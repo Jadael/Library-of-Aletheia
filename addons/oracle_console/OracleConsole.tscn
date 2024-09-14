@@ -1,0 +1,72 @@
+[gd_scene load_steps=3 format=3 uid="uid://cplimsac434v"]
+
+[ext_resource type="Script" path="res://addons/oracle_console/OracleConsole.gd" id="1_52mcg"]
+
+[sub_resource type="GDScript" id="GDScript_258di"]
+script/source = "extends TextEdit
+
+func append_text(newText: String):
+	self.set_text(text + newText)
+"
+
+[node name="Oracle" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_52mcg")
+llm_model_path = "res://models/Meta-Llama-3-8B-Instruct-Q5_K_M.gguf"
+
+[node name="Completion" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="OutputBox" type="TextEdit" parent="Completion"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+size_flags_vertical = 3
+wrap_mode = 1
+script = SubResource("GDScript_258di")
+
+[node name="InputField" type="LineEdit" parent="Completion"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Completion"]
+layout_mode = 2
+
+[node name="GenerateButton" type="Button" parent="Completion/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+text = "Generate"
+
+[node name="StopButton" type="Button" parent="Completion/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "Stop"
+
+[node name="ClearButton" type="Button" parent="Completion/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Clear"
+
+[node name="StatusLabel" type="Label" parent="Completion"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+text = "Text generation completed."

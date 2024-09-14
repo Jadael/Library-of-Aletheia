@@ -1,0 +1,106 @@
+[gd_scene load_steps=2 format=3 uid="uid://dx8ncjnvajh34"]
+
+[ext_resource type="Script" path="res://Daemons/ChronicleViewer.gd" id="1_66vd4"]
+
+[node name="ChronicleViewer" type="Control"]
+clip_contents = true
+custom_minimum_size = Vector2(256, 256)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_66vd4")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.137255, 0.137255, 0.137255, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="EntityFilter" type="OptionButton" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EventTypeFilter" type="OptionButton" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FilterInput" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Filter logs..."
+
+[node name="LogText" type="TextEdit" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 256)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+editable = false
+
+[node name="ResizeHandle" type="ColorRect" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -16.0
+offset_top = -16.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_horizontal = 10
+size_flags_vertical = 8
+mouse_default_cursor_shape = 12
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="CloseButton" type="Button" parent="."]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -30.0
+offset_bottom = 31.0
+grow_horizontal = 0
+size_flags_horizontal = 10
+size_flags_vertical = 8
+mouse_default_cursor_shape = 12
+theme_override_font_sizes/font_size = 16
+text = "❌"
+flat = true

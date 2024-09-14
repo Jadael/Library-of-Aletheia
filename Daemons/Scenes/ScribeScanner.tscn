@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bwjbo1gqytfvq"]
+
+[ext_resource type="Script" path="res://Daemons/ScribeScanner.gd" id="1_tp06s"]
+
+[node name="ScribeScanner" type="Node"]
+script = ExtResource("1_tp06s")

@@ -1,0 +1,48 @@
+[gd_scene load_steps=2 format=3 uid="uid://cwv3l5isjb0ye"]
+
+[ext_resource type="Script" path="res://Daemons/Scroll.gd" id="1_1xnsd"]
+
+[node name="Scroll" type="Window"]
+disable_3d = true
+title = "📜"
+size = Vector2i(256, 256)
+transient = true
+min_size = Vector2i(128, 128)
+content_scale_mode = 1
+content_scale_aspect = 4
+script = ExtResource("1_1xnsd")
+
+[node name="TabContainer" type="TabContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+tab_alignment = 1
+current_tab = 0
+
+[node name="Content" type="TextEdit" parent="TabContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+size_flags_vertical = 3
+wrap_mode = 1
+metadata/_edit_use_anchors_ = true
+metadata/_tab_index = 0
+
+[node name="Metadata" type="ScrollContainer" parent="TabContainer"]
+visible = false
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+follow_focus = true
+horizontal_scroll_mode = 0
+metadata/_tab_index = 1
+
+[node name="FrontmatterContainer" type="VBoxContainer" parent="TabContainer/Metadata"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
