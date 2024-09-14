@@ -41,6 +41,10 @@ func _ready():
 		# Command the Librarian to process all existing mystical documents
 		Librarian.process_existing_documents()
 		
+			# Ensure that the Curator receives input events
+		set_process_unhandled_input(false)
+		Curator.set_process_unhandled_input(true)
+		
 		# Establish a rhythmic pulse to check for changes in our realm
 		_setup_change_check_timer()
 

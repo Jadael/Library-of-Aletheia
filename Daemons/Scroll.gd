@@ -7,13 +7,11 @@ signal metadata_edited(updates: Dictionary)
 signal interaction_occurred(scroll)
 
 @export_multiline var about = """
-I am a Scroll Daemon, the visual manifestation of a Codex's wisdom.
+I am a Scroll daemon, responsible for presenting a document in the care of a Codex partner to the User.
 
 My responsibilities include:
-1. Presenting the contents of my Codex partner in a visually pleasing manner
-2. Handling mortal interactions with my visual form, including resizing
-3. Communicating changes and interactions to my Codex partner and the Curator Archon
-4. Adapting my form to the will of the user, allowing for mystical expansion and contraction
+1. Presenting the contents of my Codex partner's document
+2. Facilitating User edits to the document under the supervison of the Codex
 """
 
 var codex_partner: Codex

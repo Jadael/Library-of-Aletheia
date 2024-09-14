@@ -17,6 +17,16 @@ I respect the User's agency in organizing the mystical library space. Once a Scr
 # A mystical tome that records the connection between Codex essences and their Scroll manifestations
 var scroll_collection = {}
 
+var is_panning = false
+var last_mouse_position = Vector2.ZERO
+var scroll_offset = Vector2.ZERO
+
+const MIN_ZOOM = 0.1
+const MAX_ZOOM = 1
+const ZOOM_STEP = 0.1
+
+var current_zoom = 1.0
+
 # The sacred stage upon which our visual drama unfolds
 var main_node: Node2D
 
@@ -62,18 +72,11 @@ func _on_codex_summoned(codex: Node, scroll: Scroll):
 	})
 
 func _place_new_scroll(scroll: Scroll):
-	# This mystical rite determines the initial resting place of a newly manifested Scroll
-	# We ensure that each Scroll appears within the mortal's field of view
-	
-	# We peer into the boundaries of our visible realm
+	# Modify this function to account for the current scroll_offset
 	var viewport_rect = main_node.get_viewport_rect()
-	
-	# Through an arcane formula, we divine a suitable position
 	var random_x = randf_range(0, viewport_rect.size.x - scroll.size.x)
 	var random_y = randf_range(0, viewport_rect.size.y - scroll.size.y)
-	
-	# We gently place the Scroll in its ordained position
-	scroll.position = Vector2i(random_x, random_y)
+	scroll.position = Vector2(random_x, random_y) + scroll_offset
 
 func _on_scroll_content_edited(new_content, codex):
 	# When a Scroll's essence is altered, we must ensure its Codex twin reflects the change
@@ -193,6 +196,58 @@ func summon_chronicle_viewer():
 	Chronicler.log_event("Curator", "chronicle_viewer_summoned", {
 		"position": viewer.position,
 		"size": viewer.custom_minimum_size
+	})
+
+func _unhandled_input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_MIDDLE:
+			is_panning = event.pressed
+			if is_panning:
+				last_mouse_position = event.position
+			Chronicler.log_event("Curator", "panning_state_changed", {
+				"is_panning": is_panning
+			})
+		elif event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and event.ctrl_pressed:
+			_handle_zoom(event)
+	elif event is InputEventMouseMotion and is_panning:
+		var delta = event.position - last_mouse_position
+		pan_scrolls(delta)
+		last_mouse_position = event.position
+
+func _handle_zoom(event: InputEventMouseButton):
+	var zoom_direction = 1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1
+	var new_zoom = clamp(current_zoom + zoom_direction * ZOOM_STEP, MIN_ZOOM, MAX_ZOOM)
+	
+	if new_zoom != current_zoom:
+		var zoom_center = Vector2(event.position)
+		var zoom_factor = new_zoom / current_zoom
+		
+		# Update viewport scale
+		var viewport = main_node.get_viewport()
+		viewport.content_scale_factor = new_zoom
+		
+		# Update scroll positions
+		for scroll in scroll_collection.values():
+			var scroll_pos_float = Vector2(scroll.position)
+			var offset = scroll_pos_float - zoom_center
+			var new_pos_float = zoom_center + offset * zoom_factor
+			scroll.position = Vector2i(round(new_pos_float.x), round(new_pos_float.y))
+		
+		current_zoom = new_zoom
+		
+		Chronicler.log_event("Curator", "zoom_changed", {
+			"new_zoom": new_zoom,
+			"zoom_center": zoom_center
+		})
+
+func pan_scrolls(delta: Vector2):
+	scroll_offset += delta
+	for scroll in scroll_collection.values():
+		var new_pos = Vector2(scroll.position) + delta
+		scroll.position = Vector2i(round(new_pos.x), round(new_pos.y))
+	Chronicler.log_event("Curator", "scrolls_panned", {
+		"delta": delta,
+		"total_offset": scroll_offset
 	})
 
 # TODO: Consider implementing the following features:

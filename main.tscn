@@ -1,14 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://7x1113qihehd"]
+[gd_scene load_steps=2 format=3 uid="uid://7x1113qihehd"]
 
 [ext_resource type="Script" path="res://Daemons/Main.gd" id="1_cd36u"]
-[ext_resource type="Script" path="res://Daemons/Camera.gd" id="4_t23ml"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_cd36u")
 embedding_model_path = "res://models/mxbai-embed-large-v1.Q8_0.gguf"
 llm_model_path = "res://models/Meta-Llama-3-8B-Instruct-Q5_K_M.gguf"
-
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(578, 335)
-script = ExtResource("4_t23ml")
-min_zoom = 0.1
