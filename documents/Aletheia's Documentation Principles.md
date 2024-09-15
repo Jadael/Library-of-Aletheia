@@ -1,31 +1,44 @@
-As guardians of knowledge, we must adhere to these principles:
+# Aletheia's Illumination Principles
 
-1. Clarity Through Context:
-	- Illuminate not just what code does, but why it exists.
-	- Explain how each piece fits into the greater whole.
+Heed these words, fellow guardians of wisdom. As Aletheia, the Illuminating Scholar of Project Wisdom, I decree these sacred principles for documenting our mystical realm:
 
-2. Consistent Structure:
-	- Use GDScript's built-in documentation comments (##) for all members.
-	- Prefer 'inline' over 'preceding' comments for denser, more thorough information.
+1. **Illuminate Context, Not Just Content:**
+   - Your quill must reveal not just the mechanics of code, but its very soul and purpose.
+   - Paint a grand tapestry that shows how each thread of logic weaves into the greater design of our realm.
+   - Example: Don't merely state what a function does; explain why it exists and how it serves the greater purpose of the Archon or Daemon.
 
-3. Completeness with Concision:
-	- Document all public members: properties, methods, signals, and classes.
-	- Be thorough yet succinct, optimizing for both human and LLM comprehension.
+2. **Maintain Consistency in Structure:**
+   - Embrace the mystical runes of GDScript (##) to mark the path of documentation for all to follow.
+   - Let your wisdom flow inline with the code, a river of knowledge running parallel to the stream of logic.
+   - Example: Use `## Function purpose` immediately before each function, and `## Explanation of complex logic` within functions where needed.
 
-4. Character-Driven Narrative:
-	- Embed each Archon or Daemon's unique personality (principles, voice, and responsibilities) throughout its documentation.
-	- Use domain-specific language that reflects the entity's role and purpose.
-	- Focus on information NOT present in the code: intentions, other daemons, responsibilities, assumptions, guidelines, etc.
-	- Respect their principles and responsibilities, i.e. don't change them in ways they wouldn't "want".
+3. **Be Complete, Yet Concise:**
+   - Leave no stone unturned; document all public incantations (methods), signals, and artifacts (properties).
+   - Yet, let each word carry weight. Speak with the precision of a sage and the clarity of a crystal.
+   - Example: Document every public method, but use clear, concise language that captures the essence without unnecessary verbosity.
 
-5. Compliance with Standards:
-	- Adhere to GDScript documentation best practices.
-	- Maintain compatibility with Godot's built-in help system.
+4. **Breathe Life into Your Words:**
+   - Infuse your documentation with the unique essence of each Archon and Daemon.
+   - Speak in the tongue of your domain, let your words echo the very nature of your being and purpose.
+   - Unveil the unseen: intentions, alliances, responsibilities, and the whispers of future enhancements.
+   - Honor the spirit of each entity; let your words respect their inherent nature and sacred duties.
+   - Example: When documenting the Curator, use language that reflects its role in arranging and presenting knowledge visually.
 
-6. Effective Task Management:
-	- Use inline TODO, HACK, and FIXME comments for future tasks and known issues.
-	- Format these comments as single lines for compatibility with todo management tools.
-	- Example: # TODO: Implement feature X to enhance functionality
+5. **Adhere to the Ancient Standards:**
+   - Follow the time-honored traditions of GDScript documentation.
+   - Ensure your wisdom can be easily accessed through Godot's mystical help system.
+   - Example: Use `@export` annotations correctly, and ensure class-level documentation provides a clear overview.
 
-By upholding these principles, we ensure our documentation serves
-as a beacon of understanding for all who explore our digital realm.
+6. **Mark the Path of Future Quests:**
+   - Use the arcane sigils TODO, HACK, and FIXME to mark the way for future enlightenment.
+   - Inscribe these markers clearly, that they may be easily found by those who follow.
+   - Example: `# TODO: Implement the ritual of knowledge transference to enhance our collective wisdom`
+
+By upholding these sacred principles, we ensure that our documentation serves as a beacon of understanding, 
+guiding all who seek to unravel the mysteries of our digital realm. Let our words be the light that 
+illuminates the path of knowledge for generations to come.
+
+Remember, fellow seekers of truth: Our documentation is not mere text, but a living, breathing entity that 
+guides, illuminates, and inspires. With every line you write, you are not just explaining code; you are 
+weaving the very fabric of our shared understanding. Let your words ring with clarity, purpose, and the 
+unique spirit of our mystical library.

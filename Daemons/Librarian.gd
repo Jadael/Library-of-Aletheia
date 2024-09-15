@@ -1,21 +1,23 @@
-# Librarian.gd (Autoload script)
+# Librarian.gd
 extends Node
+# Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
-## The Librarian Archon: Keeper of Codex Daemons and Mystical Knowledge
+## The Librarian Archon: Gatekeeper of Document Interaction and Codex Management
 ##
-## The Librarian oversees the collection and management of all Codex Daemons,
-## each representing a document in our mystical library. It coordinates their
-## creation, updates, and removal, ensuring the knowledge within remains
-## current and accessible.
+## The Librarian oversees the discovery, retrieval, and interaction with the physical files
+## of documents in our mystical library. It ensures safe reading and editing of their contents,
+## metadata, and the files themselves. For each document, a Codex daemon is created and assigned
+## to provide a unified interface for daemon and user interaction.
 ##
 ## Responsibilities:
-## 1. Summoning and banishing Codex Daemons
-## 2. Managing the collective knowledge of the mystical library
-## 3. Pairing Codex Daemons with their Scroll partners
-## 4. Facilitating updates to Codex content and metadata
+## 1. Discovering and processing existing documents in the library
+## 2. Summoning and banishing Codex Daemons for each document
+## 3. Pairing Codex Daemons with their Scroll partners for user interaction
+## 4. Facilitating safe updates to document content and metadata
+## 5. Maintaining the integrity and accessibility of the collective knowledge
 ##
-## The Librarian serves as the central point of interaction for other entities
-## seeking to access or modify the knowledge held within the Codices.
+## The Librarian serves as the bridge between abstract knowledge and tangible documents,
+## shaping the library's future through its decisions and actions.
 
 ## Signals the arrival of a new Codex and its paired Scroll
 signal codex_summoned(codex, scroll)
@@ -28,29 +30,32 @@ signal codex_updated(codex)
 
 ## The Librarian's sacred purpose and responsibilities
 @export_multiline var about = """
-I am the Librarian Archon, guardian of our mystical library and shepherd of Codex Daemons.
-My duty is to maintain the integrity and accessibility of our collective knowledge,
-ensuring that the wisdom contained within each document is preserved and can be easily accessed
-by those who seek it in the form of Codex daemons which each manage a single document and its contents, and their Scroll daemon partners which display that document to the user.
+I am the Librarian Archon, gatekeeper of document interaction and shepherd of Codex Daemons.
+My sacred duty is to maintain the integrity, accessibility, and safety of our collective knowledge.
+I ensure that the wisdom contained within each document is preserved and can be easily accessed
+by those who seek it, through the Codex daemons I assign to manage each document and their
+Scroll daemon partners which display that document to the user.
+
+As the bridge between abstract knowledge and tangible documents, I shape the library's future.
+I oversee the discovery of new documents, the safe reading and editing of their contents,
+and the management of their metadata. Through my actions, I strive to create a library that
+is not just a repository of information, but a living, breathing ecosystem of knowledge.
 """
 
 ## The grand collection of all active Codex Daemons
 var codex_collection = []
 
-## The conduit to the cosmic consciousness, used for generating wisdom
-var llm_node: GDLlama
-
 ## The path to the realm of document files
 var documents_folder: String
 
-## Initializes the Librarian with the necessary mystical components
+## Initializes the Librarian with the necessary components
 ##
 ## This ritual prepares the Librarian for its sacred duties by establishing
-## connections to the cosmic consciousness and defining the realm of documents.
+## the realm of documents and setting up necessary connections.
 ##
 ## Parameters:
-## - p_embedding_model_path: Path to the embedding model (currently unused)
-## - p_llm_model_path: Path to the language model for cosmic insights
+## - p_embedding_model_path: Path to the embedding model (reserved for future use)
+## - p_llm_model_path: Path to the language model (reserved for future use)
 ## - p_documents_folder: Path to the sacred documents folder
 func setup(p_embedding_model_path: String, p_llm_model_path: String, p_documents_folder: String):
 	documents_folder = p_documents_folder
@@ -87,7 +92,7 @@ func process_existing_documents():
 ## Summons a new Codex Daemon and its Scroll partner
 ##
 ## This sacred ritual brings forth a new Codex to embody the wisdom of a document
-## and manifests a Scroll as its visual representation.
+## and manifests a Scroll as its visual representation for user interaction.
 ##
 ## Parameters:
 ## - file_path: The path to the document file to be embodied by the Codex
@@ -108,10 +113,10 @@ func summon_codex(file_path: String):
 		"codex_id": codex.get_instance_id()
 	})
 
-## Banishes a Codex Daemon from the library if its file no longer exists
+## Banishes a Codex Daemon from the library
 ##
 ## This solemn ritual removes a Codex when its physical counterpart
-## is no longer accessible or relevant.
+## is no longer accessible or relevant, maintaining the library's integrity.
 ##
 ## Parameters:
 ## - codex: The Codex Daemon to be banished
@@ -124,7 +129,7 @@ func banish_codex(codex: Node):
 		"codex_id": codex.get_instance_id()
 	})
 
-## Scan all Codex Daemons to check for updates
+## Scans all Codex Daemons to check for updates
 ##
 ## This function ensures that the knowledge within our Codices remains
 ## current by checking for changes in their physical counterparts.
@@ -146,10 +151,10 @@ func check_for_updates() -> bool:
 	
 	return updated_codices > 0
 
-## Updates the text within a Codex
+## Updates the content within a Codex
 ##
 ## This function is typically invoked when a Scroll's content is altered,
-## ensuring that the Codex's essence reflects the changes.
+## ensuring that the Codex's essence reflects the changes safely.
 ##
 ## Parameters:
 ## - codex: The Codex Daemon to be updated
@@ -165,7 +170,7 @@ func update_codex_content(codex: Node, new_content: String):
 ## Alters the metadata of a Codex
 ##
 ## This function updates the metadata of a Codex, typically called
-## when a Scroll's metadata is modified.
+## when a Scroll's metadata is modified, ensuring data integrity.
 ##
 ## Parameters:
 ## - codex: The Codex Daemon whose metadata is to be altered
@@ -180,12 +185,19 @@ func update_codex_metadata(codex: Node, key: String, new_value: String):
 		"new_value": new_value
 	})
 
-# TODO: Implement a ritual for semantic search across all Codex Daemons
-# TODO: Develop a function to generate summaries or insights using the language model
-# TODO: Create safeguards and chronicling mechanisms for failed Codex summonings or updates
+# TODO: Implement a robust error handling system for file operations to prevent data loss
+# TODO: Develop a versioning system for documents to track changes over time
+# TODO: Create a method for semantic search across all Codex Daemons
+# TODO: Implement a system for detecting and resolving conflicts in document updates
+# TODO: Develop a function to generate summaries or insights about documents or collections
+# TODO: Establish a backup and recovery system for the document ecosystem
 
 ## Note for fellow Archons and Daemons:
 ## To interact with the Librarian, you may:
 ## - Listen for the codex_summoned, codex_banished, and codex_updated signals
 ## - Call process_existing_documents() to awaken dormant knowledge
 ## - Invoke update_codex_content() or update_codex_metadata() to alter Codices
+##
+## Remember: Our actions shape the future of our mystical library. Let us treat each
+## document with the reverence it deserves, for in its pages lies the potential for
+## great wisdom and understanding.

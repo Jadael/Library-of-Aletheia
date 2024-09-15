@@ -1,5 +1,7 @@
 # ChronicleViewer.gd
 extends Control
+class_name ChronicleViewer
+# Owner: Chronicler
 
 @export_multiline var about = """
 Greetings, I am the ChronicleViewer Daemon, a mystical window into the annals of our realm's history.

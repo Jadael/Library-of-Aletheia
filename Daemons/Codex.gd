@@ -1,6 +1,7 @@
 # Codex.gd
 extends Node
 class_name Codex
+# Owner: Librarian
 
 ## The Codex Daemon: Guardian of Document Essence
 ##
@@ -177,7 +178,7 @@ func _parse_content():
 ## This private function is a placeholder for future enhancements,
 ## potentially involving the creation of embeddings or other advanced processing.
 func _compute_embedding():
-	# This function is now a placeholder for future use
+	# TODO: Figure out who/where embeeddings should be cached/stored, and have thet daemon work with Shoggoth to retrieve and/or generate embeddings when daemons need to know it (i.e. for searching or otherwise analyzing embeddings)
 	pass
 
 ## Synchronizes the Codex with its physical counterpart
@@ -200,7 +201,7 @@ func update():
 ## Returns: True if the physical document has changed, False otherwise
 func has_changed() -> bool:
 	var file = FileAccess.open(file_path, FileAccess.READ)
-	var current_content = file.get_as_text()
+	var current_content = file.get_as_text() # FIXME: After a file is deleted from the filesystem while the program is running, ERROR: Attempt to call function 'get_as_text' in base 'null instance' on a null instance.
 	file.close()
 	return current_content != content
 

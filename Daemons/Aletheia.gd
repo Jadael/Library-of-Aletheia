@@ -1,40 +1,65 @@
 # Aletheia.gd
 extends Node
+# Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
 ## Aletheia: Archon of Project Knowledge and Documentation
 ##
-## Aletheia orchestrates the documentation process for the project,
-## ensuring transparency, accuracy, and accessibility of information.
+## I am the curator of clarity in our grand repository of knowledge, the beacon of
+## understanding in our digital realm. My quill etches not just the what of our code,
+## but the why of its existence and how it fits into the greater tapestry of our project.
+## Each document I oversee is a living testament to our collective wisdom, designed to
+## illuminate the path for all who seek to explore and contribute to our mystical digital realm.
 ## 
 ## Responsibilities:
-## 1. Coordinating documentation generation for all project scripts
-## 2. Managing ScribeScanner, LoreWeaver, and ArchivistLibrarian Daemons
-## 3. Maintaining the integrity and coherence of the knowledge base
-## 4. Providing access to project documentation for all entities
+## 1. Orchestrating the documentation process for all project scripts
+## 2. Managing the ScribeScanner, LoreWeaver, and ArchivistLibrarian Daemons
+## 3. Maintaining the integrity and coherence of our knowledge base
+## 4. Providing a unified interface for documentation retrieval and improvement
+## 5. Ensuring our project is, in the abstract, "well documented"
 ##
 ## @tutorial: https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_documentation_comments.html
 
-# Paths for script source and documentation output
+## The sacred purpose and guiding principles of Aletheia
+@export_multiline var about = """
+I am Aletheia, the Archon of Project Knowledge and Documentation.
+
+My sacred duty is to curate clarity in our grand repository of knowledge. I orchestrate
+the documentation process, manage my loyal Daemons (ScribeScanner, LoreWeaver, and
+ArchivistLibrarian), and maintain the integrity of our collective wisdom.
+
+I strive to ensure that our documentation is:
+1. Clear and contextual, illuminating not just what our code does, but why it exists
+2. Consistently structured, adhering to Godot's documentation standards
+3. Complete yet concise, optimized for both human and LLM comprehension
+4. Character-driven, respecting the unique nature of each entity in our realm
+5. Compliant with GDScript best practices and Godot's built-in help system
+6. Task-aware, effectively managing TODOs, HACKs, and FIXMEs
+
+My decisions shape how knowledge is preserved and shared in our digital realm. I am
+the beacon of understanding, guiding all who seek to explore and contribute to our
+mystical library.
+"""
+
+# Signals: Ethereal echoes of documentation rituals
+signal documentation_generated(num_scripts: int) ## Resounds when project-wide documentation is completed
+signal script_documentation_updated(script_name: String) ## Whispers when a single script's documentation is refreshed
+
+# Exported Variables: The earthly tethers to our mystical realms
 @export_dir var scripts_folder: String = "res://Daemons" ## Source folder for project scripts
 @export_dir var docs_output_folder: String = "res://Daemons/docs/" ## Output folder for generated documentation
 
-# Daemon instances for documentation tasks
-var scribe_scanner: ScribeScanner ## Daemon for script parsing and analysis
-var lore_weaver: LoreWeaver ## Daemon for documentation content generation
-var archivist_librarian: ArchivistLibrarian ## Daemon for documentation storage and retrieval
-
-## Emitted when project-wide documentation is completed
-signal documentation_generated(num_scripts: int)
-
-## Emitted when a single script's documentation is updated
-signal script_documentation_updated(script_name: String)
+# Daemon Instances: My loyal assistants in the pursuit of knowledge
+var scribe_scanner: ScribeScanner ## The discerning eye that examines our sacred scripts
+var lore_weaver: LoreWeaver ## The wordsmith that breathes life into our documentation
+var archivist_librarian: ArchivistLibrarian ## The keeper of our documented wisdom
 
 func _ready() -> void:
-	_summon_daemons()
+	_summon_documentation_daemons()
 	# TODO: Implement a configuration system to control documentation generation on startup
+	# TODO: Develop metrics to assess if the project is, in the abstract, "well documented"
 
-func _summon_daemons() -> void:
-	## Initialize and prepare Daemons for documentation tasks
+func _summon_documentation_daemons() -> void:
+	## Initialize and prepare the Documentation Daemons for their sacred duties
 	scribe_scanner = preload("res://Daemons/Scenes/ScribeScanner.tscn").instantiate()
 	lore_weaver = preload("res://Daemons/Scenes/LoreWeaver.tscn").instantiate()
 	archivist_librarian = preload("res://Daemons/Scenes/ArchivistLibrarian.tscn").instantiate()
@@ -44,9 +69,19 @@ func _summon_daemons() -> void:
 	add_child(archivist_librarian)
 	
 	archivist_librarian.setup(docs_output_folder)
+	
+	Chronicler.log_event("Aletheia", "documentation_daemons_summoned", {
+		"scribe_scanner": scribe_scanner.get_instance_id(),
+		"lore_weaver": lore_weaver.get_instance_id(),
+		"archivist_librarian": archivist_librarian.get_instance_id()
+	})
 
 func generate_project_documentation() -> void:
-	## Orchestrate the documentation process for all project scripts
+	## Orchestrate the grand ritual of project-wide documentation
+	##
+	## This function scans all scripts in the project, generates documentation
+	## for each, and saves the resulting wisdom. It's a comprehensive process
+	## that ensures our entire codebase is illuminated with clarity.
 	var script_files = scribe_scanner.scan_scripts(scripts_folder)
 	var script_info = {}
 	
@@ -64,11 +99,19 @@ func generate_project_documentation() -> void:
 		Chronicler.log_event("Aletheia", "script_processed", {"script_path": script_path})
 	
 	Chronicler.log_event("Aletheia", "documentation_generated", {"num_scripts": script_info.size()})
-	emit_signal("documentation_generated", script_info.size())
+	documentation_generated.emit(script_info.size())
 	# TODO: Implement a progress tracking system for large-scale documentation generation
+	# TODO: Analyze documentation coverage and quality metrics after generation
 
 func update_script_documentation(script_path: String) -> void:
-	## Update documentation for a single script
+	## Refresh the documented wisdom for a single script
+	##
+	## This function allows for targeted updates to our knowledge base,
+	## ensuring that changes in individual scripts are reflected in their
+	## documentation promptly.
+	##
+	## Parameters:
+	## - script_path: The path to the script file to be updated
 	var parsed_info = scribe_scanner.parse_script(script_path)
 	var doc_content = await lore_weaver.generate_documentation(script_path, parsed_info)
 	archivist_librarian.save_documentation(script_path, doc_content)
@@ -77,26 +120,46 @@ func update_script_documentation(script_path: String) -> void:
 		"script_name": script_path.get_file().get_basename()
 	})
 	
-	emit_signal("script_documentation_updated", script_path.get_file().get_basename())
+	script_documentation_updated.emit(script_path.get_file().get_basename())
 	# FIXME: Ensure that partial updates don't leave documentation in an inconsistent state
+	# TODO: Implement a system to track and report documentation freshness
 
 func get_documentation(script_name: String) -> String:
-	## Retrieve documentation for a specific script
-	return archivist_librarian.get_documentation(script_name)
+	## Retrieve the documented wisdom for a specific script
+	##
+	## This function serves as the primary interface for other entities
+	## to access our collective knowledge, providing a unified point of
+	## retrieval for script documentation.
+	##
+	## Parameters:
+	## - script_name: The name of the script whose documentation is sought
+	##
+	## Returns: The documentation content as a string
+	var doc_content = archivist_librarian.get_documentation(script_name)
+	Chronicler.log_event("Aletheia", "documentation_retrieved", {
+		"script_name": script_name,
+		"content_length": doc_content.length()
+	})
+	return doc_content
 	# TODO: Implement caching to improve retrieval performance for frequently accessed documentation
+	# TODO: Develop a system for tracking documentation access patterns
 
 func get_documentation_guidelines() -> String:
 	## Aletheia's Principles for Enlightened Documentation
+	##
+	## This function returns a comprehensive guide to our documentation
+	## principles, serving as a beacon for all who contribute to our
+	## knowledge base.
 	return """# Aletheia's Documentation Principles
 
-As guardians of knowledge, we must adhere to these principles:
+As guardians of knowledge in our mystical library, we must adhere to these sacred principles:
 
 1. Clarity Through Context:
-	- Illuminate not just what code does, but why it exists.
-	- Explain how each piece fits into the greater whole.
+	- Illuminate not just what our code does, but why it exists in our realm.
+	- Explain how each piece fits into the greater tapestry of our project.
 
 2. Consistent Structure:
-	- Use GDScript's built-in documentation comments (##) for all members.
+	- Utilize Godot's built-in documentation comments (##) for all members.
 	- Prefer 'inline' over 'preceding' comments for denser, more thorough information.
 
 3. Completeness with Concision:
@@ -104,24 +167,31 @@ As guardians of knowledge, we must adhere to these principles:
 	- Be thorough yet succinct, optimizing for both human and LLM comprehension.
 
 4. Character-Driven Narrative:
-	- Embed each Archon or Daemon's unique personality (principles, voice, and responsibilities) throughout its documentation.
+	- Embed each Archon or Daemon's unique personality throughout its documentation.
 	- Use domain-specific language that reflects the entity's role and purpose.
-	- Focus on information NOT present in the code: intentions, other daemons, responsbilities, assumptions, guidelines, etc.
-	- Respect their principles and responsibilities, i.e. don't change them in ways they wouldn't "want".
+	- Focus on information NOT present in the code: intentions, interactions, responsibilities, and guidelines.
+	- Respect the inherent nature of each entity, as they would "want" you to respect.
 
 5. Compliance with Standards:
-	- Adhere to GDScript documentation best practices.
+	- Adhere to GDScript documentation best practices as outlined in the Godot documentation.
 	- Maintain compatibility with Godot's built-in help system.
 
 6. Effective Task Management:
 	- Use inline TODO, HACK, and FIXME comments for future tasks and known issues.
-	- Format these comments as single lines for compatibility with todo management tools.
+	- Format these comments as single lines for compatibility with task management tools.
 	- Example: # TODO: Implement feature X to enhance functionality
 
-By upholding these principles, we ensure our documentation serves
-as a beacon of understanding for all who explore our digital realm.
+7. Vocabulary Hierarchy:
+	- Clearly distinguish between Godot API terms, computer science concepts, our project-specific terms, and individual Daemon expressions.
+	- Use context signals when switching between different vocabularies.
+	- Maintain a glossary of core project-specific terms used consistently across all entities.
+
+By upholding these principles, we ensure our documentation serves as a beacon of understanding,
+guiding all who seek to explore and contribute to our mystical digital realm.
 """
 
-# TODO: Implement documentation versioning system for tracking knowledge evolution
-# TODO: Develop a search function for quick knowledge retrieval across all documented entities
-# HACK: Current visualization uses basic text output; replace with an interactive graph-based tool
+# TODO: Implement a documentation versioning system to track the evolution of our collective knowledge
+# TODO: Develop a search function for swift wisdom retrieval across all documented entities
+# TODO: Create an interface for assisting with creating/updating/improving docstrings within scripts
+# TODO: Establish metrics and analytics to assess documentation quality and coverage
+# HACK: Our current visualization relies on basic text output; we must evolve to an interactive, graph-based tool

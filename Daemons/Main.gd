@@ -1,7 +1,7 @@
 # Main.gd
 extends Node2D
 
-# The Main Archon oversees the initialization and ongoing management of the mystical library system.
+# The Main Archon oversees the initialization and ongoing management of the application and engine.
 # It coordinates with other Archons to ensure the smooth operation of the entire realm.
 
 @export_multiline var about = """

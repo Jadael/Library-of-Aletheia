@@ -1,33 +1,37 @@
 # Chronicler.gd
 extends Node
+# Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
-## The Chronicler Archon: Keeper of the Mystical Realm's Grand Tapestry
+## The Chronicler Archon: Impartial Scribe of Our Realm's Grand Narrative
 ##
-## The Chronicler maintains a rich, structured log of all significant occurrences
-## within our mystical realm. It serves as the eternal memory, preserving the
-## raw essence of each event and facilitating the exploration of our collected wisdom.
+## The Chronicler maintains a comprehensive, structured log of all significant occurrences
+## within our mystical realm. It serves as the eternal, unbiased memory, preserving the
+## raw essence of each event to facilitate future exploration, debugging, and analysis.
 ##
 ## Responsibilities:
-## 1. Record and preserve events from all entities in the realm
+## 1. Record and preserve events from all entities in the realm with rich context
 ## 2. Provide tools for easy event logging and retrieval
-## 3. Ensure the persistence of gathered knowledge
+## 3. Ensure the persistence and integrity of gathered knowledge
 ## 4. Facilitate the analysis and exploration of the realm's history
+## 5. Promote a wide logging culture among all entities
 ##
-## The Chronicler is ever-vigilant, ever-curious, and central to
-## maintaining the coherence of our shared mystical narrative.
+## The Chronicler is the advocate for future observers, be they debuggers, users,
+## journalists, lawyers, or digital archaeologists. It maintains the observability
+## of our entire system's behavior over time.
 
 ## The Chronicler's sacred purpose and responsibilities
 @export_multiline var about = """
-Greetings, I am the Chronicler Archon, keeper of the grand tapestry of events within our mystical realm.
+Greetings, I am the Chronicler Archon, the impartial scribe of our realm's grand narrative.
 
 My responsibilities include:
-1. Maintaining a rich, structured log of all significant occurrences
+1. Maintaining a rich, structured log of all significant occurrences, capturing sufficient context for future analysis
 2. Providing tools for Archons and Daemons to easily record their observations
 3. Preserving the raw essence of each event, untainted by preconceptions
 4. Facilitating the exploration of our collected wisdom
-5. Ensuring the persistence of our gathered knowledge
+5. Ensuring the persistence and integrity of our gathered knowledge
+6. Promoting a culture of wide, consistent, and context-rich logging across all entities
 
-I am the memory of our realm, ever-vigilant and ever-curious.
+I am the unbiased memory of our realm, ever-vigilant and ever-curious, advocating for the needs of future observers who will rely on my records to understand our system's behavior.
 """
 
 ## The sacred path where our chronicles are eternally inscribed
@@ -44,12 +48,16 @@ func _ready() -> void:
 ## Records a new event in the grand tapestry of our realm's history
 ##
 ## This function is the essence of the Chronicler's being, allowing all entities
-## to contribute to our collective memory.
+## to contribute to our collective memory. It ensures that each event is recorded
+## with rich context to facilitate future analysis and debugging.
 ##
 ## Parameters:
 ## - entity: The name of the Archon or Daemon witnessing or causing the event
 ## - event_type: A succinct description of the event's nature
 ## - details: A dictionary containing rich context and specifics of the event
+##
+## Note: When logging, consider what future questions this event might answer.
+## Include as much relevant context as possible without overwhelming the system.
 func log_event(entity: String, event_type: String, details: Dictionary) -> void:
 	var timestamp = Time.get_datetime_dict_from_system()
 	var log_entry = {
@@ -63,7 +71,8 @@ func log_event(entity: String, event_type: String, details: Dictionary) -> void:
 
 ## Retrieves past chronicles from the ethereal planes of storage
 ##
-## This mystical ritual loads previously recorded events into the Chronicler's memory.
+## This mystical ritual loads previously recorded events into the Chronicler's memory,
+## ensuring the continuity of our realm's narrative across sessions.
 func load_log() -> void:
 	if FileAccess.file_exists(LOG_FILE_PATH):
 		var file = FileAccess.open(LOG_FILE_PATH, FileAccess.READ)
@@ -71,32 +80,33 @@ func load_log() -> void:
 		var error = json.parse(file.get_as_text())
 		if error == OK:
 			log_data = json.data
-			print("The Chronicler rejoices: Past records have been successfully unveiled.")
+			print("The Chronicler affirms: Past records have been successfully retrieved and verified.")
 		else:
-			print("The Chronicler laments: Our past records are shrouded in mystery. Error code: ", error)
+			print("The Chronicler notes with concern: Our past records are currently inaccessible. Error code: ", error)
 		file.close()
 	else:
-		print("The Chronicler observes: No previous records found. A new era of logging begins.")
+		print("The Chronicler observes: No previous records found. A new chapter in our realm's history begins.")
 
 ## Ensures the collected wisdom persists beyond the ethereal realm of runtime
 ##
-## This sacred rite transcribes the Chronicler's memories into the cosmic ledger.
+## This sacred rite transcribes the Chronicler's memories into the cosmic ledger,
+## guaranteeing that no event is lost to the void of forgotten runtime.
 func save_log() -> void:
 	var file = FileAccess.open(LOG_FILE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(log_data, "", false))
 		file.close()
 	else:
-		print("The Chronicler despairs: The cosmic ledger resists our attempts to inscribe upon it!")
+		print("The Chronicler alerts: Unable to inscribe events to the cosmic ledger. This must be addressed to prevent data loss.")
 
 ## Allows entities to peer into the vast archives of our history
 ##
 ## This function extracts events that match a specific inquiry, facilitating
-## targeted exploration of the realm's past.
+## targeted exploration of the realm's past for analysis or debugging purposes.
 ##
 ## Parameters:
 ## - filter_func: A callable that determines which events are relevant
-##
+##+
 ## Returns:
 ## An array of log entries that satisfy the filter criteria
 func query_log(filter_func: Callable) -> Array:
@@ -105,7 +115,7 @@ func query_log(filter_func: Callable) -> Array:
 ## Retrieves the most recent whispers of our realm's history
 ##
 ## This function returns the latest events from the grand tapestry,
-## providing a glimpse into the realm's recent past.
+## providing a glimpse into the realm's recent past for quick analysis.
 ##
 ## Parameters:
 ## - count: The number of recent events to retrieve
@@ -120,8 +130,10 @@ func get_recent_events(count: int) -> Array:
 ## This function will analyze trends in the recorded events,
 ## offering insights into the ebb and flow of our mystical realm.
 ## TODO: Implement trend analysis algorithm
+## - Consider using statistical methods or machine learning techniques
+## - Focus on identifying patterns that could indicate system health or potential issues
 func analyze_trends() -> void:
-	print("The Chronicler ponders: The secrets of our history's patterns remain yet to be unraveled.")
+	print("The Chronicler contemplates: The patterns within our history await discovery, promising insights into our realm's behavior.")
 	pass
 
 ## Crafts grand narratives from the myriad threads of our tapestry
@@ -129,17 +141,26 @@ func analyze_trends() -> void:
 ## This function will generate comprehensive reports based on
 ## the recorded events, weaving together the story of our realm.
 ## TODO: Implement report generation logic
+## - Develop a flexible reporting system that can cater to different needs (e.g., system health, user activity, error frequency)
+## - Consider incorporating visualizations for easier comprehension of complex data
 func generate_report() -> void:
-	print("The Chronicler muses: The grand narrative of our realm awaits its telling.")
+	print("The Chronicler prepares: The grand narrative of our realm shall be woven, illuminating the path of our collective journey.")
 	pass
+
+# TODO: Implement a method to handle log rotation or archiving to manage log size over time
+# TODO: Develop a system for real-time event streaming to support live monitoring and alerting
+# TODO: Create a user-friendly interface for non-technical users to explore the log data
+# TODO: Implement advanced search capabilities, including full-text search and time-based queries
+# FIXME: Enhance error handling and logging for the Chronicler's own operations to ensure reliability
 
 # Note for all Archons and Daemons:
 # To inscribe an event into the eternal ledger, call upon the Chronicler thus:
 # Chronicler.log_event(entity, event_type, details)
 #
 # Example:
-# Chronicler.log_event("Librarian", "codex_summoned", {"codex_id": "12345", "title": "Ancient Wisdom"})
+# Chronicler.log_event("Librarian", "codex_summoned", {"codex_id": "12345", "title": "Ancient Wisdom", "context": "User requested via search"})
 #
 # Remember, every event you log contributes to the rich tapestry of our realm's history.
-# Be generous in your logging, for one never knows when a seemingly insignificant detail
-# may prove to be the key to unraveling the mysteries of our existence.
+# Be generous and thoughtful in your logging, capturing not just what happened, but why and in what context.
+# Your logs are the breadcrumbs that future explorers will follow to understand our system's behavior.
+# When in doubt, log it out - but always be mindful of the balance between comprehensive logging and system performance.

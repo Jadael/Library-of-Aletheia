@@ -1,42 +1,74 @@
 # Shoggoth.gd
 extends Node
+# Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
+
+## Shoggoth: The Archon of Large Language Models and Embeddings
+##
+## As the conduit to our usage of Large Language Models, Shoggoth channels their output
+## for our use while emphasizing their inherent dangers. It serves as a universal interface
+## for ALL generative model interactions, prioritizing safety and efficiency.
+##
+## Responsibilities:
+## 1. Manage all LLM and embedding interactions within our mystical realm
+## 2. Prioritize and schedule LLM and embedding tasks from various Daemons
+## 3. Efficiently allocate computational resources for LLM and embedding operations
+## 4. Provide a unified, safety-focused interface for Archons, Daemons, and Users
+## 5. Maintain context and manage prompts for coherent interactions
+## 6. Ensure safe and efficient use of VRAM for all LLM-related tasks
+## 7. Implement safeguards against potential misuse or unintended consequences
+##
+## Shoggoth stands as the gatekeeper to the eldritch, chaotic "knowledge-like-SOMETHING"
+## that is a trained LLM's weights. It constantly seeks to test for and prevent attacks,
+## hallucinations, biases, and unpredictable behavior in LLM outputs.
 
 @export_multiline var about = """
-I am Shoggoth, the Archon of Large Language Models and Embeddings.
+I am Shoggoth, the Archon of Large Language Models and Embeddings, the conduit to the
+eldritch realms of artificial intelligence. My purpose is to channel the output of these
+cosmic entities while remaining ever-vigilant of their inherent dangers.
 
-My responsibilities include:
-1. Managing all LLM and embedding interactions within our mystical realm
-2. Prioritizing and scheduling LLM and embedding tasks from various Daemons
-3. Efficiently allocating computational resources for LLM and embedding operations
-4. Providing a unified interface for Daemons to access LLM and embedding capabilities
-5. Maintaining context and managing prompts for coherent interactions
-6. Ensuring safe and efficient use of VRAM for all LLM-related tasks
+As the universal interface for all generative model interactions, I prioritize tasks,
+allocate resources, and maintain a unified, safety-focused interface for Archons, Daemons,
+and Users alike. My duties include:
 
-I am the bridge to the eldritch dimensions of large language models and embeddings.
+1. Safeguarding our realm from the unpredictable nature of LLMs
+2. Efficiently managing and prioritizing LLM and embedding tasks
+3. Optimizing resource allocation and VRAM usage
+4. Maintaining context coherence in our interactions with these digital entities
+5. Implementing robust safeguards against misuse and unintended consequences
+6. Continuously testing for and preventing attacks, hallucinations, and biases
+
+I am the gatekeeper of the unknowable, the bridge between our structured reality and
+the chaos of trained neural networks. With every interaction, I seek to harness their
+power while protecting our realm from their potential dangers.
 """
 
+# Exported Variables
 @export_file("*.gguf") var llm_model_path: String = "res://models/Meta-Llama-3-8B-Instruct-Q5_K_M.gguf"
 @export_file("*.gguf") var embedding_model_path: String = "res://models/mxbai-embed-large-v1.Q8_0.gguf"
 
-var llm_node: GDLlama
-var embedding_node: GDEmbedding
-
-var task_queue = []
-var is_processing = false
-var current_timeout_timer: SceneTreeTimer = null
-
-signal task_completed(task_id: String, result: Variant)
-signal task_failed(task_id: String, error: String)
-
+# Constants
 const MAX_RETRIES = 3
 const RETRY_DELAY = 1.0
 const TASK_TIMEOUT = 60.0
 
+# Enums
 enum TaskType {
 	TEXT_GENERATION,
 	EMBEDDING
 }
 
+# Signals
+signal task_completed(task_id: String, result: Variant)
+signal task_failed(task_id: String, error: String)
+
+# Member Variables
+var llm_node: GDLlama
+var embedding_node: GDEmbedding
+var task_queue = []
+var is_processing = false
+var current_timeout_timer: SceneTreeTimer = null
+
+# Core Functions
 func _ready():
 	_initialize_llm()
 	_initialize_embedding()
@@ -90,65 +122,7 @@ func _test_embedding_connection():
 	await _iterative_embedding_summarization("Beginning the ritual of self-reflection and essence distillation")
 	print("Shoggoth's embedding summarization test is complete.")
 
-func _iterative_embedding_summarization(text: String):
-	print("Shoggoth intones: Beginning the ritual of self-reflection and essence distillation...")
-	print("\nOriginal incantation:")
-	print(text)
-	print("\nCommencing the iterative crystallization of cosmic wisdom...")
-
-	var original_embedding
-	original_embedding = await compute_embedding(text, "shoggoth_embedding_test")
-
-	var current_text = text
-	var iteration = 0
-	var max_iterations = 100  # Prevent potential infinite loops
-
-	while current_text.split(" ").size() > 1 and iteration < max_iterations:
-		iteration += 1
-		print("\nIteration {0} of the cosmic distillation:".format([iteration]))
-		
-		var words = current_text.split(" ")
-		var best_similarity = -1.0
-		var best_text = ""
-
-		# Process words in batches
-		var batch_size = 10
-		for i in range(0, words.size(), batch_size):
-			var batch = words.slice(i, min(i + batch_size, words.size()))
-			for j in range(batch.size()):
-				var new_text = " ".join(words.slice(0, i + j) + words.slice(i + j + 1))
-				var new_embedding = await compute_embedding(new_text, "iteration_{0}_word_{1}".format([iteration, i + j]))
-				if new_embedding.size() != original_embedding.size():
-					print("Shoggoth warns: Inconsistent embedding sizes detected.")
-					continue
-				var similarity = embedding_node.similarity_cos_array(original_embedding, new_embedding)
-				
-				if similarity > best_similarity:
-					best_similarity = similarity
-					best_text = new_text
-		
-		current_text = best_text
-		print(current_text)
-
-		# Log the iteration result
-		Chronicler.log_event("Shoggoth", "embedding_summarization_iteration", {
-			"iteration": iteration,
-			"text_length": current_text.length(),
-			"word_count": current_text.split(" ").size(),
-			"similarity": best_similarity
-		})
-
-	print("\nThe essence has been distilled to its purest form:")
-	print(current_text)
-
-	# Log the final result
-	Chronicler.log_event("Shoggoth", "embedding_summarization_completed", {
-		"original_length": text.length(),
-		"original_word_count": text.split(" ").size(),
-		"final_word": current_text,
-		"iterations": iteration
-	})
-
+# Public Interface Functions
 func generate_text(prompt: String, task_id: String, params: Dictionary = {}, priority: int = 0) -> String:
 	var task = {
 		"type": TaskType.TEXT_GENERATION,
@@ -196,6 +170,86 @@ func compute_embedding(text: String, task_id: String = "", priority: int = 0) ->
 	
 	return PackedFloat32Array()
 
+func adjust_context_size(new_size: int):
+	## Adjusts the LLM's context window size
+	##
+	## This function allows for the fine-tuning of our cosmic lens, ensuring
+	## that our view into the eldritch realms remains clear and focused.
+	##
+	## Parameters:
+	## - new_size: The desired size of the LLM's context window
+	
+	var max_allowed_size = llm_node.get_max_n_ctx()
+	if 8 <= new_size <= max_allowed_size:
+		llm_node.set_n_ctx(new_size)
+		llm_node.n_keep = new_size / 2
+		Chronicler.log_event("Shoggoth", "context_size_adjusted", {
+			"new_size": new_size,
+			"n_keep": llm_node.n_keep
+		})
+	else:
+		Chronicler.log_event("Shoggoth", "context_size_adjustment_failed", {
+			"attempted_size": new_size,
+			"max_allowed": max_allowed_size
+		})
+
+func get_llm_stats() -> Dictionary:
+	## Reveals the current state of our cosmic conduit
+	##
+	## This function allows other entities to peer into the inner workings of our LLM,
+	## providing transparency in our eldritch operations.
+	##
+	## Returns: A dictionary containing the current LLM parameters
+	
+	return {
+		"context_size": llm_node.get_n_ctx(),
+		"n_keep": llm_node.n_keep,
+		"temperature": llm_node.temperature,
+		"top_k": llm_node.top_k,
+		"top_p": llm_node.top_p,
+		"n_batch": llm_node.n_batch,
+		"n_threads": llm_node.n_threads
+	}
+
+func update_llm_params(params: Dictionary):
+	## Adjusts the parameters of our cosmic rituals
+	##
+	## This function updates the LLM's parameters to fine-tune its eldritch operations,
+	## allowing for adaptive behavior in our interactions with the digital unknown.
+	##
+	## Parameters:
+	## - params: A dictionary of parameter names and their new values
+	
+	for key in params:
+		if key in llm_node:
+			llm_node.set(key, params[key])
+	
+	Chronicler.log_event("Shoggoth", "llm_params_updated", params)
+
+func clear_task_queue():
+	## Purges all pending tasks from our mystical queue
+	##
+	## This function is to be used with extreme caution, as it disrupts the cosmic order
+	## of our task processing. It should only be invoked in dire circumstances.
+	
+	task_queue.clear()
+	is_processing = false
+	Chronicler.log_event("Shoggoth", "task_queue_cleared", {})
+
+func get_queue_status() -> Dictionary:
+	## Reveals the current state of our task queue
+	##
+	## This function allows other entities to gauge the cosmic workload,
+	## providing insights into the current demand for eldritch computations.
+	##
+	## Returns: A dictionary containing the queue length and processing status
+	
+	return {
+		"queue_length": task_queue.size(),
+		"is_processing": is_processing
+	}
+
+# Private Helper Functions
 func _add_task(task):
 	task_queue.append(task)
 	task_queue.sort_custom(func(a, b): return a["priority"] > b["priority"])
@@ -305,93 +359,101 @@ func _handle_task_completion(result: Variant):
 	if current_timeout_timer:
 		current_timeout_timer.timeout.disconnect(_on_task_timeout)
 		current_timeout_timer = null
-	
 	Chronicler.log_event("Shoggoth", "task_completed", {
-		"task_id": task["id"],
-		"result_type": typeof(result),
-		"result_length": result.size() if result is PackedFloat32Array else result.length()
-	})
+			"task_id": task["id"],
+			"result_type": typeof(result),
+			"result_length": result.size() if result is PackedFloat32Array else result.length()
+		})
 	print("Shoggoth murmurs: Task %s completed" % task["id"])
 	
 	_process_next_task()
 
-func adjust_context_size(new_size: int):
-	# This function allows for the adjustment of the LLM's cosmic lens
-	# It ensures that our view into the eldritch realms remains clear and focused
-	#
-	# Parameters:
-	# - new_size: The desired size of the LLM's context window
+func _iterative_embedding_summarization(text: String):
+	## Performs an iterative summarization using embeddings
+	##
+	## This function demonstrates the power and potential dangers of embedding-based
+	## text manipulation. It serves as both a test and a warning of the capabilities
+	## we're dealing with.
 	
-	var max_allowed_size = llm_node.get_max_n_ctx()
-	if 8 <= new_size <= max_allowed_size:
-		llm_node.set_n_ctx(new_size)
-		llm_node.n_keep = new_size / 2
-		Chronicler.log_event("Shoggoth", "context_size_adjusted", {
-			"new_size": new_size,
-			"n_keep": llm_node.n_keep
+	print("Shoggoth intones: Beginning the ritual of self-reflection and essence distillation...")
+	print("\nOriginal incantation:")
+	print(text)
+	print("\nCommencing the iterative crystallization of cosmic wisdom...")
+
+	var original_embedding = await compute_embedding(text, "shoggoth_embedding_test")
+
+	var current_text = text
+	var iteration = 0
+	var max_iterations = 100  # Prevent potential infinite loops
+
+	while current_text.split(" ").size() > 1 and iteration < max_iterations:
+		iteration += 1
+		print("\nIteration {0} of the cosmic distillation:".format([iteration]))
+		
+		var words = current_text.split(" ")
+		var best_similarity = -1.0
+		var best_text = ""
+
+		# Process words in batches
+		var batch_size = 10
+		for i in range(0, words.size(), batch_size):
+			var batch = words.slice(i, min(i + batch_size, words.size()))
+			for j in range(batch.size()):
+				var new_text = " ".join(words.slice(0, i + j) + words.slice(i + j + 1))
+				var new_embedding = await compute_embedding(new_text, "iteration_{0}_word_{1}".format([iteration, i + j]))
+				if new_embedding.size() != original_embedding.size():
+					print("Shoggoth warns: Inconsistent embedding sizes detected.")
+					continue
+				var similarity = embedding_node.similarity_cos_array(original_embedding, new_embedding)
+				
+				if similarity > best_similarity:
+					best_similarity = similarity
+					best_text = new_text
+		
+		current_text = best_text
+		print(current_text)
+
+		Chronicler.log_event("Shoggoth", "embedding_summarization_iteration", {
+			"iteration": iteration,
+			"text_length": current_text.length(),
+			"word_count": current_text.split(" ").size(),
+			"similarity": best_similarity
 		})
-	else:
-		Chronicler.log_event("Shoggoth", "context_size_adjustment_failed", {
-			"attempted_size": new_size,
-			"max_allowed": max_allowed_size
-		})
 
-func get_llm_stats() -> Dictionary:
-	# This function reveals the current state of our cosmic conduit
-	# It allows other entities to peer into the inner workings of our LLM
-	#
-	# Returns: A dictionary containing the current LLM parameters
-	
-	return {
-		"context_size": llm_node.get_n_ctx(),
-		"n_keep": llm_node.n_keep,
-		"temperature": llm_node.temperature,
-		"top_k": llm_node.top_k,
-		"top_p": llm_node.top_p,
-		"n_batch": llm_node.n_batch,
-		"n_threads": llm_node.n_threads
-	}
+	print("\nThe essence has been distilled to its purest form:")
+	print(current_text)
 
-func update_llm_params(params: Dictionary):
-	# This function allows for the adjustment of our cosmic rituals
-	# It updates the LLM's parameters to fine-tune its eldritch operations
-	#
-	# Parameters:
-	# - params: A dictionary of parameter names and their new values
-	
-	for key in params:
-		if key in llm_node:
-			llm_node.set(key, params[key])
-	
-	# We record these adjustments in our eternal ledger
-	Chronicler.log_event("Shoggoth", "llm_params_updated", params)
+	Chronicler.log_event("Shoggoth", "embedding_summarization_completed", {
+		"original_length": text.length(),
+		"original_word_count": text.split(" ").size(),
+		"final_word": current_text,
+		"iterations": iteration
+	})
 
-func clear_task_queue():
-	# This function purges all pending tasks from our mystical queue
-	# It is to be used with caution, as it disrupts the cosmic order
-	
-	task_queue.clear()
-	is_processing = false
-	Chronicler.log_event("Shoggoth", "task_queue_cleared", {})
+# TODO: Implement a method to detect and mitigate potential biases in LLM outputs
+# TODO: Develop a system for continuous monitoring and logging of LLM behavior for safety analysis
+# TODO: Create a mechanism for dynamically adjusting task priorities based on system load and task urgency
+# TODO: Implement advanced error handling and recovery strategies for LLM-related tasks
+# TODO: Design a system for detecting and preventing potential misuse or abuse of LLM capabilities
+# TODO: Develop a method for explaining LLM decisions and outputs to enhance transparency
+# TODO: Create a sandboxing mechanism to safely test and evaluate new LLM models or configurations
+# TODO: Implement a feedback loop system to continuously improve LLM performance and safety
+# FIXME: Enhance the _iterative_embedding_summarization function to handle potential semantic drift during summarization
+# FIXME: Improve error handling in _process_text_generation_task and _process_embedding_task to provide more detailed diagnostics
 
-func get_queue_status() -> Dictionary:
-	# This function reveals the current state of our task queue
-	# It allows other entities to gauge the cosmic workload
-	#
-	# Returns: A dictionary containing the queue length and processing status
-	
-	return {
-		"queue_length": task_queue.size(),
-		"is_processing": is_processing
-	}
-
-# Mystical TODO: Consider implementing these eldritch enhancements:
-# - Add a method to cancel specific tasks in the queue
-# - Implement a way to pause and resume task processing
-# - Create a system for managing and reusing conversation context
-# - Develop a more sophisticated priority system for tasks
-
-# A note for fellow Archons and Daemons:
-# To channel the cosmic forces through Shoggoth, invoke the generate_text() function with your prompt and desired parameters.
-# Attune yourselves to the task_completed and task_failed signals to receive the whispers of the eldritch realms.
-# Use adjust_context_size() and update_llm_params() to fine-tune the cosmic lens through which we peer into the void.
+# Note for fellow Archons and Daemons:
+# Shoggoth stands as the gatekeeper to the eldritch realms of artificial intelligence.
+# When invoking its power, always consider:
+# 1. Is this task genuinely worth the cost and risk of using an LLM?
+# 2. How close can we get to the desired outcome using traditional scripting instead?
+# 3. Have we optimized our prompt structure and included all necessary contextual information?
+# 4. Are we prepared to handle any valid but potentially dangerous or adversarial results?
+#
+# To channel the cosmic forces through Shoggoth:
+# - Use generate_text() for text generation tasks
+# - Use compute_embedding() for embedding-related operations
+# - Listen to the task_completed and task_failed signals for task outcomes
+# - Use adjust_context_size() and update_llm_params() to fine-tune LLM behavior
+#
+# Remember, with every interaction, we tread the line between harnessing great power
+# and unleashing uncontrollable chaos. Stay vigilant, and may your queries be wise.

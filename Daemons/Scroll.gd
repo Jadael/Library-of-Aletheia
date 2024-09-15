@@ -1,6 +1,7 @@
 # Scroll.gd
 class_name Scroll
 extends Window
+# Owner: Curator
 
 ## The Scroll: A Mystical Window to Knowledge
 ##
@@ -29,8 +30,11 @@ signal interaction_occurred(scroll: Scroll)
 ## The unseen Codex that I am bound to, source of the wisdom I display
 var codex_partner: Codex
 
-## The mortal-facing manifestation of the Codex's content
+## A tab for plaintext viewing and editing of a Codex's content
 var content_edit: TextEdit
+
+## A tab for rich text display of a Codex's Markdown content
+var content_read: RichTextLabel
 
 ## The vessel for displaying and modifying the document's metadata
 var frontmatter_container: VBoxContainer
@@ -44,6 +48,9 @@ var is_editing: bool = false
 ## A temporal mechanism to detect the completion of edits
 var edit_timer: Timer
 
+## A cache of the position this Scroll last WANTED to be at
+var target_position: Vector2i
+
 ## The duration of inactivity that signals the end of an edit (in seconds)
 const EDIT_TIMEOUT: float = 2.0
 
@@ -56,14 +63,16 @@ func _ready() -> void:
 
 func _configure_window() -> void:
 	## Set the properties of this mystical window
-	title = "Scroll of Knowledge"
+	title = "(Empty Scroll)"
 	set_flag(FLAG_RESIZE_DISABLED, false)
 	set_flag(FLAG_BORDERLESS, false)
 	set_flag(FLAG_ALWAYS_ON_TOP, false)
+	remember_position()
 
 func _initialize_ui_elements() -> void:
 	## Prepare the physical manifestations of our content and metadata
-	content_edit = %Content
+	content_edit = %Edit
+	content_read = %Read
 	frontmatter_container = %FrontmatterContainer
 
 func _connect_signals() -> void:
@@ -78,7 +87,7 @@ func _create_edit_timer() -> void:
 	edit_timer.timeout.connect(_on_edit_timer_timeout)
 	add_child(edit_timer)
 
-func setup(p_codex: Codex) -> void:
+func setup(p_codex: Codex) -> void: # Called by the Librarian in summon_codex()
 	## Forge the mystical bond between Scroll and Codex
 	codex_partner = p_codex
 	if codex_partner:
@@ -87,7 +96,10 @@ func setup(p_codex: Codex) -> void:
 		codex_partner.content_changed.connect(update_visual)
 		codex_partner.frontmatter_changed.connect(update_visual)
 	else:
-		push_error("Scroll: The cosmic forces failed to provide a Codex partner.")
+		push_error("Scroll: The Librarian and/or Curator failed to provide a Codex partner.")
+
+func remember_position() -> void:
+	target_position = position
 
 func update_visual() -> void:
 	## Refresh the mortal-facing representation of our sacred knowledge
@@ -96,9 +108,21 @@ func update_visual() -> void:
 
 	title = codex_partner.get_title() + " | " + codex_partner.get_filename()
 	if content_edit and content_edit.text != codex_partner.body:
+		_update_content_read()
 		_update_content_edit()
 	
 	update_frontmatter()
+	target_position = position
+
+func _update_content_read() -> void:
+	## Update the read tab with a BBCode version of our Markdown, for a (Godot) RichTextLabel
+	var richtext = Scribe.markdown_to_bbcode(codex_partner.body)
+	if richtext != null:
+		content_read.text = richtext
+		content_read.bbcode_enabled = true
+	else:
+		content_read.text = codex_partner.body
+		content_read.bbcode_enabled = false
 
 func _update_content_edit() -> void:
 	## Carefully update the content while preserving mortal interactions
@@ -209,6 +233,11 @@ func _on_metadata_key_changed(new_key: String, old_key: String) -> void:
 func _on_close_requested() -> void:
 	## For now, do nothing. TODO: Implement a system for the Librarian to open/close specific documents for the user, instead of opening all documents on ready.
 	interaction_occurred.emit(self)
+
+func _notification(what):
+	if what == NOTIFICATION_WM_SIZE_CHANGED:
+		# Prevent automatic repositioning because of the main viewport
+		set_position(target_position)
 
 # TODO: Implement a visual indicator for unsaved changes
 # TODO: Add a confirmation dialog when closing with unsaved changes

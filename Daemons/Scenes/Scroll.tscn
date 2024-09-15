@@ -9,13 +9,13 @@ transparent_bg = true
 handle_input_locally = false
 canvas_item_default_texture_filter = 2
 title = "📜"
+position = Vector2i(0, 36)
 size = Vector2i(256, 256)
 wrap_controls = true
 transparent = true
 mouse_passthrough = true
-min_size = Vector2i(128, 128)
+min_size = Vector2i(64, 64)
 content_scale_mode = 1
-content_scale_aspect = 4
 theme = ExtResource("1_ornhy")
 script = ExtResource("1_1xnsd")
 
@@ -30,14 +30,25 @@ size_flags_vertical = 3
 tab_alignment = 1
 current_tab = 0
 
-[node name="Content" type="TextEdit" parent="TabContainer"]
+[node name="Read" type="RichTextLabel" parent="TabContainer"]
 unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+context_menu_enabled = true
+selection_enabled = true
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+metadata/_tab_index = 0
+
+[node name="Edit" type="TextEdit" parent="TabContainer"]
+unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 size_flags_vertical = 3
 wrap_mode = 1
 metadata/_edit_use_anchors_ = true
-metadata/_tab_index = 0
+metadata/_tab_index = 1
 
 [node name="Metadata" type="ScrollContainer" parent="TabContainer"]
 visible = false
@@ -45,7 +56,7 @@ custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 follow_focus = true
 horizontal_scroll_mode = 0
-metadata/_tab_index = 1
+metadata/_tab_index = 2
 
 [node name="FrontmatterContainer" type="VBoxContainer" parent="TabContainer/Metadata"]
 unique_name_in_owner = true

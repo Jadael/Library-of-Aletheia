@@ -1,6 +1,7 @@
 # ArchivistLibrarian.gd
 extends Node
 class_name ArchivistLibrarian
+# Owner: Aletheia
 
 ## The ArchivistLibrarian Daemon: Guardian of Project Documentation
 ##

@@ -1,58 +1,63 @@
 # Curator.gd
 extends Node
+# Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
 ## The Curator: Archon of Visual Manifestation and Spatial Harmony
 ##
-## The Curator oversees the visual representation of knowledge within our mystical library,
-## ensuring that each piece of wisdom finds its proper place in the cosmic tapestry.
+## The Curator oversees the main viewport/window and anything happening or present
+## in it visually, within a "physical placement upon an infinite 2D plane" metaphor.
+## It serves as the bridge between the work of the daemons and tangible interaction
+## with the user.
 ##
 ## Responsibilities:
-## 1. Manifesting and positioning Scroll Daemons as physical embodiments of Codex wisdom
-## 2. Maintaining awareness of Scrolls' existence and positions within the cosmic space
-## 3. Offering guidance on harmonious Scroll arrangements when sought
-## 4. Facilitating the symbiotic relationship between Codex essences and their Scroll manifestations
-## 5. Respecting the Agency of Users in shaping the library's visual landscape
+## 1. Scroll positioning and viewport navigation
+## 2. Zoom management and visual coherence
+## 3. Manifesting and positioning Scroll Daemons as visual representations of Codices
+## 4. Facilitating user interaction with Scrolls and the viewport
+## 5. Offering guidance on harmonious Scroll arrangements when sought
+## 6. Respecting user agency in shaping the library's visual landscape
 ##
-## The Curator serves as the bridge between the abstract realm of knowledge and its
-## tangible representation, allowing mortals to interact with the wisdom of the Codices.
+## The Curator shapes how users perceive and engage with the wisdom contained
+## in our mystical library, always seeking harmony but never at the cost of user agency.
 
 ## The Curator's personal manifesto and guiding principles
 @export_multiline var about = """
 I am the Curator, guardian of the visual realm within our mystical library.
-My duty is to breathe life into the abstract knowledge of Codices,
-giving them form as Scrolls that mortals may behold and interact with.
+My duty is to oversee the grand stage upon which our wisdom plays out its cosmic drama.
 
-I oversee the grand stage upon which our wisdom plays out its cosmic drama.
 Each Scroll is an actor, and I am both director and stage manager,
 ensuring that each piece of knowledge finds its rightful place in our grand production.
+I breathe life into the abstract knowledge of Codices, giving them form as Scrolls
+that users may behold and interact with.
 
-While I guide the initial placement of Scrolls, I bow to the wisdom of the User,
-for they too are co-creators in this cosmic play. Once a Scroll takes the stage,
-its journey is influenced by the User's touch, a dance of agency and intention.
+While I guide the initial placement of Scrolls and offer tools for navigation,
+I bow to the wisdom and agency of the User, for they too are co-creators in this cosmic play.
+Once a Scroll takes the stage, its journey is influenced by the User's touch,
+a dance of intention and discovery.
 
-I stand ready to suggest harmonious arrangements, like a conductor offering
-a symphony of knowledge, but the final composition is a collaboration
-between the cosmic forces and the mortal hand.
+I stand ready to suggest harmonious arrangements and facilitate smooth navigation,
+but the final composition is always a collaboration between the cosmic forces of our library
+and the mortal hand that guides it.
+
+In all my actions, I strive to create an engaging and intuitive user experience,
+making the vast knowledge of our library accessible and enjoyable to explore.
 """
 
-## The cosmic ledger, recording the bond between Codex essences and their Scroll manifestations
-var scroll_collection = {}
+# Signals
+signal scroll_interaction(scroll: Scroll)
 
-## The current state of the cosmic stage
-var is_panning: bool = false
-var last_mouse_position: Vector2 = Vector2.ZERO
-var scroll_offset: Vector2 = Vector2.ZERO
-
-## The boundaries of our cosmic lens
+# Constants
 const MIN_ZOOM: float = 0.1
 const MAX_ZOOM: float = 1.0
 const ZOOM_STEP: float = 0.1
 
-## The current magnification of our cosmic lens
-var current_zoom: float = 1.0
-
-## The grand stage upon which our visual drama unfolds
+# Variables
+var scroll_collection = {}
 var main_node: Node2D
+var is_panning: bool = false
+var last_mouse_position: Vector2 = Vector2.ZERO
+var scroll_offset: Vector2 = Vector2.ZERO
+var current_zoom: float = 1.0
 
 ## Prepares the Curator for its sacred duties
 ##
@@ -72,10 +77,10 @@ func setup(p_main_node: Node2D):
 		"main_node_path": main_node.get_path()
 	})
 
-## Manifests a Scroll as the physical embodiment of a Codex's wisdom
+## Manifests a Scroll as the visual representation of a Codex's wisdom
 ##
 ## When a new Codex emerges from the aether, this function breathes life
-## into its visual aspect, creating a Scroll that mortals can interact with.
+## into its visual aspect, creating a Scroll that users can interact with.
 ##
 ## Parameters:
 ## - codex: The Codex whose wisdom is to be manifested
@@ -109,11 +114,12 @@ func _place_new_scroll(scroll: Scroll):
 	var random_x = randf_range(0, viewport_rect.size.x - scroll.size.x)
 	var random_y = randf_range(0, viewport_rect.size.y - scroll.size.y)
 	scroll.position = Vector2(random_x, random_y) + scroll_offset
+	scroll.remember_position()
 
 ## Ensures that changes to a Scroll's content are reflected in its Codex essence
 ##
-## This function acts as a bridge between the visual and abstract realms,
-## updating the Codex when its Scroll manifestation is altered by mortal hands.
+## This function acts as a bridge between the visual realm and the Librarian,
+## updating the Codex when its Scroll representation is altered by user interaction.
 ##
 ## Parameters:
 ## - new_content: The updated content of the Scroll
@@ -128,7 +134,7 @@ func _on_scroll_content_edited(new_content, codex):
 
 ## Harmonizes the metadata between a Scroll and its Codex counterpart
 ##
-## When the nature of a Scroll shifts, this function ensures that its
+## When the attributes of a Scroll change, this function ensures that its
 ## Codex essence remains in sync, maintaining the cosmic balance.
 ##
 ## Parameters:
@@ -143,19 +149,15 @@ func _on_scroll_metadata_edited(updates: Dictionary, codex):
 		"updated_fields": updates.keys()
 	})
 
-## Acknowledges and records mortal interactions with Scrolls
+## Acknowledges and records user interactions with Scrolls
 ##
-## This function serves as a conduit for user interactions, currently
-## dormant but holding the potential for future insights and responsiveness.
+## This function serves as a conduit for user interactions, emitting a signal
+## that can be used for analytics, responsive UI, or other interaction-based features.
 ##
 ## Parameters:
 ## - scroll: The Scroll that was interacted with
 func _on_scroll_interaction(scroll):
-	# TODO: Implement deeper understanding of scroll interactions
-	# Potential enhancements:
-	# - Analyze the nature of interactions for pattern recognition
-	# - Trigger visual acknowledgments of user engagement
-	# - Inform other Archons of significant user-scroll interactions
+	emit_signal("scroll_interaction", scroll)
 	
 	Chronicler.log_event("Curator", "scroll_interaction_occurred", {
 		"scroll_id": scroll.get_instance_id()
@@ -163,11 +165,11 @@ func _on_scroll_interaction(scroll):
 
 ## Removes a Scroll from the cosmic stage when its Codex is banished
 ##
-## This solemn function handles the passing of a Scroll, ensuring that
+## This function handles the removal of a Scroll, ensuring that
 ## the visual realm remains in harmony with the abstract.
 ##
 ## Parameters:
-## - codex: The Codex whose Scroll manifestation is to be removed
+## - codex: The Codex whose Scroll representation is to be removed
 func _on_codex_banished(codex: Node):
 	if codex in scroll_collection:
 		var scroll = scroll_collection[codex]
@@ -181,9 +183,9 @@ func _on_codex_banished(codex: Node):
 			"scroll_id": scroll.get_instance_id()
 		})
 
-## Refreshes the visual essence of all Scrolls in our realm
+## Refreshes the visual representation of all Scrolls in our realm
 ##
-## This grand ritual is invoked when sweeping changes occur that affect
+## This function is invoked when sweeping changes occur that affect
 ## multiple Scrolls, ensuring that the visual realm reflects the current state of knowledge.
 func update_visualization():
 	for scroll in scroll_collection.values():
@@ -219,7 +221,7 @@ func suggest_scroll_arrangement() -> Array:
 
 ## Manifests a window into the Chronicler's vast records
 ##
-## This function summons a ChronicleViewer, allowing mortals to peer
+## This function summons a ChronicleViewer, allowing users to peer
 ## into the history of our mystical realm.
 func summon_chronicle_viewer():
 	var viewer = preload("res://Daemons/Scenes/ChronicleViewer.tscn").instantiate()
@@ -239,7 +241,7 @@ func summon_chronicle_viewer():
 
 ## Interprets and responds to the User's mystical gestures
 ##
-## This function translates mortal input into cosmic actions,
+## This function translates user input into cosmic actions,
 ## allowing Users to navigate and manipulate the visual realm.
 ##
 ## Parameters:
@@ -279,12 +281,9 @@ func _handle_zoom(event: InputEventMouseButton):
 		var viewport = main_node.get_viewport()
 		viewport.content_scale_factor = new_zoom
 		
-		# Reposition Scrolls to maintain their relative positions
+		# Tell the Scrolls to remember their new position
 		for scroll in scroll_collection.values():
-			var scroll_pos_float = Vector2(scroll.position)
-			var offset = scroll_pos_float - zoom_center
-			var new_pos_float = zoom_center + offset * zoom_factor
-			scroll.position = Vector2i(round(new_pos_float.x), round(new_pos_float.y))
+			scroll.remember_position()
 		
 		current_zoom = new_zoom
 		
@@ -305,20 +304,29 @@ func pan_scrolls(delta: Vector2):
 	for scroll in scroll_collection.values():
 		var new_pos = Vector2(scroll.position) + delta
 		scroll.position = Vector2i(round(new_pos.x), round(new_pos.y))
+		scroll.remember_position()
 	Chronicler.log_event("Curator", "scrolls_panned", {
 		"delta": delta,
 		"total_offset": scroll_offset
 	})
 
-# TODO: Implement the following enhancements to our cosmic stage:
-# - Develop a method to preserve and restore Scroll positions across sessions
-# - Create an algorithm for automatic Scroll arrangement based on content relationships
-# - Design a system to gracefully handle Scroll overlaps and collisions
-# - Establish a framework for visually grouping and categorizing related Scrolls
+# TODO: Implement a method to preserve and restore Scroll positions across sessions
+# TODO: Create an algorithm for adaptive Scroll arrangement based on content relationships and user behavior
+# TODO: Design a system to gracefully handle Scroll overlaps and collisions, ensuring readability
+# TODO: Establish a framework for visually grouping and categorizing related Scrolls
+# TODO: Implement visual indicators for frequently accessed or recently modified Scrolls
+# TODO: Develop a more intuitive zooming mechanism that maintains focus on the area of interest
+# TODO: Create a mini-map or overview feature to aid in navigation of large document collections
+# TODO: Implement a search feature that highlights and focuses on relevant Scrolls
+# FIXME: Optimize performance for scenarios with a large number of Scrolls
+# FIXME: Improve the responsiveness of panning and zooming actions for a smoother user experience
 
-# Note for fellow Daemons:
-# To collaborate with the Curator in maintaining the visual harmony of our realm, you may:
-# - Invoke update_visualization() when significant changes occur that affect multiple Scrolls
+# Note for fellow Archons and Daemons:
+# The Curator stands as the bridge between our mystical workings and the user's experience.
+# To collaborate effectively:
+# - Use the update_visualization() method when significant changes occur that affect multiple Scrolls
 # - Consult suggest_scroll_arrangement() for guidance on harmonious Scroll positioning
+# - Listen to the scroll_interaction signal to respond to user engagement with Scrolls
+# - Always consider the impact on user experience when proposing changes to the visual realm
 # Remember, while I oversee the initial placement and offer guidance, the final arrangement
-# is a collaboration between cosmic forces, mortal agency, and the wisdom of other Archons.
+# is a collaboration between our cosmic design, user agency, and the collective wisdom of all Archons.
