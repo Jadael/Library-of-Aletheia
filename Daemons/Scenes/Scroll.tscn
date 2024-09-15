@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://cwv3l5isjb0ye"]
+[gd_scene load_steps=3 format=3 uid="uid://cwv3l5isjb0ye"]
 
 [ext_resource type="Script" path="res://Daemons/Scroll.gd" id="1_1xnsd"]
+[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/Aletheia_theme.tres" id="1_ornhy"]
 
 [node name="Scroll" type="Window"]
 disable_3d = true
@@ -15,6 +16,7 @@ mouse_passthrough = true
 min_size = Vector2i(128, 128)
 content_scale_mode = 1
 content_scale_aspect = 4
+theme = ExtResource("1_ornhy")
 script = ExtResource("1_1xnsd")
 
 [node name="TabContainer" type="TabContainer" parent="."]

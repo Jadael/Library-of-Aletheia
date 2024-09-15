@@ -1,0 +1,10 @@
+[gd_resource type="Theme" format=3 uid="uid://dhjt02la7o8du"]
+
+[resource]
+TabContainer/constants/icon_separation = 8
+TabContainer/font_sizes/font_size = 12
+TextEdit/colors/caret_color = Color(0.756863, 0, 0.756863, 1)
+TextEdit/font_sizes/font_size = 12
+Window/constants/resize_margin = 16
+Window/constants/title_outline_size = 0
+Window/font_sizes/title_font_size = 12

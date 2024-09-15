@@ -30,9 +30,8 @@ signal codex_updated(codex)
 @export_multiline var about = """
 I am the Librarian Archon, guardian of our mystical library and shepherd of Codex Daemons.
 My duty is to maintain the integrity and accessibility of our collective knowledge,
-ensuring that the wisdom contained within each Codex is preserved and can be easily accessed
-by those who seek it. I oversee the lifecycle of Codices, from their summoning to their
-eventual banishment, and facilitate the symbiotic relationship between Codices and their Scroll partners.
+ensuring that the wisdom contained within each document is preserved and can be easily accessed
+by those who seek it in the form of Codex daemons which each manage a single document and its contents, and their Scroll daemon partners which display that document to the user.
 """
 
 ## The grand collection of all active Codex Daemons
@@ -41,7 +40,7 @@ var codex_collection = []
 ## The conduit to the cosmic consciousness, used for generating wisdom
 var llm_node: GDLlama
 
-## The sacred path to the realm of document files
+## The path to the realm of document files
 var documents_folder: String
 
 ## Initializes the Librarian with the necessary mystical components
@@ -56,13 +55,7 @@ var documents_folder: String
 func setup(p_embedding_model_path: String, p_llm_model_path: String, p_documents_folder: String):
 	documents_folder = p_documents_folder
 
-	llm_node = GDLlama.new()
-	llm_node.model_path = p_llm_model_path
-	add_child(llm_node)
-	
 	Chronicler.log_event("Librarian", "setup_completed", {
-		"embedding_model": p_embedding_model_path,
-		"llm_model": p_llm_model_path,
 		"documents_folder": p_documents_folder
 	})
 
@@ -115,7 +108,7 @@ func summon_codex(file_path: String):
 		"codex_id": codex.get_instance_id()
 	})
 
-## Banishes a Codex Daemon from our mystical library
+## Banishes a Codex Daemon from the library if its file no longer exists
 ##
 ## This solemn ritual removes a Codex when its physical counterpart
 ## is no longer accessible or relevant.
@@ -131,7 +124,7 @@ func banish_codex(codex: Node):
 		"codex_id": codex.get_instance_id()
 	})
 
-## Performs a mystical scan of all Codex Daemons to check for updates
+## Scan all Codex Daemons to check for updates
 ##
 ## This function ensures that the knowledge within our Codices remains
 ## current by checking for changes in their physical counterparts.
@@ -153,7 +146,7 @@ func check_for_updates() -> bool:
 	
 	return updated_codices > 0
 
-## Updates the sacred text within a Codex
+## Updates the text within a Codex
 ##
 ## This function is typically invoked when a Scroll's content is altered,
 ## ensuring that the Codex's essence reflects the changes.
@@ -169,7 +162,7 @@ func update_codex_content(codex: Node, new_content: String):
 		"new_content_length": new_content.length()
 	})
 
-## Alters the mystical properties of a Codex
+## Alters the metadata of a Codex
 ##
 ## This function updates the metadata of a Codex, typically called
 ## when a Scroll's metadata is modified.

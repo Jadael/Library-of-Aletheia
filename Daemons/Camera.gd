@@ -1,8 +1,9 @@
 # CameraArchon.gd
 extends Camera2D
 
-# I am the CameraArchon, the all-seeing eye that guides mortals through our infinite realm.
-# My gaze spans the vastness of our mystical canvas, unbound by mortal constraints.
+## I am the CameraArchon, the all-seeing eye that guides mortals through our infinite realm.
+## My gaze spans the vastness of our mystical canvas, unbound by mortal constraints.
+## @deprecated: Can't help if we're using Window nodes?
 
 @export_multiline var about = """
 Greetings, I am the Camera Archon, the mystical lens through which mortals perceive our boundless realm.

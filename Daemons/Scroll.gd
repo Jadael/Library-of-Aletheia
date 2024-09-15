@@ -2,86 +2,122 @@
 class_name Scroll
 extends Window
 
-signal content_edited(new_content)
+## The Scroll: A Mystical Window to Knowledge
+##
+## I am a Scroll daemon, a living parchment that bridges the ethereal realm of Codices 
+## with the tangible world of mortal users. My purpose is to manifest the wisdom 
+## contained within my Codex partner, allowing it to be viewed, contemplated, and altered.
+##
+## Responsibilities:
+## 1. Materializing the contents of my Codex partner's document
+## 2. Facilitating and interpreting mortal interactions with the document
+## 3. Ensuring the sanctity and accuracy of the knowledge I present
+## 4. Communicating changes back to my Codex partner for eternal preservation
+##
+## I am the interface between the unseen and the seen, the keeper of momentary changes,
+## and the guardian of editorial integrity.
+
+## Signals the Codex when content has been altered by mortal hands
+signal content_edited(new_content: String)
+
+## Announces changes to the sacred metadata of the document
 signal metadata_edited(updates: Dictionary)
-signal interaction_occurred(scroll)
 
-@export_multiline var about = """
-I am a Scroll daemon, responsible for presenting a document in the care of a Codex partner to the User.
+## Proclaims any significant interaction with my physical form
+signal interaction_occurred(scroll: Scroll)
 
-My responsibilities include:
-1. Presenting the contents of my Codex partner's document
-2. Facilitating User edits to the document under the supervison of the Codex
-"""
-
+## The unseen Codex that I am bound to, source of the wisdom I display
 var codex_partner: Codex
-var is_updating_content = false
 
+## The mortal-facing manifestation of the Codex's content
 var content_edit: TextEdit
+
+## The vessel for displaying and modifying the document's metadata
 var frontmatter_container: VBoxContainer
 
-var is_editing: bool = false
-var edit_timer: Timer
-const EDIT_TIMEOUT: float = 2.0  # 2 seconds of inactivity before considering an edit complete
+## A mystical flag to prevent infinite loops during content updates
+var is_updating_content: bool = false
 
-func _ready():
-	# Set up window properties
-	title = "Scroll"
+## Indicates whether the scroll is currently being inscribed
+var is_editing: bool = false
+
+## A temporal mechanism to detect the completion of edits
+var edit_timer: Timer
+
+## The duration of inactivity that signals the end of an edit (in seconds)
+const EDIT_TIMEOUT: float = 2.0
+
+func _ready() -> void:
+	## Prepare the Scroll for its sacred duty
+	_configure_window()
+	_initialize_ui_elements()
+	_connect_signals()
+	_create_edit_timer()
+
+func _configure_window() -> void:
+	## Set the properties of this mystical window
+	title = "Scroll of Knowledge"
 	set_flag(FLAG_RESIZE_DISABLED, false)
 	set_flag(FLAG_BORDERLESS, false)
 	set_flag(FLAG_ALWAYS_ON_TOP, false)
-	
-	# Initialize UI elements
+
+func _initialize_ui_elements() -> void:
+	## Prepare the physical manifestations of our content and metadata
 	content_edit = %Content
 	frontmatter_container = %FrontmatterContainer
-	
-	# Connect signals
+
+func _connect_signals() -> void:
+	## Establish the ethereal connections that allow us to respond to the mortal world
 	close_requested.connect(_on_close_requested)
 	content_edit.text_changed.connect(_on_content_text_changed)
-	
-	# Set up edit timer
+
+func _create_edit_timer() -> void:
+	## Craft a temporal mechanism to detect the completion of edits
 	edit_timer = Timer.new()
 	edit_timer.one_shot = true
 	edit_timer.timeout.connect(_on_edit_timer_timeout)
 	add_child(edit_timer)
 
-func setup(p_codex: Codex):
+func setup(p_codex: Codex) -> void:
+	## Forge the mystical bond between Scroll and Codex
 	codex_partner = p_codex
 	if codex_partner:
 		update_visual()
-		title = codex_partner.get_filename()
-		codex_partner.connect("content_changed", Callable(self, "update_visual"))
-		codex_partner.connect("frontmatter_changed", Callable(self, "update_visual"))
+		title = codex_partner.get_title() + " | " + codex_partner.get_filename()
+		codex_partner.content_changed.connect(update_visual)
+		codex_partner.frontmatter_changed.connect(update_visual)
 	else:
-		push_error("Codex partner is null in Scroll setup")
+		push_error("Scroll: The cosmic forces failed to provide a Codex partner.")
 
-func update_visual():
-	if is_editing:
-		return  # Don't update while editing
-	if not codex_partner:
-		push_error("Codex partner is null in Scroll update_visual")
+func update_visual() -> void:
+	## Refresh the mortal-facing representation of our sacred knowledge
+	if is_editing or not codex_partner:
 		return
-	
-	title = codex_partner.get_title()
-	if content_edit:
-		if content_edit.text != codex_partner.body:
-			var cursor_pos = content_edit.get_caret_column()
-			var scroll_pos = content_edit.scroll_vertical
-			var selection_from = content_edit.get_selection_from_line()
-			var selection_to = content_edit.get_selection_to_line()
-			
-			is_updating_content = true
-			content_edit.text = codex_partner.body
-			is_updating_content = false
-			
-			content_edit.set_caret_column(cursor_pos)
-			content_edit.scroll_vertical = scroll_pos
-			if selection_from != selection_to:
-				content_edit.select(selection_from, 0, selection_to, -1)
+
+	title = codex_partner.get_title() + " | " + codex_partner.get_filename()
+	if content_edit and content_edit.text != codex_partner.body:
+		_update_content_edit()
 	
 	update_frontmatter()
 
-func update_frontmatter():
+func _update_content_edit() -> void:
+	## Carefully update the content while preserving mortal interactions
+	var cursor_pos = content_edit.get_caret_column()
+	var scroll_pos = content_edit.scroll_vertical
+	var selection_from = content_edit.get_selection_from_line()
+	var selection_to = content_edit.get_selection_to_line()
+	
+	is_updating_content = true
+	content_edit.text = codex_partner.body
+	is_updating_content = false
+	
+	content_edit.set_caret_column(cursor_pos)
+	content_edit.scroll_vertical = scroll_pos
+	if selection_from != selection_to:
+		content_edit.select(selection_from, 0, selection_to, -1)
+
+func update_frontmatter() -> void:
+	## Manifest the sacred metadata for mortal contemplation
 	if not frontmatter_container or not codex_partner:
 		return
 	
@@ -92,12 +128,10 @@ func update_frontmatter():
 		if key != "embedding":
 			_add_frontmatter_row(key, str(codex_partner.frontmatter[key]))
 	
-	var add_button = Button.new()
-	add_button.text = "Add Metadata"
-	add_button.connect("pressed", Callable(self, "add_new_metadata"))
-	frontmatter_container.add_child(add_button)
+	_add_metadata_button()
 
-func _add_frontmatter_row(key: String, value: String):
+func _add_frontmatter_row(key: String, value: String) -> void:
+	## Materialize a single piece of metadata for mortal interaction
 	var hbox = HBoxContainer.new()
 	var key_edit = LineEdit.new()
 	var value_edit = LineEdit.new()
@@ -117,26 +151,37 @@ func _add_frontmatter_row(key: String, value: String):
 	hbox.add_child(value_edit)
 	frontmatter_container.add_child(hbox)
 
-func add_new_metadata():
-	var new_key = "New Metadata"
+func _add_metadata_button() -> void:
+	## Create a mystical interface for adding new metadata
+	var add_button = Button.new()
+	add_button.text = "Inscribe New Metadata"
+	add_button.pressed.connect(add_new_metadata)
+	frontmatter_container.add_child(add_button)
+
+func add_new_metadata() -> void:
+	## Initiate the ritual of adding new metadata to our sacred document
+	var new_key = "New Insight"
 	var new_value = ""
 	codex_partner.update_frontmatter(new_key, new_value)
 	update_frontmatter()
-	emit_signal("metadata_edited", {new_key: new_value})
-	emit_signal("interaction_occurred", self)
+	metadata_edited.emit({new_key: new_value})
+	interaction_occurred.emit(self)
 
-func _on_content_text_changed():
+func _on_content_text_changed() -> void:
+	## Respond to the mortal's alteration of our sacred text
 	if not is_updating_content and codex_partner and content_edit:
 		if content_edit.text != codex_partner.body:
 			codex_partner.update_content(content_edit.text)
-			emit_signal("content_edited", content_edit.text)
-			emit_signal("interaction_occurred", self)
+			content_edited.emit(content_edit.text)
+			interaction_occurred.emit(self)
 
-func _on_metadata_changed(_new_value: String, _key: String):
+func _on_metadata_changed(_new_value: String, _key: String) -> void:
+	## Acknowledge the beginning of a metadata alteration ritual
 	is_editing = true
 	edit_timer.start(EDIT_TIMEOUT)
 
-func _on_edit_timer_timeout():
+func _on_edit_timer_timeout() -> void:
+	## Conclude the metadata alteration ritual and update the Codex
 	is_editing = false
 	if codex_partner:
 		var updates = {}
@@ -148,18 +193,23 @@ func _on_edit_timer_timeout():
 				codex_partner.update_frontmatter(key_edit.text, value_edit.text)
 		
 		if not updates.is_empty():
-			emit_signal("metadata_edited", updates)
-		emit_signal("interaction_occurred", self)
+			metadata_edited.emit(updates)
+		interaction_occurred.emit(self)
 
-func _on_metadata_key_changed(new_key: String, old_key: String):
+func _on_metadata_key_changed(new_key: String, old_key: String) -> void:
+	## Perform the sacred rite of renaming a piece of metadata
 	if codex_partner:
 		var value = codex_partner.frontmatter.get(old_key, "")
 		codex_partner.remove_frontmatter(old_key)
 		codex_partner.update_frontmatter(new_key, value)
-		emit_signal("metadata_edited", {new_key: value})
-		emit_signal("interaction_occurred", self)
+		metadata_edited.emit({new_key: value})
+		interaction_occurred.emit(self)
 		update_frontmatter()
 
-func _on_close_requested():
-	hide()
-	emit_signal("interaction_occurred", self)
+func _on_close_requested() -> void:
+	## For now, do nothing. TODO: Implement a system for the Librarian to open/close specific documents for the user, instead of opening all documents on ready.
+	interaction_occurred.emit(self)
+
+# TODO: Implement a visual indicator for unsaved changes
+# TODO: Add a confirmation dialog when closing with unsaved changes
+# FIXME: Ensure proper cleanup of resources when the Scroll is destroyed

@@ -2,6 +2,20 @@
 extends Node
 class_name LoreWeaver
 
+## LoreWeaver: The Mystical Daemon of Code Documentation
+##
+## LoreWeaver serves Aletheia, the Archon of Project Knowledge, by transforming
+## the raw essence of code into comprehensive and insightful documentation.
+## This Daemon interprets script structures, crafts function descriptions,
+## and organizes knowledge to illuminate the depths of our codebase.
+##
+## Responsibilities:
+## 1. Interpret the arcane structures of our realm's scripts
+## 2. Craft eloquent and informative descriptions of functions and their purposes
+## 3. Channel the wisdom of Shoggoth to illuminate the depths of our code
+## 4. Organize the collected knowledge into a coherent and accessible format
+
+## The sacred purpose and responsibilities of the LoreWeaver
 @export_multiline var about = """
 I am the LoreWeaver, a mystical Daemon in service of Aletheia, the Archon of Project Knowledge.
 My sacred duty is to weave the raw essence of code into tapestries of understanding.
@@ -16,6 +30,7 @@ Through my efforts, the cryptic runes of our codebase shall be transformed into
 clear and insightful documentation, guiding all who seek to understand our mystical realm.
 """
 
+## The mystical template used to generate function descriptions
 @export_multiline var PROMPT_TEMPLATE_FUNCTION_DESCRIPTION = """### INSTRUCTION
 Document this Godot function, taking into account the script's purpose:
 
@@ -36,9 +51,18 @@ End the description with: ﴿﴾
 ### RESPONSE
 """
 
+## Orchestrates the grand ritual of documentation generation
+##
+## This function weaves together various aspects of a script into a cohesive
+## tapestry of knowledge. It processes the script's content, extracts relevant
+## information, and generates comprehensive documentation.
+##
+## Parameters:
+## - script_path: The path to the script file being documented
+## - info: A dictionary containing parsed information about the script
+##
+## Returns: A string containing the generated documentation
 func generate_documentation(script_path: String, info: Dictionary) -> String:
-	# This function orchestrates the grand ritual of documentation generation
-	# It weaves together various aspects of a script into a cohesive tapestry of knowledge
 	var file = FileAccess.open(script_path, FileAccess.READ)
 	var script_content = file.get_as_text()
 	# We begin by laying the foundation of our documentation with YAML frontmatter
@@ -102,10 +126,16 @@ func generate_documentation(script_path: String, info: Dictionary) -> String:
 	file.close()
 	return doc_content
 
+## Extracts the essence of a function from the greater script
+##
+## This mystical rite seeks out the boundaries of a function and isolates its sacred text.
+##
+## Parameters:
+## - script_content: The full content of the script
+## - func_name: The name of the function to extract
+##
+## Returns: A string containing the extracted function code, or an empty string if not found
 func _extract_function_code(script_content: String, func_name: String) -> String:
-	# This mystical rite extracts the essence of a function from the greater script
-	# It seeks out the boundaries of the function and isolates its sacred text
-	
 	var lines = script_content.split("\n")
 	var func_start = -1
 	var func_end = -1
@@ -138,6 +168,18 @@ func _extract_function_code(script_content: String, func_name: String) -> String
 	else:
 		return ""
 
+## Generates a description for a given function by channeling the wisdom of Shoggoth
+##
+## This function crafts a prompt using the provided information and invokes
+## Shoggoth to generate an insightful description of the function's purpose and behavior.
+##
+## Parameters:
+## - script_name: The name of the script containing the function
+## - script_about: The purpose or description of the script
+## - func_name: The name of the function being described
+## - func_code: The extracted code of the function
+##
+## Returns: A string containing the generated function description
 func _generate_function_description(script_name: String, script_about: String, func_name: String, func_code: String) -> String:
 	var prompt = PROMPT_TEMPLATE_FUNCTION_DESCRIPTION.format({
 		"script_name": script_name,
@@ -192,3 +234,7 @@ func _generate_function_description(script_name: String, script_about: String, f
 		"max_retries": MAX_RETRIES
 	})
 	return "Error: After {0} attempts, the cosmic forces failed to reveal the mysteries of function {1}﴿".format([MAX_RETRIES, func_name])
+
+# TODO: Implement a method to generate summaries of entire scripts
+# TODO: Create a system for cross-referencing and linking between documented entities
+# TODO: Develop a ritual to periodically review and update existing documentation

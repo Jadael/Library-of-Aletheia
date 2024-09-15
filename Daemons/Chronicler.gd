@@ -86,7 +86,6 @@ func save_log() -> void:
 	if file:
 		file.store_string(JSON.stringify(log_data, "", false))
 		file.close()
-		print("The Chronicler whispers: Our memories have been etched into the cosmic ledger.")
 	else:
 		print("The Chronicler despairs: The cosmic ledger resists our attempts to inscribe upon it!")
 
