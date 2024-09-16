@@ -57,7 +57,7 @@ var documents_folder: String
 ## - p_embedding_model_path: Path to the embedding model (reserved for future use)
 ## - p_llm_model_path: Path to the language model (reserved for future use)
 ## - p_documents_folder: Path to the sacred documents folder
-func setup(p_embedding_model_path: String, p_llm_model_path: String, p_documents_folder: String):
+func setup(p_documents_folder: String):
 	documents_folder = p_documents_folder
 
 	Chronicler.log_event("Librarian", "setup_completed", {
@@ -97,15 +97,15 @@ func process_existing_documents():
 ## Parameters:
 ## - file_path: The path to the document file to be embodied by the Codex
 func summon_codex(file_path: String):
+	var scroll = preload("res://Daemons/Scenes/Scroll.tscn").instantiate()
 	var codex = preload("res://Daemons/Scenes/Codex.tscn").instantiate()
-	codex.setup(file_path, self)
 	codex_collection.append(codex)
 	add_child(codex)
 	
-	var scroll = preload("res://Daemons/Scenes/Scroll.tscn").instantiate()
-	scroll.setup(codex)
+	codex.setup(file_path, self)
 	codex.set_scroll_partner(scroll)
-	
+	scroll.setup(codex)
+		
 	emit_signal("codex_summoned", codex, scroll)
 	
 	Chronicler.log_event("Librarian", "codex_summoned", {
@@ -136,17 +136,46 @@ func banish_codex(codex: Node):
 ##
 ## Returns:
 ## - bool: True if any Codices were updated, False otherwise
+#func check_for_updates() -> bool:
+	#var updated_codices = 0
+	#for codex in codex_collection:
+		#if codex.has_changed():
+			#codex.update()
+			#emit_signal("codex_updated", codex)
+			#updated_codices += 1
+	#
+	#Chronicler.log_event("Librarian", "update_check_completed", {
+		#"codices_checked": codex_collection.size(),
+		#"codices_updated": updated_codices
+	#})
+	#
+	#return updated_codices > 0
+
 func check_for_updates() -> bool:
 	var updated_codices = 0
+	var codices_to_banish = []
+
 	for codex in codex_collection:
-		if codex.has_changed():
-			codex.update()
-			emit_signal("codex_updated", codex)
-			updated_codices += 1
-	
+		if FileAccess.file_exists(codex.file_path):
+			var file_time = FileAccess.get_modified_time(codex.file_path)
+			if file_time != codex.last_modified_time:
+				codex.update()
+				codex.last_modified_time = file_time
+				codex.notify_content_changed()
+				emit_signal("codex_updated", codex)
+				updated_codices += 1
+		else:
+			# Mark for banishment if file no longer exists
+				codices_to_banish.append(codex)
+
+	# Banish codices whose files no longer exist
+	for codex in codices_to_banish:
+		banish_codex(codex)
+
 	Chronicler.log_event("Librarian", "update_check_completed", {
 		"codices_checked": codex_collection.size(),
-		"codices_updated": updated_codices
+		"codices_updated": updated_codices,
+		"codices_banished": codices_to_banish.size()
 	})
 	
 	return updated_codices > 0

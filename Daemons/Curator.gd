@@ -50,6 +50,7 @@ signal scroll_interaction(scroll: Scroll)
 const MIN_ZOOM: float = 0.1
 const MAX_ZOOM: float = 1.0
 const ZOOM_STEP: float = 0.1
+const BATCH_SIZE = 10
 
 # Variables
 var scroll_collection = {}
@@ -188,11 +189,24 @@ func _on_codex_banished(codex: Node):
 ## This function is invoked when sweeping changes occur that affect
 ## multiple Scrolls, ensuring that the visual realm reflects the current state of knowledge.
 func update_visualization():
+	var updated_scrolls = 0
 	for scroll in scroll_collection.values():
-		scroll.update_visual()
+		if scroll.needs_update:
+			scroll.update_visual()
+			updated_scrolls += 1
 	
 	Chronicler.log_event("Curator", "visualization_updated", {
-		"scrolls_updated": scroll_collection.size()
+		"scrolls_updated": updated_scrolls
+	})
+
+func check_for_desyncs():
+	var updated_scrolls = 0
+	for scroll in scroll_collection.values():
+		if scroll.check_for_update():
+			updated_scrolls += 1
+	return updated_scrolls
+	Chronicler.log_event("Curator", "visualization_updated", {
+		"scrolls_updated": updated_scrolls
 	})
 
 ## Offers guidance on the harmonious placement of Scrolls

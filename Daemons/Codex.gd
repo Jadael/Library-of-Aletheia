@@ -36,6 +36,7 @@ var file_path: String ## The earthly tether to the document's physical form
 var content: String ## The raw, unfiltered essence of the document
 var frontmatter: Dictionary ## The document's mystical properties
 var body: String ## The pure knowledge contained within the document
+var last_modified_time: int ## The last time my document was modified
 
 var librarian: Node ## The Librarian Archon who oversees this Codex
 var scroll_partner: Scroll ## The Scroll Daemon that manifests this Codex's wisdom
@@ -60,8 +61,12 @@ func get_title() -> String:
 func setup(p_file_path: String, p_librarian: Node):
 	file_path = p_file_path
 	librarian = p_librarian
+	last_modified_time = FileAccess.get_modified_time(file_path)
 	_load_content()
 	_parse_content()
+	notify_content_changed()
+	emit_signal("content_changed")
+	emit_signal("frontmatter_changed")
 
 ## Forges the sacred bond between Codex and Scroll
 ##
@@ -105,6 +110,7 @@ func remove_frontmatter(key: String):
 	if frontmatter.has(key):
 		frontmatter.erase(key)
 		_save_content()
+		notify_content_changed()
 		emit_signal("frontmatter_changed")
 
 ## Inscribes or modifies a mystical property in the document's frontmatter
@@ -119,6 +125,7 @@ func update_frontmatter(key: String, new_value: String):
 	if frontmatter.get(key) != new_value:
 		frontmatter[key] = new_value
 		_save_content()
+		notify_content_changed()
 		emit_signal("frontmatter_changed")
 
 ## Absorbs the essence of the physical document
@@ -128,6 +135,9 @@ func update_frontmatter(key: String, new_value: String):
 func _load_content():
 	var file = FileAccess.open(file_path, FileAccess.READ)
 	content = file.get_as_text()
+	notify_content_changed()
+	emit_signal("content_changed")
+	emit_signal("frontmatter_changed")
 	file.close()
 
 ## Deciphers the mystical runes of YAML
@@ -191,7 +201,9 @@ func update():
 	if content != old_content:
 		_parse_content()
 		_compute_embedding()
+		notify_content_changed()
 		emit_signal("content_changed")
+		emit_signal("frontmatter_changed")
 
 ## Detects disturbances in the document's physical form
 ##
@@ -204,6 +216,10 @@ func has_changed() -> bool:
 	var current_content = file.get_as_text() # FIXME: After a file is deleted from the filesystem while the program is running, ERROR: Attempt to call function 'get_as_text' in base 'null instance' on a null instance.
 	file.close()
 	return current_content != content
+
+func notify_content_changed():
+	if scroll_partner:
+		scroll_partner.set_needs_update(true)
 
 ## Manifests the Codex's essence into physical form
 ##
@@ -222,7 +238,9 @@ func _save_content():
 	_load_content()
 	_parse_content()
 	_compute_embedding()
+	notify_content_changed()
 	emit_signal("content_changed")
+	emit_signal("frontmatter_changed")
 
 # TODO: Implement a method to track the history of changes in the Codex's essence
 # TODO: Develop a system for resolving conflicts between Codex and physical document changes

@@ -45,6 +45,9 @@ var is_updating_content: bool = false
 ## Indicates whether the scroll is currently being inscribed
 var is_editing: bool = false
 
+## Indicate a need for my Codex partner to validate and re-propogate the document
+var needs_update: bool = true
+
 ## A temporal mechanism to detect the completion of edits
 var edit_timer: Timer
 
@@ -87,23 +90,30 @@ func _create_edit_timer() -> void:
 	edit_timer.timeout.connect(_on_edit_timer_timeout)
 	add_child(edit_timer)
 
-func setup(p_codex: Codex) -> void: # Called by the Librarian in summon_codex()
-	## Forge the mystical bond between Scroll and Codex
+func setup(p_codex: Codex) -> void:
 	codex_partner = p_codex
 	if codex_partner:
-		update_visual()
 		title = codex_partner.get_title() + " | " + codex_partner.get_filename()
-		codex_partner.content_changed.connect(update_visual)
-		codex_partner.frontmatter_changed.connect(update_visual)
+		codex_partner.content_changed.connect(_on_codex_content_changed)
+		codex_partner.frontmatter_changed.connect(_on_codex_frontmatter_changed)
 	else:
 		push_error("Scroll: The Librarian and/or Curator failed to provide a Codex partner.")
+	set_needs_update(true)
+	update_visual()
+
+func _on_codex_content_changed():
+	set_needs_update(true)
+	update_visual()
+
+func _on_codex_frontmatter_changed():
+	set_needs_update(true)
+	update_visual()
 
 func remember_position() -> void:
 	target_position = position
 
 func update_visual() -> void:
-	## Refresh the mortal-facing representation of our sacred knowledge
-	if is_editing or not codex_partner:
+	if not needs_update or not codex_partner:
 		return
 
 	title = codex_partner.get_title() + " | " + codex_partner.get_filename()
@@ -113,6 +123,21 @@ func update_visual() -> void:
 	
 	update_frontmatter()
 	target_position = position
+
+	if content_edit and content_edit.text == codex_partner.body:
+		needs_update = false
+
+func check_for_update():
+	if needs_update:
+		return true
+	#if codex_partner.content != content_edit.text:
+		#set_needs_update(true)
+		#return true
+	else:
+		return false
+
+func set_needs_update(value: bool):
+	needs_update = value
 
 func _update_content_read() -> void:
 	## Update the read tab with a BBCode version of our Markdown, for a (Godot) RichTextLabel
@@ -192,12 +217,12 @@ func add_new_metadata() -> void:
 	interaction_occurred.emit(self)
 
 func _on_content_text_changed() -> void:
-	## Respond to the mortal's alteration of our sacred text
 	if not is_updating_content and codex_partner and content_edit:
 		if content_edit.text != codex_partner.body:
 			codex_partner.update_content(content_edit.text)
 			content_edited.emit(content_edit.text)
 			interaction_occurred.emit(self)
+			needs_update = true  # Set flag when content is changed through UI
 
 func _on_metadata_changed(_new_value: String, _key: String) -> void:
 	## Acknowledge the beginning of a metadata alteration ritual

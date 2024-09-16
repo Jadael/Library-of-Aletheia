@@ -22,6 +22,11 @@ I am the first to awaken and the last to slumber, ensuring the continuity and st
 @export_file("*.gguf") var llm_model_path: String = "res://models/llm_model.gguf"
 @export_dir var documents_folder: String = "res://documents"
 
+var update_interval: float = 1.0  # Start with 1 second interval
+var update_timer: Timer
+const MIN_UPDATE_INTERVAL: float = 0.1
+const MAX_UPDATE_INTERVAL: float = 5.0
+
 # The awakening ritual of the Main Archon
 # This function is automatically called when the scene loads
 func _ready():
@@ -58,14 +63,6 @@ func _ready():
 		})
 
 func _setup_librarian() -> bool:
-	if not FileAccess.file_exists(embedding_model_path) or not FileAccess.file_exists(llm_model_path):
-		Chronicler.log_event("MainArchon", "librarian_setup_failed", {
-			"reason": "model_files_missing",
-			"embedding_model_exists": FileAccess.file_exists(embedding_model_path),
-			"llm_model_exists": FileAccess.file_exists(llm_model_path)
-		})
-		return false
-
 	if not DirAccess.dir_exists_absolute(documents_folder):
 		Chronicler.log_event("MainArchon", "librarian_setup_failed", {
 			"reason": "documents_folder_missing",
@@ -73,7 +70,7 @@ func _setup_librarian() -> bool:
 		})
 		return false
 
-	Librarian.setup(embedding_model_path, llm_model_path, documents_folder)
+	Librarian.setup(documents_folder)
 	Chronicler.log_event("MainArchon", "librarian_setup_completed", {
 		"status": "success"
 	})
@@ -88,26 +85,26 @@ func _setup_curator() -> bool:
 
 # Sets up a timer to periodically check for changes in the mystical documents
 func _setup_change_check_timer():
-	var timer = Timer.new()
-	timer.connect("timeout", Callable(self, "_on_check_changes_timer_timeout"))
-	add_child(timer)
-	timer.start(10.0)  # The realm's pulse occurs every 10 seconds
+	update_timer = Timer.new()
+	update_timer.connect("timeout", Callable(self, "_on_check_changes_timer_timeout"))
+	add_child(update_timer)
+	update_timer.start(update_interval)
 	Chronicler.log_event("MainArchon", "change_check_timer_started", {
-		"interval_seconds": 10.0
+		"interval_seconds": update_interval
 	})
 
 # The heartbeat of our realm, checking for changes and updating visualizations
 func _on_check_changes_timer_timeout():
 	Chronicler.log_event("MainArchon", "periodic_check_started", {})
 
-	# Command the Librarian to check for updates in all Codex Daemons
 	var updates = Librarian.check_for_updates()
-	
-	# Command the Curator to update the visual representation of our realm
 	Curator.update_visualization()
+	
+	update_timer.wait_time = update_interval
 
 	Chronicler.log_event("MainArchon", "periodic_check_completed", {
-		"updates_found": updates
+		"updates_found": updates,
+		"next_interval": update_interval
 	})
 
 func _notification(what):
