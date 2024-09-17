@@ -32,61 +32,65 @@ tapestry of wisdom.
 """
 
 func markdown_to_bbcode(markdown: String) -> String:
-	## Transmutes Markdown incantations into BBCode rituals compatible with Godot 4.3 RichTextLabel
-	##
-	## This function takes Markdown text and converts it to equivalent BBCode,
-	## focusing on tags supported by Godot 4.3's RichTextLabel while preserving
-	## other Markdown elements as closely as possible.
-	##
-	## Parameters:
-	## - markdown: The Markdown text to be converted
-	##
-	## Returns: The equivalent text in BBCode format, optimized for RichTextLabel
-	
 	var bbcode = markdown
 	
-	# Headers (h1, h2, h3 only, as RichTextLabel supports up to 3 levels)
-	bbcode = bbcode.replace("# ", "[font_size=24][b]")
+	# Headers (improved handling)
+	bbcode = bbcode.replace("###### ", "[font_size=12][b]")
+	bbcode = bbcode.replace("##### ", "[font_size=14][b]")
+	bbcode = bbcode.replace("#### ", "[font_size=16][b]")
+	bbcode = bbcode.replace("### ", "[font_size=18][b]")
 	bbcode = bbcode.replace("## ", "[font_size=20][b]")
-	bbcode = bbcode.replace("### ", "[font_size=16][b]")
-	bbcode = bbcode.replace("\n# ", "\n[font_size=24][b]")
-	bbcode = bbcode.replace("\n## ", "\n[font_size=20][b]")
-	bbcode = bbcode.replace("\n### ", "\n[font_size=16][b]")
+	bbcode = bbcode.replace("# ", "[font_size=24][b]")
 	
 	# Close header tags
 	var header_regex = RegEx.new()
 	header_regex.compile("\\[font_size=(\\d+)\\]\\[b\\](.+)")
-	bbcode = header_regex.sub(bbcode, "[font_size=$1][b]$2[/b][/font_size]", true)
+	bbcode = header_regex.sub(bbcode, "[font_size=$1][b]$2[/b][/font_size]\n", true)
 	
 	# Bold and Italic
 	bbcode = bbcode.replace("**", "[b]")
 	bbcode = bbcode.replace("*", "[i]")
+	
+	# Strikethrough
+	bbcode = bbcode.replace("~~", "[s]")
 	
 	# Links
 	var link_regex = RegEx.new()
 	link_regex.compile("\\[(.+?)\\]\\((.+?)\\)")
 	bbcode = link_regex.sub(bbcode, "[url=$2]$1[/url]", true)
 	
-	# Code blocks (using the 'code' tag for both inline and block code)
-	bbcode = bbcode.replace("```", "[code]")
+	# Code blocks
+	var code_block_regex = RegEx.new()
+	code_block_regex.compile("```([\\s\\S]*?)```")
+	bbcode = code_block_regex.sub(bbcode, "[code]$1[/code]", true)
 	
 	# Inline code
 	var inline_code_regex = RegEx.new()
 	inline_code_regex.compile("`(.+?)`")
 	bbcode = inline_code_regex.sub(bbcode, "[code]$1[/code]", true)
 	
-	# Images (limited support, as RichTextLabel requires a path to a Texture2D resource)
+	# Images
 	var image_regex = RegEx.new()
 	image_regex.compile("!\\[(.+?)\\]\\((.+?)\\)")
 	bbcode = image_regex.sub(bbcode, "[img]$2[/img]", true)
 	
-	# Horizontal Rule (approximated with a series of dashes)
+	# Horizontal Rule (improved)
 	bbcode = bbcode.replace("\n---\n", "\n[center]---[/center]\n")
 	
-	# Blockquotes (approximated with indentation)
+	# Blockquotes
 	var blockquote_regex = RegEx.new()
 	blockquote_regex.compile("(?m)^>\\s(.+)$")
 	bbcode = blockquote_regex.sub(bbcode, "[indent]$1[/indent]", true)
+	
+	# Unordered Lists
+	var ul_regex = RegEx.new()
+	ul_regex.compile("(?m)^-\\s(.+)$")
+	bbcode = ul_regex.sub(bbcode, "[indent]- $1[/indent]", true)
+	
+	# Ordered Lists
+	var ol_regex = RegEx.new()
+	ol_regex.compile("(?m)^(\\d+)\\.\\s(.+)$")
+	bbcode = ol_regex.sub(bbcode, "[indent]$1. $2[/indent]", true)
 	
 	Chronicler.log_event("Scribe", "markdown_to_bbcode_conversion", {
 		"input_length": markdown.length(),
@@ -96,23 +100,16 @@ func markdown_to_bbcode(markdown: String) -> String:
 	return bbcode
 
 func bbcode_to_markdown(bbcode: String) -> String:
-	## Transforms BBCode rituals back into Markdown incantations
-	##
-	## This function takes BBCode text and converts it to equivalent Markdown,
-	## preserving the structure and meaning of the original content.
-	##
-	## Parameters:
-	## - bbcode: The BBCode text to be converted
-	##
-	## Returns: The equivalent text in Markdown format
-	
 	var markdown = bbcode
 	
 	# Headers
-	markdown = markdown.replace("[size=24][b]", "# ")
-	markdown = markdown.replace("[size=20][b]", "## ")
-	markdown = markdown.replace("[size=16][b]", "### ")
-	markdown = markdown.replace("[/b][/size]", "")
+	markdown = markdown.replace("[font_size=24][b]", "# ")
+	markdown = markdown.replace("[font_size=20][b]", "## ")
+	markdown = markdown.replace("[font_size=18][b]", "### ")
+	markdown = markdown.replace("[font_size=16][b]", "#### ")
+	markdown = markdown.replace("[font_size=14][b]", "##### ")
+	markdown = markdown.replace("[font_size=12][b]", "###### ")
+	markdown = markdown.replace("[/b][/font_size]", "")
 	
 	# Bold and Italic
 	markdown = markdown.replace("[b]", "**")
@@ -120,8 +117,9 @@ func bbcode_to_markdown(bbcode: String) -> String:
 	markdown = markdown.replace("[i]", "*")
 	markdown = markdown.replace("[/i]", "*")
 	
-	# Lists
-	markdown = markdown.replace("[*]", "- ")
+	# Strikethrough
+	markdown = markdown.replace("[s]", "~~")
+	markdown = markdown.replace("[/s]", "~~")
 	
 	# Links
 	var link_regex = RegEx.new()
@@ -129,13 +127,35 @@ func bbcode_to_markdown(bbcode: String) -> String:
 	markdown = link_regex.sub(markdown, "[$2]($1)", true)
 	
 	# Code blocks
-	markdown = markdown.replace("[code]", "```")
-	markdown = markdown.replace("[/code]", "```")
+	markdown = markdown.replace("[code]", "```\n")
+	markdown = markdown.replace("[/code]", "\n```")
 	
 	# Inline code
 	var inline_code_regex = RegEx.new()
 	inline_code_regex.compile("\\[code\\](.+?)\\[/code\\]")
 	markdown = inline_code_regex.sub(markdown, "`$1`", true)
+	
+	# Images
+	var image_regex = RegEx.new()
+	image_regex.compile("\\[img\\](.+?)\\[/img\\]")
+	markdown = image_regex.sub(markdown, "![]($1)", true)
+	
+	# Horizontal Rule
+	markdown = markdown.replace("[center]-----[/center]", "---")
+	
+	# Blockquotes
+	markdown = markdown.replace("[indent]", "> ")
+	markdown = markdown.replace("[/indent]", "")
+	
+	# Unordered Lists
+	var ul_regex = RegEx.new()
+	ul_regex.compile("(?m)^\\[indent\\]•\\s(.+?)\\[/indent\\]")
+	markdown = ul_regex.sub(markdown, "- $1", true)
+	
+	# Ordered Lists
+	var ol_regex = RegEx.new()
+	ol_regex.compile("(?m)^\\[indent\\](\\d+)\\.\\s(.+?)\\[/indent\\]")
+	markdown = ol_regex.sub(markdown, "$1. $2", true)
 	
 	Chronicler.log_event("Scribe", "bbcode_to_markdown_conversion", {
 		"input_length": bbcode.length(),

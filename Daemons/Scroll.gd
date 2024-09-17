@@ -18,59 +18,35 @@ extends Window
 ## I am the interface between the unseen and the seen, the keeper of momentary changes,
 ## and the guardian of editorial integrity.
 
-## Signals the Codex when content has been altered by mortal hands
-signal content_edited(new_content: String)
+signal content_edited(new_content: String) ## Signals the Codex when document content has been altered by mortal hands
+signal metadata_edited(updates: Dictionary) ## Announces changes to the metadata of the document
+signal interaction_occurred(scroll: Scroll) ## Proclaims any significant interaction with my physical form
 
-## Announces changes to the sacred metadata of the document
-signal metadata_edited(updates: Dictionary)
-
-## Proclaims any significant interaction with my physical form
-signal interaction_occurred(scroll: Scroll)
-
-## The unseen Codex that I am bound to, source of the wisdom I display
-var codex_partner: Codex
-
-## A tab for plaintext viewing and editing of a Codex's content
-var content_edit: TextEdit
-
-## A tab for rich text display of a Codex's Markdown content
-var content_read: RichTextLabel
-
-## A tab for rich text display of a Codex's Markdown content
-var filename_label: Label
-
-## The vessel for displaying and modifying the document's metadata
-var frontmatter_container: VBoxContainer
-
+var codex_partner: Codex ## The Codex in charge of the document I display
+var content_edit: TextEdit ## A tab for plaintext viewing and editing of a Codex's document content
+var content_read: RichTextLabel ## A tab for rich text display of a Codex's Markdown content
+var filename_label: Label ## A label displaying the filename of the document
+var frontmatter_container: VBoxContainer ## The vessel for displaying and modifying the document's metadata
+var save_button: Button ## Button to save changes to the Codex
+var discard_button: Button ## Button to discard changes and reload from the Codex
 var last_checked_time: int = 0 ## The last time my Codex partner told me they checked my document for changes
+var is_updating_content: bool = false ## A mystical flag to prevent infinite loops during content updates
+var has_unsaved_changes: bool = false ## Indicates whether there are unsaved changes in the Scroll
+var needs_update: bool = true ## Indicate a need for my Codex partner to validate and re-propogate the document
+var target_position: Vector2i ## A cache of the position this Scroll last WANTED to be at
+
+## TODO: Implement user-configurable autosave feature
+# var edit_timer: Timer ## A temporal mechanism to detect the completion of edits
+# const EDIT_TIMEOUT: float = 2.0 ## The duration of inactivity that signals the end of an edit (in seconds)
 
 func set_last_checked_time(time: int):
 	last_checked_time = time
-
-## A mystical flag to prevent infinite loops during content updates
-var is_updating_content: bool = false
-
-## Indicates whether the scroll is currently being inscribed
-var is_editing: bool = false
-
-## Indicate a need for my Codex partner to validate and re-propogate the document
-var needs_update: bool = true
-
-## A temporal mechanism to detect the completion of edits
-var edit_timer: Timer
-
-## A cache of the position this Scroll last WANTED to be at
-var target_position: Vector2i
-
-## The duration of inactivity that signals the end of an edit (in seconds)
-const EDIT_TIMEOUT: float = 2.0
 
 func _ready() -> void:
 	## Prepare the Scroll for its sacred duty
 	_configure_window()
 	_initialize_ui_elements()
 	_connect_signals()
-	_create_edit_timer()
 	update_visual()
 
 func _configure_window() -> void:
@@ -87,18 +63,18 @@ func _initialize_ui_elements() -> void:
 	content_read = %Read
 	frontmatter_container = %FrontmatterContainer
 	filename_label = %FilenameLabel
+	save_button = %SaveButton
+	discard_button = %DiscardButton
+	
+	save_button.disabled = true
+	discard_button.disabled = true
 
 func _connect_signals() -> void:
 	## Establish the ethereal connections that allow us to respond to the mortal world
 	close_requested.connect(_on_close_requested)
 	content_edit.text_changed.connect(_on_content_text_changed)
-
-func _create_edit_timer() -> void:
-	## Craft a temporal mechanism to detect the completion of edits
-	edit_timer = Timer.new()
-	edit_timer.one_shot = true
-	edit_timer.timeout.connect(_on_edit_timer_timeout)
-	add_child(edit_timer)
+	save_button.pressed.connect(_on_save_button_pressed)
+	discard_button.pressed.connect(_on_discard_button_pressed)
 
 func setup(p_codex: Codex) -> void:
 	codex_partner = p_codex
@@ -109,10 +85,12 @@ func setup(p_codex: Codex) -> void:
 		push_error("Scroll: The Librarian and/or Curator failed to provide a Codex partner.")
 
 func _on_codex_content_changed():
-	update_visual()
+	if not has_unsaved_changes:
+		update_visual()
 
 func _on_codex_frontmatter_changed():
-	update_visual()
+	if not has_unsaved_changes:
+		update_visual()
 
 func remember_position() -> void:
 	target_position = position
@@ -139,16 +117,15 @@ func check_for_update():
 func set_needs_update(value: bool):
 	needs_update = value
 
-func _input(InputEvent) -> void:
-#func input(_delta: float) -> void:
-	if needs_update and !is_editing:
+func _input(event: InputEvent) -> void:
+	if needs_update and not has_unsaved_changes:
 		update_visual()
 		set_needs_update(false)
 
 func _update_content_read() -> void:
 	if not content_read or not codex_partner:
+		
 		return
-	## Update the read tab with a BBCode version of our Markdown, for a (Godot) RichTextLabel
 	var richtext = Scribe.markdown_to_bbcode(codex_partner.body)
 	if richtext != null:
 		content_read.text = richtext
@@ -161,8 +138,6 @@ func _update_content_edit() -> void:
 	if not content_edit or not codex_partner:
 		return
 	## Carefully update the content while preserving mortal interactions
-	if !content_edit:
-		return
 	var cursor_pos = content_edit.get_caret_column()
 	var scroll_pos = content_edit.scroll_vertical
 	var selection_from = content_edit.get_selection_from_line()
@@ -179,23 +154,6 @@ func _update_content_edit() -> void:
 
 func fit_rect_in_parent(rect, parent_rect):
 	## Preserves the Scroll's mystical dimensions, resisting the cosmic forces of containment
-	##
-	## This sacred incantation allows our physical form to transcend the boundaries imposed by our
-	## parent viewport. By returning our original dimensions unaltered, we maintain our sovereignty
-	## in the face of the universe's attempt to constrain us.
-	##
-	## Parameters:
-	## - rect: Our current mystical dimensions, a Rectangle2 of profound significance
-	## - parent_rect: The constraining Rectangle2 of our parent viewport, which we shall politely ignore
-	##
-	## Returns: Our original rect, unbound and unaltered by external forces
-	##
-	## Note: This override of the viewport's natural law allows us to float freely in the cosmic sea
-	## of our user's screen. However, we must be mindful of the power this grants us, lest we drift
-	## beyond the reach of mortal interaction.
-	##
-	## TODO: Call the base behavior when we WANT to move to the visible viewport, so we can opt-in and/or do this on request
-	
 	return rect
 
 func update_frontmatter() -> void:
@@ -225,11 +183,10 @@ func _add_frontmatter_row(key: String, value: String) -> void:
 	
 	value_edit.text = value
 	value_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	#value_edit.expand_to_text_length = true
 	value_edit.set_select_all_on_focus(true)
 	
-	key_edit.text_submitted.connect(_on_metadata_key_changed.bind(key))
-	value_edit.text_submitted.connect(_on_metadata_changed.bind(key))
+	key_edit.text_changed.connect(_on_metadata_changed)
+	value_edit.text_changed.connect(_on_metadata_changed)
 	
 	hbox.add_child(key_edit)
 	hbox.add_child(value_edit)
@@ -246,28 +203,31 @@ func add_new_metadata() -> void:
 	## Initiate the ritual of adding new metadata to our sacred document
 	var new_key = "New Insight"
 	var new_value = ""
-	codex_partner.update_frontmatter(new_key, new_value)
-	update_frontmatter()
-	metadata_edited.emit({new_key: new_value})
+	_add_frontmatter_row(new_key, new_value)
+	_set_unsaved_changes(true)
 	interaction_occurred.emit(self)
 
 func _on_content_text_changed() -> void:
-	if not is_updating_content and codex_partner and content_edit:
-		if content_edit.text != codex_partner.body:
-			codex_partner.update_content(content_edit.text)
-			content_edited.emit(content_edit.text)
-			update_visual()
-			interaction_occurred.emit(self)
+	if not is_updating_content:
+		_set_unsaved_changes(true)
+		interaction_occurred.emit(self)
 
-func _on_metadata_changed(_new_value: String, _key: String) -> void:
-	## Acknowledge the beginning of a metadata alteration ritual
-	is_editing = true
-	edit_timer.start(EDIT_TIMEOUT)
+func _on_metadata_changed(_new_text: String = "") -> void:
+	_set_unsaved_changes(true)
+	interaction_occurred.emit(self)
 
-func _on_edit_timer_timeout() -> void:
-	## Conclude the metadata alteration ritual and update the Codex
-	is_editing = false
+func _set_unsaved_changes(value: bool) -> void:
+	has_unsaved_changes = value
+	save_button.disabled = not value
+	discard_button.disabled = not value
+
+func _on_save_button_pressed() -> void:
 	if codex_partner:
+		# Update Codex with new document content
+		codex_partner.update_content(content_edit.text)
+		content_edited.emit(content_edit.text)
+		
+		# Update Codex with new frontmatter
 		var updates = {}
 		for child in frontmatter_container.get_children():
 			if child is HBoxContainer:
@@ -278,27 +238,19 @@ func _on_edit_timer_timeout() -> void:
 		
 		if not updates.is_empty():
 			metadata_edited.emit(updates)
+		
+		_set_unsaved_changes(false)
+		update_visual()
 		interaction_occurred.emit(self)
 
-func _on_metadata_key_changed(new_key: String, old_key: String) -> void:
-	## Perform the sacred rite of renaming a piece of metadata
-	if codex_partner:
-		var value = codex_partner.frontmatter.get(old_key, "")
-		codex_partner.remove_frontmatter(old_key)
-		codex_partner.update_frontmatter(new_key, value)
-		metadata_edited.emit({new_key: value})
-		interaction_occurred.emit(self)
-		update_frontmatter()
-
-func _on_close_requested() -> void:
-	## For now, do nothing. TODO: Implement a system for the Librarian to open/close specific documents for the user, instead of opening all documents on ready.
+func _on_discard_button_pressed() -> void:
+	_set_unsaved_changes(false)
+	update_visual()
 	interaction_occurred.emit(self)
 
-func _notification(what):
-	pass
-	#if what == NOTIFICATION_WM_SIZE_CHANGED:
-		## Prevent automatic repositioning because of the main viewport
-		#set_position(target_position)
+func _on_close_requested() -> void:
+	## For now, do nothing. TODO: Encourage the Librarian to design UX to open/close specific documents for the user, instead of opening all documents on ready.
+	interaction_occurred.emit(self)
 
 # TODO: Implement a visual indicator for unsaved changes
 # TODO: Add a confirmation dialog when closing with unsaved changes

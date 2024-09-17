@@ -42,8 +42,6 @@ func _ready():
 	# Awaken the Curator Archon, providing it with a reference to this node
 	var curator_setup_success = _setup_curator()
 	
-	print_tree_pretty()
-	
 	if librarian_setup_success and curator_setup_success:
 		# Command the Librarian to process all existing mystical documents
 		Librarian.process_existing_documents()
@@ -63,6 +61,8 @@ func _ready():
 			"librarian_setup_success": librarian_setup_success,
 			"curator_setup_success": curator_setup_success
 		})
+		
+		_setup_change_check_timer()
 
 func _setup_librarian() -> bool:
 	if not DirAccess.dir_exists_absolute(documents_folder):

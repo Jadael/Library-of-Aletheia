@@ -129,7 +129,6 @@ func _parse_content():
 func update():
 	if has_changed():
 		_load_content()
-		scroll_partner.set_needs_update(true)
 		emit_signal("content_changed")
 		emit_signal("frontmatter_changed")
 

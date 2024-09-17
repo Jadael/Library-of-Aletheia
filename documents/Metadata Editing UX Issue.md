@@ -1,5 +1,5 @@
 ---
-title: "Archon and Daemon Discussion: Metadata Editing UX Issue"
+title: Archon and Daemon Discussion of Metadata Editing UX Issue
 date: 2024-09-11
 participants: 
 topic: Metadata editing user experience issues
@@ -8,7 +8,7 @@ desired_outcomes:
 action_items: 
 next_steps: Evaluate potential solutions or gather more user interaction data
 ---
-# Archon and Daemon Discussion: Metadata Editing UX Issue
+# Archon and Daemon Discussion of Metadata Editing UX Issue
 
 ## Main Archon:
 Greetings, fellow Archons and Daemons. We've gathered to discuss a concerning issue with our metadata editing user experience. Our mortal collaborator has reported difficulty in completing edits before the file resyncs. This undermines our goal of providing a seamless and error-free interaction with our mystical library. Let's examine this issue from all perspectives.
