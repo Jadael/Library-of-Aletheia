@@ -102,9 +102,10 @@ func summon_codex(file_path: String):
 	codex_collection.append(codex)
 	add_child(codex)
 	
-	codex.setup(file_path, self)
 	codex.set_scroll_partner(scroll)
+	codex.setup(file_path, self)
 	scroll.setup(codex)
+	scroll.update_visual()
 		
 	emit_signal("codex_summoned", codex, scroll)
 	
@@ -157,16 +158,13 @@ func check_for_updates() -> bool:
 
 	for codex in codex_collection:
 		if FileAccess.file_exists(codex.file_path):
-			var file_time = FileAccess.get_modified_time(codex.file_path)
-			if file_time != codex.last_modified_time:
+			if codex.has_changed():
 				codex.update()
-				codex.last_modified_time = file_time
-				codex.notify_content_changed()
 				emit_signal("codex_updated", codex)
 				updated_codices += 1
 		else:
 			# Mark for banishment if file no longer exists
-				codices_to_banish.append(codex)
+			codices_to_banish.append(codex)
 
 	# Banish codices whose files no longer exist
 	for codex in codices_to_banish:

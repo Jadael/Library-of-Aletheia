@@ -3,7 +3,7 @@ title: GDLlama Nodes Reference
 ---
 # GDLlama Nodes Reference
 
-This reference guide provides detailed information about the GDLlama, GDEmbedding, GDLlava, and LlmDB nodes, their properties, and functions. These nodes are part of the Godot LLM plugin, allowing developers to integrate large language model capabilities into their Godot projects.
+This reference guide provides detailed information about the GDLlama, GDEmbedding, GDLlava, and LlmDB nodes, their properties, and functions. These nodes are part of the GDLlama plugin, allowing developers to integrate large language model capabilities into their Godot projects.
 
 ## Table of Contents
 

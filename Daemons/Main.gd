@@ -42,6 +42,8 @@ func _ready():
 	# Awaken the Curator Archon, providing it with a reference to this node
 	var curator_setup_success = _setup_curator()
 	
+	print_tree_pretty()
+	
 	if librarian_setup_success and curator_setup_success:
 		# Command the Librarian to process all existing mystical documents
 		Librarian.process_existing_documents()
@@ -50,8 +52,8 @@ func _ready():
 		set_process_unhandled_input(false)
 		Curator.set_process_unhandled_input(true)
 		
-		# Establish a rhythmic pulse to check for changes in our realm
-		_setup_change_check_timer()
+		Librarian.check_for_updates()
+		Curator.update_visualization()
 
 		Chronicler.log_event("MainArchon", "initialization_completed", {
 			"status": "success"
@@ -97,14 +99,15 @@ func _setup_change_check_timer():
 func _on_check_changes_timer_timeout():
 	Chronicler.log_event("MainArchon", "periodic_check_started", {})
 
+	# Command the Librarian to check for updates in all Codex Daemons
 	var updates = Librarian.check_for_updates()
-	Curator.update_visualization()
 	
-	update_timer.wait_time = update_interval
+	# Only update visualization if there were changes
+	if updates:
+		Curator.update_visualization()
 
 	Chronicler.log_event("MainArchon", "periodic_check_completed", {
-		"updates_found": updates,
-		"next_interval": update_interval
+		"updates_found": updates
 	})
 
 func _notification(what):

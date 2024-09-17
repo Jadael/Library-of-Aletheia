@@ -37,118 +37,63 @@ var content: String ## The raw, unfiltered essence of the document
 var frontmatter: Dictionary ## The document's mystical properties
 var body: String ## The pure knowledge contained within the document
 var last_modified_time: int ## The last time my document was modified
+var last_checked_time: int ## The last time I checked my document for changes
 
 var librarian: Node ## The Librarian Archon who oversees this Codex
 var scroll_partner: Scroll ## The Scroll Daemon that manifests this Codex's wisdom
 
 ## Reveals the true name of the document
-##
-## This function peers into the frontmatter to discern the document's title,
-## returning "Untitled" if no title has been bestowed upon it.
-##
-## Returns: The title of the document, or "Untitled" if not specified
 func get_title() -> String:
-	return frontmatter.get("title", "(Untitled)")
+	return frontmatter.get("title", get_filename())
 
 ## Awakens the Codex and binds it to its earthly tether
-##
-## This ritual initializes the Codex, connecting it to its physical document
-## and the Librarian who will oversee its existence.
-##
-## Parameters:
-## - p_file_path: The path to the physical document
-## - p_librarian: The Librarian Archon overseeing this Codex
 func setup(p_file_path: String, p_librarian: Node):
 	file_path = p_file_path
 	librarian = p_librarian
-	last_modified_time = FileAccess.get_modified_time(file_path)
 	_load_content()
-	_parse_content()
-	notify_content_changed()
 	emit_signal("content_changed")
 	emit_signal("frontmatter_changed")
 
 ## Forges the sacred bond between Codex and Scroll
-##
-## This function establishes the connection between the Codex and its Scroll partner,
-## allowing them to work in harmony to manifest the document's wisdom.
-##
-## Parameters:
-## - scroll: The Scroll Daemon to be partnered with this Codex
 func set_scroll_partner(scroll: Node):
 	scroll_partner = scroll
 
 ## Inscribes new content into the Codex's essence
-##
-## This function updates the body of the document with new content,
-## saves the changes to the physical document, and announces the transformation.
-##
-## Parameters:
-## - new_content: The new content to be inscribed into the Codex
 func update_content(new_content: String):
-	body = new_content
-	_save_content()
-	emit_signal("content_changed")
+	if body != new_content:
+		body = new_content
+		_save_content()
+		emit_signal("content_changed")
 
 ## Unveils the earthly name of the document
-##
-## This function reveals the filename of the physical document
-## that this Codex is bound to.
-##
-## Returns: The filename of the document
 func get_filename() -> String:
 	return file_path.get_file()
 
 ## Erases a mystical property from the document's frontmatter
-##
-## This function removes a specified key from the frontmatter,
-## updates the physical document, and announces the change.
-##
-## Parameters:
-## - key: The mystical property to be erased
 func remove_frontmatter(key: String):
 	if frontmatter.has(key):
 		frontmatter.erase(key)
 		_save_content()
-		notify_content_changed()
 		emit_signal("frontmatter_changed")
 
 ## Inscribes or modifies a mystical property in the document's frontmatter
-##
-## This function updates a specified key-value pair in the frontmatter,
-## saves the changes to the physical document, and announces the transformation.
-##
-## Parameters:
-## - key: The mystical property to be updated
-## - new_value: The new value to be associated with the property
 func update_frontmatter(key: String, new_value: String):
 	if frontmatter.get(key) != new_value:
 		frontmatter[key] = new_value
 		_save_content()
-		notify_content_changed()
 		emit_signal("frontmatter_changed")
 
 ## Absorbs the essence of the physical document
-##
-## This private function reads the content of the physical document,
-## infusing the Codex with its raw essence.
 func _load_content():
 	var file = FileAccess.open(file_path, FileAccess.READ)
-	content = file.get_as_text()
-	notify_content_changed()
-	emit_signal("content_changed")
-	emit_signal("frontmatter_changed")
-	file.close()
+	if file:
+		content = file.get_as_text()
+		file.close()
+		last_modified_time = FileAccess.get_modified_time(file_path)
+		set_last_checked_time(Time.get_ticks_msec())
+		_parse_content()
 
 ## Deciphers the mystical runes of YAML
-##
-## This private function interprets the YAML-formatted frontmatter,
-## translating it into a dictionary of mystical properties.
-##
-## Parameters:
-## - yaml_str: The YAML-formatted string to be interpreted
-##
-## Returns: A dictionary containing the decoded mystical properties
 func _parse_yaml(yaml_str: String) -> Dictionary:
 	var result = {}
 	var lines = yaml_str.split("\n")
@@ -161,9 +106,6 @@ func _parse_yaml(yaml_str: String) -> Dictionary:
 	return result
 
 ## Separates the mystical properties from the body of knowledge
-##
-## This private function dissects the raw content of the document,
-## distinguishing between the frontmatter (mystical properties) and the body (pure knowledge).
 func _parse_content():
 	var lines = content.split("\n")
 	var in_frontmatter = false
@@ -183,64 +125,45 @@ func _parse_content():
 	frontmatter = _parse_yaml("\n".join(frontmatter_lines))
 	body = "\n".join(body_lines).strip_edges()
 
-## Prepares the Codex's essence for cosmic understanding
-##
-## This private function is a placeholder for future enhancements,
-## potentially involving the creation of embeddings or other advanced processing.
-func _compute_embedding():
-	# TODO: Figure out who/where embeeddings should be cached/stored, and have thet daemon work with Shoggoth to retrieve and/or generate embeddings when daemons need to know it (i.e. for searching or otherwise analyzing embeddings)
-	pass
-
 ## Synchronizes the Codex with its physical counterpart
-##
-## This function checks for changes in the physical document,
-## updating the Codex's essence if modifications are detected.
 func update():
-	var old_content = content
-	_load_content()
-	if content != old_content:
-		_parse_content()
-		_compute_embedding()
-		notify_content_changed()
+	if has_changed():
+		_load_content()
+		scroll_partner.set_needs_update(true)
 		emit_signal("content_changed")
 		emit_signal("frontmatter_changed")
 
 ## Detects disturbances in the document's physical form
-##
-## This function compares the Codex's current essence with the physical document,
-## determining if changes have occurred outside the Codex's awareness.
-##
-## Returns: True if the physical document has changed, False otherwise
 func has_changed() -> bool:
-	var file = FileAccess.open(file_path, FileAccess.READ)
-	var current_content = file.get_as_text() # FIXME: After a file is deleted from the filesystem while the program is running, ERROR: Attempt to call function 'get_as_text' in base 'null instance' on a null instance.
-	file.close()
-	return current_content != content
-
-func notify_content_changed():
-	if scroll_partner:
-		scroll_partner.set_needs_update(true)
+	## if my scroll partner is out of date, default to assuming there was an update (HACK: Is this the best way for this to work and the best place for it to happen?)
+	var current_time = Time.get_ticks_msec()
+	#if scroll_partner and scroll_partner.last_checked_time != self.last_checked_time:
+		#set_last_checked_time(current_time)
+		#var file_time = FileAccess.get_modified_time(file_path)
+		#if file_time != last_modified_time:
+			#return true
+	if current_time - last_checked_time > 1000:  # Check no more than once per second
+		set_last_checked_time(current_time)
+		var file_time = FileAccess.get_modified_time(file_path)
+		if file_time != last_modified_time:
+			return true
+	return false
 
 ## Manifests the Codex's essence into physical form
-##
-## This private function inscribes the Codex's content and frontmatter
-## into the physical document, ensuring harmony between the mystical and material realms.
 func _save_content():
 	var file = FileAccess.open(file_path, FileAccess.WRITE)
-	file.store_string("---\n")
-	for key in frontmatter:
-		file.store_string("%s: %s\n" % [key, frontmatter[key]])
-	file.store_string("---\n")
-	file.store_string(body)
-	file.close()
-	
-	# After manifesting the changes, we realign our essence with the physical form
-	_load_content()
-	_parse_content()
-	_compute_embedding()
-	notify_content_changed()
-	emit_signal("content_changed")
-	emit_signal("frontmatter_changed")
+	if file:
+		file.store_string("---\n")
+		for key in frontmatter:
+			file.store_string("%s: %s\n" % [key, frontmatter[key]])
+		file.store_string("---\n")
+		file.store_string(body)
+		file.close()
+		last_modified_time = FileAccess.get_modified_time(file_path)
+		set_last_checked_time(Time.get_ticks_msec())
+
+func set_last_checked_time(time: int):
+	last_checked_time = time
 
 # TODO: Implement a method to track the history of changes in the Codex's essence
 # TODO: Develop a system for resolving conflicts between Codex and physical document changes

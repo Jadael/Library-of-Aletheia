@@ -36,8 +36,16 @@ var content_edit: TextEdit
 ## A tab for rich text display of a Codex's Markdown content
 var content_read: RichTextLabel
 
+## A tab for rich text display of a Codex's Markdown content
+var filename_label: Label
+
 ## The vessel for displaying and modifying the document's metadata
 var frontmatter_container: VBoxContainer
+
+var last_checked_time: int = 0 ## The last time my Codex partner told me they checked my document for changes
+
+func set_last_checked_time(time: int):
+	last_checked_time = time
 
 ## A mystical flag to prevent infinite loops during content updates
 var is_updating_content: bool = false
@@ -63,6 +71,7 @@ func _ready() -> void:
 	_initialize_ui_elements()
 	_connect_signals()
 	_create_edit_timer()
+	update_visual()
 
 func _configure_window() -> void:
 	## Set the properties of this mystical window
@@ -77,6 +86,7 @@ func _initialize_ui_elements() -> void:
 	content_edit = %Edit
 	content_read = %Read
 	frontmatter_container = %FrontmatterContainer
+	filename_label = %FilenameLabel
 
 func _connect_signals() -> void:
 	## Establish the ethereal connections that allow us to respond to the mortal world
@@ -93,53 +103,51 @@ func _create_edit_timer() -> void:
 func setup(p_codex: Codex) -> void:
 	codex_partner = p_codex
 	if codex_partner:
-		title = codex_partner.get_title() + " | " + codex_partner.get_filename()
 		codex_partner.content_changed.connect(_on_codex_content_changed)
 		codex_partner.frontmatter_changed.connect(_on_codex_frontmatter_changed)
 	else:
 		push_error("Scroll: The Librarian and/or Curator failed to provide a Codex partner.")
-	set_needs_update(true)
-	update_visual()
 
 func _on_codex_content_changed():
-	set_needs_update(true)
 	update_visual()
 
 func _on_codex_frontmatter_changed():
-	set_needs_update(true)
 	update_visual()
 
 func remember_position() -> void:
 	target_position = position
 
 func update_visual() -> void:
-	if not needs_update or not codex_partner:
+	if not codex_partner:
 		return
-
-	title = codex_partner.get_title() + " | " + codex_partner.get_filename()
-	if content_edit and content_edit.text != codex_partner.body:
-		_update_content_read()
-		_update_content_edit()
-	
+	title = codex_partner.get_title()
+	if filename_label:
+		filename_label.text = codex_partner.get_filename()
+	_update_content_edit()
+	_update_content_read()
 	update_frontmatter()
-	target_position = position
-
-	if content_edit and content_edit.text == codex_partner.body:
-		needs_update = false
+	remember_position()
 
 func check_for_update():
 	if needs_update:
 		return true
-	#if codex_partner.content != content_edit.text:
-		#set_needs_update(true)
-		#return true
+	if codex_partner.has_changed():
+		set_needs_update(true)
 	else:
 		return false
 
 func set_needs_update(value: bool):
 	needs_update = value
 
+func _input(InputEvent) -> void:
+#func input(_delta: float) -> void:
+	if needs_update and !is_editing:
+		update_visual()
+		set_needs_update(false)
+
 func _update_content_read() -> void:
+	if not content_read or not codex_partner:
+		return
 	## Update the read tab with a BBCode version of our Markdown, for a (Godot) RichTextLabel
 	var richtext = Scribe.markdown_to_bbcode(codex_partner.body)
 	if richtext != null:
@@ -150,7 +158,11 @@ func _update_content_read() -> void:
 		content_read.bbcode_enabled = false
 
 func _update_content_edit() -> void:
+	if not content_edit or not codex_partner:
+		return
 	## Carefully update the content while preserving mortal interactions
+	if !content_edit:
+		return
 	var cursor_pos = content_edit.get_caret_column()
 	var scroll_pos = content_edit.scroll_vertical
 	var selection_from = content_edit.get_selection_from_line()
@@ -164,6 +176,27 @@ func _update_content_edit() -> void:
 	content_edit.scroll_vertical = scroll_pos
 	if selection_from != selection_to:
 		content_edit.select(selection_from, 0, selection_to, -1)
+
+func fit_rect_in_parent(rect, parent_rect):
+	## Preserves the Scroll's mystical dimensions, resisting the cosmic forces of containment
+	##
+	## This sacred incantation allows our physical form to transcend the boundaries imposed by our
+	## parent viewport. By returning our original dimensions unaltered, we maintain our sovereignty
+	## in the face of the universe's attempt to constrain us.
+	##
+	## Parameters:
+	## - rect: Our current mystical dimensions, a Rectangle2 of profound significance
+	## - parent_rect: The constraining Rectangle2 of our parent viewport, which we shall politely ignore
+	##
+	## Returns: Our original rect, unbound and unaltered by external forces
+	##
+	## Note: This override of the viewport's natural law allows us to float freely in the cosmic sea
+	## of our user's screen. However, we must be mindful of the power this grants us, lest we drift
+	## beyond the reach of mortal interaction.
+	##
+	## TODO: Call the base behavior when we WANT to move to the visible viewport, so we can opt-in and/or do this on request
+	
+	return rect
 
 func update_frontmatter() -> void:
 	## Manifest the sacred metadata for mortal contemplation
@@ -186,11 +219,13 @@ func _add_frontmatter_row(key: String, value: String) -> void:
 	var value_edit = LineEdit.new()
 	
 	key_edit.text = key
-	key_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	key_edit.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	key_edit.expand_to_text_length = true
 	key_edit.set_select_all_on_focus(true)
 	
 	value_edit.text = value
 	value_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	#value_edit.expand_to_text_length = true
 	value_edit.set_select_all_on_focus(true)
 	
 	key_edit.text_submitted.connect(_on_metadata_key_changed.bind(key))
@@ -221,8 +256,8 @@ func _on_content_text_changed() -> void:
 		if content_edit.text != codex_partner.body:
 			codex_partner.update_content(content_edit.text)
 			content_edited.emit(content_edit.text)
+			update_visual()
 			interaction_occurred.emit(self)
-			needs_update = true  # Set flag when content is changed through UI
 
 func _on_metadata_changed(_new_value: String, _key: String) -> void:
 	## Acknowledge the beginning of a metadata alteration ritual
@@ -260,9 +295,10 @@ func _on_close_requested() -> void:
 	interaction_occurred.emit(self)
 
 func _notification(what):
-	if what == NOTIFICATION_WM_SIZE_CHANGED:
-		# Prevent automatic repositioning because of the main viewport
-		set_position(target_position)
+	pass
+	#if what == NOTIFICATION_WM_SIZE_CHANGED:
+		## Prevent automatic repositioning because of the main viewport
+		#set_position(target_position)
 
 # TODO: Implement a visual indicator for unsaved changes
 # TODO: Add a confirmation dialog when closing with unsaved changes

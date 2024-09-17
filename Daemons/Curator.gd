@@ -159,7 +159,7 @@ func _on_scroll_metadata_edited(updates: Dictionary, codex):
 ## - scroll: The Scroll that was interacted with
 func _on_scroll_interaction(scroll):
 	emit_signal("scroll_interaction", scroll)
-	
+	#scroll.remember_position()
 	Chronicler.log_event("Curator", "scroll_interaction_occurred", {
 		"scroll_id": scroll.get_instance_id()
 	})
@@ -190,8 +190,10 @@ func _on_codex_banished(codex: Node):
 ## multiple Scrolls, ensuring that the visual realm reflects the current state of knowledge.
 func update_visualization():
 	var updated_scrolls = 0
-	for scroll in scroll_collection.values():
-		if scroll.needs_update:
+	for codex in scroll_collection:
+		var scroll = scroll_collection[codex]
+		if codex.has_changed():
+			codex.update()
 			scroll.update_visual()
 			updated_scrolls += 1
 	
@@ -263,6 +265,7 @@ func summon_chronicle_viewer():
 func _unhandled_input(event):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_MIDDLE:
+			get_viewport().grab_focus()
 			is_panning = event.pressed
 			if is_panning:
 				last_mouse_position = event.position

@@ -1,4 +1,6 @@
-# Window
+---
+---
+# Windows
 
 Inherits: Viewport < Node < Object
 
@@ -98,7 +100,7 @@ At runtime, Windows will not close automatically when requested. You need to han
 - void popup_centered_clamped(minsize: Vector2i = Vector2i(0, 0), fallback_ratio: float = 0.75)
 - void popup_centered_ratio(ratio: float = 0.8)
 - void popup_exclusive(from_node: Node, rect: Rect2i = Rect2i(0, 0, 0, 0))
-- void popup_exclusive_centered(from_node: Node, minsize: Vector2i = Vector2i(0, 0))
+- void popup_excluive_centered(from_node: Node, minsize: Vector2i = Vector2i(0, 0))
 - void popup_exclusive_centered_clamped(from_node: Node, minsize: Vector2i = Vector2i(0, 0), fallback_ratio: float = 0.75)
 - void popup_exclusive_centered_ratio(from_node: Node, ratio: float = 0.8)
 - void popup_exclusive_on_parent(from_node: Node, parent_rect: Rect2i)

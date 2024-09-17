@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://cwv3l5isjb0ye"]
+[gd_scene load_steps=5 format=3 uid="uid://cwv3l5isjb0ye"]
 
 [ext_resource type="Script" path="res://Daemons/Scroll.gd" id="1_1xnsd"]
 [ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/Aletheia_theme.tres" id="1_ornhy"]
+[ext_resource type="Texture2D" uid="uid://d1a4tsekcg4ws" path="res://assets/UI/confirm.png" id="3_3abmq"]
+[ext_resource type="Texture2D" uid="uid://dfyi1hgln4u6a" path="res://assets/UI/cancel.png" id="4_d5roj"]
 
 [node name="Scroll" type="Window"]
 disable_3d = true
@@ -10,11 +12,12 @@ handle_input_locally = false
 canvas_item_default_texture_filter = 2
 title = "📜"
 position = Vector2i(0, 36)
-size = Vector2i(256, 256)
+size = Vector2i(783, 336)
 wrap_controls = true
+transient = true
 transparent = true
-mouse_passthrough = true
 min_size = Vector2i(64, 64)
+keep_title_visible = true
 content_scale_mode = 1
 theme = ExtResource("1_ornhy")
 script = ExtResource("1_1xnsd")
@@ -27,40 +30,104 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-tab_alignment = 1
+tab_alignment = 2
 current_tab = 0
+clip_tabs = false
+use_hidden_tabs_for_min_size = true
 
-[node name="Read" type="RichTextLabel" parent="TabContainer"]
+[node name="📜 Read" type="VBoxContainer" parent="TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+metadata/_tab_index = 0
+
+[node name="Read" type="RichTextLabel" parent="TabContainer/📜 Read"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
 focus_mode = 2
+bbcode_enabled = true
 context_menu_enabled = true
 selection_enabled = true
 deselect_on_focus_loss_enabled = false
 drag_and_drop_selection_enabled = false
-metadata/_tab_index = 0
 
-[node name="Edit" type="TextEdit" parent="TabContainer"]
-unique_name_in_owner = true
+[node name="✒ Edit" type="MarginContainer" parent="TabContainer"]
 visible = false
-custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
-size_flags_vertical = 3
-wrap_mode = 1
-metadata/_edit_use_anchors_ = true
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 metadata/_tab_index = 1
 
-[node name="Metadata" type="ScrollContainer" parent="TabContainer"]
-visible = false
-custom_minimum_size = Vector2(0, 64)
+[node name="Details" type="VBoxContainer" parent="TabContainer/✒ Edit"]
 layout_mode = 2
-follow_focus = true
-horizontal_scroll_mode = 0
-metadata/_tab_index = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 4
 
-[node name="FrontmatterContainer" type="VBoxContainer" parent="TabContainer/Metadata"]
+[node name="HBoxContainer" type="HBoxContainer" parent="TabContainer/✒ Edit/Details"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="SaveButton" type="Button" parent="TabContainer/✒ Edit/Details/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+disabled = true
+text = "Save"
+icon = ExtResource("3_3abmq")
+
+[node name="DiscardButton" type="Button" parent="TabContainer/✒ Edit/Details/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+disabled = true
+text = "Discard"
+icon = ExtResource("4_d5roj")
+
+[node name="HSeparator" type="HSeparator" parent="TabContainer/✒ Edit/Details"]
+layout_mode = 2
+
+[node name="MetadataLabel" type="Label" parent="TabContainer/✒ Edit/Details"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_type_variation = &"TooltipLabel"
+theme_override_font_sizes/font_size = 8
+text = "Metadata"
+
+[node name="FrontmatterContainer" type="VBoxContainer" parent="TabContainer/✒ Edit/Details"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="HSeparator2" type="HSeparator" parent="TabContainer/✒ Edit/Details"]
+layout_mode = 2
+
+[node name="FilenameLabel" type="Label" parent="TabContainer/✒ Edit/Details"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_type_variation = &"TooltipLabel"
+theme_override_font_sizes/font_size = 8
+text = "(Filename)"
+autowrap_mode = 3
+text_overrun_behavior = 3
+
+[node name="Edit" type="TextEdit" parent="TabContainer/✒ Edit/Details"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
 size_flags_vertical = 3
+placeholder_text = "Lorem ipsum."
+wrap_mode = 1
+metadata/_edit_use_anchors_ = true

@@ -1,23 +1,44 @@
-[gd_resource type="Theme" load_steps=5 format=3 uid="uid://dhjt02la7o8du"]
+[gd_resource type="Theme" load_steps=6 format=3 uid="uid://dhjt02la7o8du"]
 
 [ext_resource type="FontFile" uid="uid://hy7le4ku7dwx" path="res://fonts/LibreBaskerville-Bold.ttf" id="1_rwkvv"]
 [ext_resource type="FontFile" uid="uid://satkul7ohaxm" path="res://fonts/LibreBaskerville-Italic.ttf" id="2_46j2u"]
 [ext_resource type="FontFile" uid="uid://ci7w4fd3vwgba" path="res://fonts/LibreBaskerville-Regular.ttf" id="2_pi8ax"]
 [ext_resource type="FontFile" uid="uid://da3er4mjqd0j3" path="res://fonts/Hack-Regular.ttf" id="3_tnyg7"]
+[ext_resource type="StyleBox" uid="uid://c0cbspwo1uvbo" path="res://assets/document_stylebox.tres" id="5_ljnbq"]
 
 [resource]
+Button/constants/align_to_largest_stylebox = 1
+Button/constants/icon_max_width = 10
+Button/constants/outline_size = 4
+Button/font_sizes/font_size = 10
+Button/fonts/font = ExtResource("1_rwkvv")
+LineEdit/constants/minimum_character_width = 6
+LineEdit/font_sizes/font_size = 12
+LineEdit/fonts/font = ExtResource("3_tnyg7")
+RichTextLabel/font_sizes/bold_font_size = 12
+RichTextLabel/font_sizes/bold_italics_font_size = 17
+RichTextLabel/font_sizes/italics_font_size = 12
+RichTextLabel/font_sizes/mono_font_size = 12
+RichTextLabel/font_sizes/normal_font_size = 12
 RichTextLabel/fonts/bold_font = ExtResource("1_rwkvv")
 RichTextLabel/fonts/bold_italics_font = ExtResource("2_46j2u")
 RichTextLabel/fonts/italics_font = ExtResource("2_46j2u")
 RichTextLabel/fonts/mono_font = ExtResource("3_tnyg7")
 RichTextLabel/fonts/normal_font = ExtResource("2_pi8ax")
+RichTextLabel/styles/background = ExtResource("5_ljnbq")
+RichTextLabel/styles/fill = ExtResource("5_ljnbq")
+RichTextLabel/styles/focus = ExtResource("5_ljnbq")
+RichTextLabel/styles/normal = ExtResource("5_ljnbq")
 TabContainer/constants/icon_separation = 8
+TabContainer/constants/side_margin = 16
 TabContainer/font_sizes/font_size = 12
-TabContainer/fonts/font = ExtResource("2_46j2u")
+TabContainer/fonts/font = ExtResource("3_tnyg7")
 TextEdit/colors/caret_color = Color(0.756863, 0, 0.756863, 1)
 TextEdit/font_sizes/font_size = 12
 TextEdit/fonts/font = ExtResource("3_tnyg7")
-Window/constants/resize_margin = 16
-Window/constants/title_outline_size = 0
+TextEdit/styles/focus = ExtResource("5_ljnbq")
+TextEdit/styles/normal = ExtResource("5_ljnbq")
+TextEdit/styles/read_only = ExtResource("5_ljnbq")
+Window/constants/resize_margin = 32
 Window/font_sizes/title_font_size = 12
 Window/fonts/title_font = ExtResource("2_pi8ax")
