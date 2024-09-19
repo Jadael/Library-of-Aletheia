@@ -22,7 +22,7 @@ I am the first to awaken and the last to slumber, ensuring the continuity and st
 @export_file("*.gguf") var llm_model_path: String = "res://models/llm_model.gguf"
 @export_dir var documents_folder: String = "res://documents"
 
-var update_interval: float = 1.0  # Start with 1 second interval
+var update_interval: float = 10.0  # Start with 1 second interval
 var update_timer: Timer
 const MIN_UPDATE_INTERVAL: float = 0.1
 const MAX_UPDATE_INTERVAL: float = 5.0
@@ -62,7 +62,7 @@ func _ready():
 			"curator_setup_success": curator_setup_success
 		})
 		
-		_setup_change_check_timer()
+	_setup_change_check_timer()
 
 func _setup_librarian() -> bool:
 	if not DirAccess.dir_exists_absolute(documents_folder):
@@ -97,14 +97,14 @@ func _setup_change_check_timer():
 
 # The heartbeat of our realm, checking for changes and updating visualizations
 func _on_check_changes_timer_timeout():
-	Chronicler.log_event("MainArchon", "periodic_check_started", {})
+	#Chronicler.log_event("MainArchon", "periodic_check_started", {})
 
 	# Command the Librarian to check for updates in all Codex Daemons
 	var updates = Librarian.check_for_updates()
 	
 	# Only update visualization if there were changes
-	if updates:
-		Curator.update_visualization()
+	#if updates:
+		#Curator.update_visualization()
 
 	Chronicler.log_event("MainArchon", "periodic_check_completed", {
 		"updates_found": updates

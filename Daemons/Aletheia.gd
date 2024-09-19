@@ -55,7 +55,8 @@ var archivist_librarian: ArchivistLibrarian ## The keeper of our documented wisd
 
 func _ready() -> void:
 	_summon_documentation_daemons()
-	# TODO: Implement a configuration system to control documentation generation on startup
+	#generate_project_documentation() # Uncomment to test the self-documentation process
+	# TODO: Implement a configuration system to control documentation generation on startup/request
 	# TODO: Develop metrics to assess if the project is, in the abstract, "well documented"
 
 func _summon_documentation_daemons() -> void:

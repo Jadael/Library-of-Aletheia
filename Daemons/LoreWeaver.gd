@@ -78,17 +78,18 @@ func generate_documentation(script_path: String, info: Dictionary) -> String:
 
 	var file = FileAccess.open(script_path, FileAccess.READ)
 	var script_content = file.get_as_text()
+	var script_name = script_path.get_file().get_basename()
 	var doc_content = _create_documentation_foundation(script_path, info)
 	
 	doc_content += _document_script_properties(info)
 	doc_content += _document_script_signals(info)
 	doc_content += _document_script_constants(info)
-	doc_content += await _document_script_functions(info, script_content)
+	doc_content += await _document_script_functions(info, script_content, script_name)
 	
 	doc_content += _append_source_code(script_content)
 	
 	file.close()
-	documentation_generated.emit(script_path.get_file().get_basename(), doc_content)
+	documentation_generated.emit(script_name, doc_content)
 	return doc_content
 
 ## Private Methods
@@ -134,7 +135,7 @@ func _document_script_constants(info: Dictionary) -> String:
 		doc_content += "\n"
 	return doc_content
 
-func _document_script_functions(info: Dictionary, script_content: String) -> String:
+func _document_script_functions(info: Dictionary, script_content: String, script_name: String) -> String:
 	var doc_content = ""
 	if info.functions:
 		doc_content += "## Functions\n"
@@ -142,7 +143,7 @@ func _document_script_functions(info: Dictionary, script_content: String) -> Str
 		for func_def in info.functions:
 			var func_name = func_def.split("(")[0].split(" ")[-1]
 			var func_code = _extract_function_code(script_content, func_name)
-			var description = await _generate_function_description(info.title, info.about, func_name, func_code)
+			var description = await _generate_function_description(script_name, info.about, func_name, func_code)
 			
 			doc_content += "### " + func_name + "\n"
 			doc_content += "`" + func_def + "`\n\n"
@@ -216,7 +217,7 @@ func _generate_function_description(script_name: String, script_about: String, f
 
 	var prompt = PROMPT_TEMPLATE_FUNCTION_DESCRIPTION.format({
 		"script_name": script_name,
-		"script_about": script_about,
+		#"script_about": script_about,
 		"func_name": func_name,
 		"func_code": func_code
 	})

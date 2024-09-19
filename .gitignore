@@ -5,6 +5,7 @@ export.cfg
 export_presets.cfg
 *.import
 .godot/
+godot/
 
 # Mono-specific ignores
 .mono/
@@ -16,3 +17,4 @@ chronicle.json
 llama.log
 llava.log
 models/*
+*.dll

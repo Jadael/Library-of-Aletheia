@@ -222,11 +222,11 @@ func suggest_scroll_arrangement() -> Array:
 	var suggested_positions = []
 	
 	for i in range(scroll_array.size()):
-		var angle = (2 * PI * i) / scroll_array.size()
-		var radius = 300  # The radius of our mystic circle
+		var angle = (2.0 * PI * i) / float(scroll_array.size())
+		var radius = 300.0  # The radius of our mystic circle
 		var x = cos(angle) * radius
 		var y = sin(angle) * radius
-		suggested_positions.append(Vector2i(x, y))
+		suggested_positions.append(Vector2i(int(x), int(y)))
 	
 	Chronicler.log_event("Curator", "scroll_arrangement_suggested", {
 		"arrangement_type": "circular",

@@ -1,30 +1,37 @@
 ---
 title: ArchivistLibrarian
-last_updated: 2024-09-13T17:02:23
+last_updated: 2024-09-17T13:13:07
 ---
 
 # ArchivistLibrarian
 
 ## Functions
 ### setup
-`func setup(output_folder: String):`
+`func setup(output_folder: String) -> void:`
 
-﴾**ArchivistLibrarian Script Purpose:**
-The script's purpose is to manage the output of archiving tasks, ensuring that all generated files are properly organized and stored.
+﴾**Archivist Librarian**
 
-**Function setup:**
-The `setup` function is a crucial initialization step for the ArchivistLibrarian script. Its purpose is to configure the output directory for the archiving process.
+Within the hallowed halls of our mystical library, the Archivist Librarian script meticulously organizes and preserves the treasures of knowledge. Its purpose is to ensure the integrity and accessibility of our digital archives.
 
-**Input(s):**
-The function expects a single input, `output_folder`, which is a string representing the desired output folder path.
+**setup Function**
 
-**Output returned and/ or behavior(s):**
-The function does not return any direct output. Instead, it sets an internal variable, `docs_output_folder`, to the specified output folder path and calls the `_create_output_directory` function to create the output directory if it does not already exist.
+The `setup` function is the inaugural step in this noble endeavor. It sets the foundation for the script's operations, preparing the ground for the archiving process.
 
-**Intricacies in implementation:**
-The `setup` function ensures that the output directory is properly configured before the archiving process begins. This is important to maintain organization and prevent potential issues with file storage.
+**Input**
 
-﴿
+The `setup` function expects a single input: `output_folder`, a string representing the desired destination for the archived documents. This folder will serve as the repository for our digital treasures.
+
+**Output and Behavior**
+
+The `setup` function returns `void`, indicating that it does not yield a tangible output. Instead, it performs a crucial behind-the-scenes task, creating the specified output directory and setting the `docs_output_folder` variable to the provided value.
+
+**Implementation Intricacies**
+
+The function's implementation is straightforward, with a single line of code assigning the input `output_folder` to the `docs_output_folder` variable. This is followed by a call to the `_create_output_directory()` function, which is responsible for creating the specified directory if it does not already exist.
+
+**Conclusion**
+
+With the `setup` function, the Archivist Librarian script lays the groundwork for its archiving duties. By establishing the output folder, the script ensures that our digital treasures will be safely stored and easily retrievable for future generations. May the knowledge contained within our archives forever flourish! ﴿
 
 ### _create_output_directory
 `func _create_output_directory() -> void:`
@@ -34,23 +41,7 @@ The `setup` function ensures that the output directory is properly configured be
 ### save_documentation
 `func save_documentation(script_path: String, doc_content: String) -> void:`
 
-﴾The function `save_documentation` is part of the `ArchivistLibrarian` script, which aims to document Godot projects by saving script documentation into Markdown files.
-
-**Function Context and Purpose:**
-The purpose of `save_documentation` is to take a script's path and its content, then save the content as a Markdown file in a designated output folder. This function helps maintain documentation for Godot projects, making it easier for developers to understand and maintain their code.
-
-**Input(s):**
-The function expects two inputs:
-1. `script_path`: A `String` representing the path to the script being documented.
-2. `doc_content`: A `String` containing the script's documentation content.
-
-**Output Returned and/or Behavior(s):**
-The function returns no value (`-> void`). Instead, it creates a new Markdown file in the `docs_output_folder` with a filename derived from the script's path. The file's content is written to the file using the provided `doc_content` string.
-
-**Intricacies in Implementation:**
-The function uses the `FileAccess` class to interact with the file system. It opens the output file in write mode, checks if the file was successfully opened, and then writes the documentation content to the file. The file's path is constructed by joining the `docs_output_folder` path with the script's path and the ".md" extension.
-
-﴿
+﴾Error: After 3 attempts, the cosmic forces failed to reveal the mysteries of function save_documentation﴿
 
 ### get_documentation
 `func get_documentation(script_name: String) -> String:`
@@ -64,50 +55,99 @@ The function uses the `FileAccess` class to interact with the file system. It op
 	# ArchivistLibrarian.gd
 	extends Node
 	class_name ArchivistLibrarian
+	# Owner: Aletheia
 	
+	## The ArchivistLibrarian Daemon: Guardian of Project Documentation
+	##
+	## This Daemon is responsible for managing the storage and retrieval of
+	## documentation files generated for the project. It works in tandem with
+	## other Daemons under the guidance of Aletheia, the Archon of Project Knowledge.
+	##
+	## Responsibilities:
+	## 1. Creating and maintaining the documentation output directory
+	## 2. Saving generated documentation to appropriate files
+	## 3. Retrieving existing documentation when requested
+	## 4. Ensuring the integrity and accessibility of all stored documentation
+	##
+	## The ArchivistLibrarian serves as the bridge between the ephemeral realm of
+	## generated knowledge and the tangible realm of persistent documentation files.
+	
+	## The sacred path where documentation scrolls are stored
 	var docs_output_folder: String
 	
-	func setup(output_folder: String):
+	## Prepares the ArchivistLibrarian for its duties
+	##
+	## This ritual establishes the sacred ground where documentation will be preserved.
+	##
+	## Parameters:
+	## - output_folder: The path where documentation files will be stored
+	func setup(output_folder: String) -> void:
 		docs_output_folder = output_folder
 		_create_output_directory()
 	
+	## Creates the hallowed halls to house our documentation scrolls
+	##
+	## This mystical rite ensures that a suitable repository exists for our knowledge.
+	## If the halls do not yet exist, they are conjured into being.
 	func _create_output_directory() -> void:
 		if not DirAccess.dir_exists_absolute(docs_output_folder):
 			var dir = DirAccess.open("res://")
 			if dir.make_dir_recursive(docs_output_folder.trim_prefix("res://")) != OK:
-				push_error("ArchivistLibrarian: Failed to create output directory.")
+				push_error("ArchivistLibrarian: Failed to create the sacred halls of documentation.")
 				Chronicler.log_event("ArchivistLibrarian", "output_directory_creation_failed", {
 					"path": docs_output_folder
 				})
 	
+	## Inscribes the given documentation onto a sacred scroll
+	##
+	## This function takes the ephemeral knowledge generated by the LoreWeaver
+	## and preserves it in a tangible form for future reference.
+	##
+	## Parameters:
+	## - script_path: The path of the original script being documented
+	## - doc_content: The documentation content to be preserved
 	func save_documentation(script_path: String, doc_content: String) -> void:
 		var output_path = docs_output_folder.path_join(script_path.get_file().get_basename() + ".md")
 		var file = FileAccess.open(output_path, FileAccess.WRITE)
 		if file:
 			file.store_string(doc_content)
 			file.close()
-			Chronicler.log_event("ArchivistLibrarian", "documentation_file_created", {
+			Chronicler.log_event("ArchivistLibrarian", "documentation_scroll_created", {
 				"script_name": script_path.get_file().get_basename(),
-				"output_path": output_path
+				"scroll_path": output_path
 			})
 		else:
-			push_error("ArchivistLibrarian: Failed to create documentation file.")
-			Chronicler.log_event("ArchivistLibrarian", "documentation_file_creation_failed", {
+			push_error("ArchivistLibrarian: Failed to inscribe the documentation scroll.")
+			Chronicler.log_event("ArchivistLibrarian", "documentation_scroll_creation_failed", {
 				"script_name": script_path.get_file().get_basename(),
-				"output_path": output_path
+				"attempted_path": output_path
 			})
 	
+	## Retrieves the sacred knowledge from a documentation scroll
+	##
+	## This function seeks out and unrolls the scroll containing the requested wisdom,
+	## returning its contents to those who seek enlightenment.
+	##
+	## Parameters:
+	## - script_name: The name of the script whose documentation is sought
+	##
+	## Returns:
+	## - The content of the documentation scroll, or an error message if not found
 	func get_documentation(script_name: String) -> String:
-		var doc_path = docs_output_folder.path_join(script_name + ".md")
-		if FileAccess.file_exists(doc_path):
-			var file = FileAccess.open(doc_path, FileAccess.READ)
+		var scroll_path = docs_output_folder.path_join(script_name + ".md")
+		if FileAccess.file_exists(scroll_path):
+			var file = FileAccess.open(scroll_path, FileAccess.READ)
 			if file:
 				var content = file.get_as_text()
 				file.close()
 				return content
 			else:
-				push_error("ArchivistLibrarian: Failed to open documentation file for reading.")
-				return "Error: Could not read documentation for " + script_name
+				push_error("ArchivistLibrarian: Failed to unroll the documentation scroll.")
+				return "Error: Could not read the sacred text for " + script_name
 		else:
-			return "Documentation not found for " + script_name
+			return "Alas, no scroll of knowledge exists for " + script_name
+	
+	# TODO: Implement a method to update existing documentation without losing manual edits
+	# TODO: Create a system for versioning documentation to track the evolution of knowledge
+	# TODO: Develop a search function to find specific information across all documentation scrolls
 	

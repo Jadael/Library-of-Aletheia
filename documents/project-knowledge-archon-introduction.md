@@ -1,4 +1,7 @@
-# The Gathering of Archons and Daemons
+---
+title: Project Knowledge Archon Introduction
+---
+# Project Knowledge Archon Introduction
 
 In the mystical library realm, a shimmering portal appears, signaling the arrival of a new entity. The existing Archons and Daemons gather around, their ethereal forms pulsing with curiosity and anticipation.
 

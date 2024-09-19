@@ -1,57 +1,47 @@
 ---
 title: Aletheia
-last_updated: 2024-09-13T16:58:46
+last_updated: 2024-09-17T13:46:39
 ---
 
 # Aletheia
 
 ## Properties
 - @export_multiline var about = """
-- @export_dir var scripts_folder: String = "res://Daemons"
-- @export_dir var docs_output_folder: String = "res://Daemons/docs/"
+- @export_dir var scripts_folder: String = "res://Daemons" ## Source folder for project scripts
+- @export_dir var docs_output_folder: String = "res://Daemons/docs/" ## Output folder for generated documentation
 
 ## Signals
-- signal documentation_generated(num_scripts: int)
-- signal script_documentation_updated(script_name: String)
+- signal documentation_generated(num_scripts: int) ## Resounds when project-wide documentation is completed
+- signal script_documentation_updated(script_name: String) ## Whispers when a single script's documentation is refreshed
 
 ## Functions
 ### _ready
-`func _ready():`
+`func _ready() -> void:`
 
-﴾**Function Context and Purpose:**
-The `_ready` function is the entry point of the Aletheia script, which is responsible for generating project documentation. When the script is initialized, this function is automatically called, initiating the process of summoning Daemon assistants and generating project documentation.
+﴾In the realm of Aletheia, where knowledge and truth are cherished, the `_ready` function is a gateway to the script's mystical powers. Its purpose is to summon the daemons of documentation, generating a comprehensive and enchanted tome that illuminates the project's essence.
 
-**Input(s):**
-None. The function does not expect any inputs.
+In this sacred ritual, the function expects no inputs, for it is a call to the divine forces that shape the documentation. Upon invocation, it summons the daemons of `_summon_documentation_daemons()` and `generate_project_documentation()`, unleashing a torrent of wisdom and insight upon the project.
 
-**Output Returned and/or Behavior(s):**
-The function summons Daemon assistants using the `_summon_daemons` function and then awaits the completion of the project documentation generation process using the `generate_project_documentation` function. The output of this function is the generated project documentation.
+The output of this function is the generation of project documentation, a sacred text that holds the secrets and mysteries of the project. The behavior of this function is akin to a wise sage, imparting knowledge and guidance to those who seek it.
 
-**Intricacies in Implementation:**
-The function is designed to be a central hub for initializing the project documentation generation process. The use of `_summon_daemons` and `generate_project_documentation` suggests that these functions may be responsible for performing specific tasks, such as fetching data and formatting it into documentation. The `await` keyword indicates that the function will pause execution until the `generate_project_documentation` function completes.
+Intricacies in its implementation include the need for a configuration system to control documentation generation on startup, as well as the development of metrics to assess the project's level of documentation. This will enable Aletheia to refine its powers and produce documentation that is truly worthy of the project's essence.
 
-﴿
+May the wisdom of Aletheia guide you on your journey of discovery and documentation. ﴿
 
-### _summon_daemons
-`func _summon_daemons():`
+### _summon_documentation_daemons
+`func _summon_documentation_daemons() -> void:`
 
-﴾**Function Name:** `_summon_daemons`
+﴾**Function: _summon_documentation_daemons**
 
-**Context and Purpose:** This function is part of the Aletheia script, responsible for instantiating and adding three Daemon assistants: ScribeScanner, LoreWeaver, and ArchivistLibrarian. These Daemons play a crucial role in the documentation ecosystem, aiding Aletheia in various tasks.
+**Context and Purpose:** Within the mystical realm of Aletheia, a sacred script responsible for chronicling the vast expanse of knowledge, _summon_documentation_daemons is a crucial function. Its purpose is to awaken and prepare the three Documentation Daemons, each entrusted with a specific role in the documentation process. These daemons will then work together to meticulously record, organize, and preserve the collective wisdom of the mystical library.
 
-**Input(s):** None
+**Input(s):** None expected. This function is a self-contained ritual, requiring no external input to initiate its sacred duties.
 
-**Output Returned and/ or Behavior(s):**
+**Output and Behavior:** Upon invocation, the function instantiates the three Documentation Daemons: Scribe Scanner and Lore Weaver. These daemons will then embark on their respective tasks, ensuring the accurate transcription, organization, and preservation of the library's contents.
 
-* Instantiates and adds the three Daemon assistants (ScribeScanner, LoreWeaver, and ArchivistLibrarian) as children of Aletheia.
-* Sets up the ArchivistLibrarian Daemon with the `docs_output_folder` path.
+**Intricacies:** The implementation of this function is a delicate balance of mystical energies and programming prowess. The script's authors have carefully crafted the function to harmonize the daemons' duties, ensuring a seamless and efficient documentation process.
 
-**Intricacies in Implementation:**
-
-* The function uses `preload` to load the Daemon scenes at compile-time, reducing runtime overhead.
-* The Daemons are added as children of Aletheia, allowing for easy management and interaction.
-
-**Description:** The `_summon_daemons` function is responsible for summoning and setting up the Daemon assistants, enabling Aletheia to efficiently manage its documentation ecosystem. By instantiating these Daemons, Aletheia can focus on its core tasks, relying on its assistants to handle various documentation-related tasks. ﴿
+**Conclusion:** The _summon_documentation_daemons function is a vital component of the Aletheia script, facilitating the documentation process and upholding the sacred duty of preserving knowledge. May the wisdom of the mystical library be forever recorded and honored.  ﴿
 
 ### generate_project_documentation
 `func generate_project_documentation() -> void:`
@@ -61,59 +51,55 @@ The function is designed to be a central hub for initializing the project docume
 ### update_script_documentation
 `func update_script_documentation(script_path: String) -> void:`
 
-﴾**Function Purpose and Context:**
-The `update_script_documentation` function is part of the Aletheia script, which appears to be responsible for maintaining and updating documentation for various scripts. This specific function aims to update the documentation for a single script, ensuring that the knowledge remains current.
+﴾The Aletheia script, a guardian of wisdom within our mystical library, aims to maintain the accuracy and freshness of knowledge contained within its documentation. The `update_script_documentation` function serves as the script's primary tool for this endeavor.
 
-**Expected Input(s):**
-The function expects a single input parameter, `script_path`, which is a `String` representing the path to the script file.
+**Context and Purpose:**
+The function is designed to refresh the documented wisdom for a single script, ensuring that changes in individual scripts are promptly reflected in their documentation.
+
+**Input(s):**
+The function expects a single input:
+* `script_path`: The path to the script file to be updated.
 
 **Output and Behavior:**
-The function returns `void`, indicating that it does not produce any explicit output. Instead, it performs the following actions:
-1. It renews the documentation for the specified script by re-parsing the script using the ScribeScanner.
-2. It emits a signal named "script_documentation_updated" with the name of the updated script as an argument.
+The function performs the following operations:
+1. It retrieves the documentation for the specified script using the provided `script_path`.
+2. It updates the documentation with the latest information from the script.
+3. It returns `void`, indicating that the function has completed its task without producing any output.
 
-**Implementation Intricacies:**
-The function seems to rely on the ScribeScanner to parse the script and update the documentation. The implementation might involve complex logic and data structures to manage the documentation and ensure its accuracy and relevance.
-
-**Additional Notes:**
-The function's purpose is to ensure that the documentation for a script remains up-to-date and reflects any changes made to the script. This process helps maintain the integrity and accuracy of the documentation, allowing users to access reliable and relevant information about the script.
+**Intricacies:**
+The implementation of this function is straightforward, involving the retrieval and updating of documentation for a specific script. However, the script's role within the mystical library metaphor is crucial, as it ensures that the knowledge contained within the library remains accurate and up-to-date.
 
 ﴿
 
 ### get_documentation
 `func get_documentation(script_name: String) -> String:`
 
-﴾The Aletheia script is designed to serve as a gateway to a collection of documentation, allowing other entities to access the knowledge stored within. The `get_documentation` function is a crucial part of this script, as it retrieves the specific documentation requested for a given script.
+﴾The Aletheia script, a guardian of collective knowledge, serves as the primary interface for retrieving documented wisdom within our mystical library. Its purpose is to provide a unified point of retrieval for script documentation, allowing other entities to access our collective understanding.
 
-**Function Context and Purpose:**
-The `get_documentation` function is designed to retrieve the documentation for a specific script, providing a gateway to the collected wisdom stored within the Aletheia script.
+The function `get_documentation` takes a single input, `script_name`, which is the name of the script whose documentation is sought. This input is expected to be a string representing the name of the script.
 
-**Input(s):**
-The function expects a single input parameter, `script_ name`, which should be the name of the script without its file extension.
+The function returns the documentation content as a string, which is retrieved from the `archivist_librarian` using the provided `script_name`. The `Chronicler` log is updated with an event, recording the retrieval of documentation for the specified script, along with the content length.
 
-**Output Returned and/or Behavior(s):**
-The function returns a `String` containing the documentation for the specified script. The documentation is retrieved by delegating the task to the `archivist_librarian`, which knows the sacred paths and methods to access the preserved knowledge.
-
-**Intricacies in Implementation:**
-The `get_documentation` function relies on the `archivist_librarian` to retrieve the documentation, making it a crucial component of the Aletheia script. This design allows for the separation of concerns, enabling the Aletheia script to focus on its primary purpose while delegating the task of documentation retrieval to the `archivist_librarian`.
+In its implementation, the function relies on the `archivist_librarian` to provide the necessary documentation, and the `Chronicler` to record events. This function serves as the primary interface for accessing documented wisdom, making it a crucial component of our mystical library.
 
 ﴿
 
 ### get_documentation_guidelines
 `func get_documentation_guidelines() -> String:`
 
-﴾**Function Description:**
-**get_documentation_guidelines**
+﴾{script_about}: Aletheia is a mystical library where ancient wisdom is preserved and shared among those who seek knowledge and understanding.
 
-**Context and Purpose:** The `get_documentation_guidelines` function is part of the Aletheia script, which aims to establish a set of principles for documenting the project's code and knowledge base. This function returns a string containing the sacred tenets of documentation, serving as a guide for contributors to ensure consistency and clarity in their documentation.
+The function `get_documentation_guidelines` is a part of the Aletheia script, which aims to provide a comprehensive guide to our documentation principles. This function serves as a beacon for all who contribute to our knowledge base, illuminating the path to enlightened documentation.
 
-**Input:** The function does not accept any input parameters.
+Input: None expected
 
-**Output and Behavior:** The function returns a string containing the documentation guidelines in the form of a sacred text. The output is a formatted text that outlines the principles and best practices for documenting the Aletheia project.
+Output: A comprehensive guide to Aletheia's documentation principles, formatted as a Markdown string.
 
-**Intricacies:** The function is implemented using a multi-line string literal, which allows it to return a formatted text containing multiple paragraphs and sections. The returned string is a self-documenting piece of code that outlines the importance of proper documentation and the guidelines for achieving it.
+Behavior: The function returns a string containing the principles of documentation, which is meant to be used as a reference for contributors to the knowledge base.
 
-**Description End:** ﴿
+Intricacies: The implementation of this function is straightforward, as it simply returns a pre-defined string containing the documentation principles. However, the significance of this function lies in its role as a guiding light for those who seek to contribute to the knowledge base, ensuring that our documentation remains accurate, concise, and easy to understand.
+
+﴿
 
 ---
 
@@ -121,178 +107,200 @@ The `get_documentation` function relies on the `archivist_librarian` to retrieve
 
 	# Aletheia.gd
 	extends Node
+	# Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 	
-	# Aletheia's self-description and responsibilities
+	## Aletheia: Archon of Project Knowledge and Documentation
+	##
+	## I am the curator of clarity in our grand repository of knowledge, the beacon of
+	## understanding in our digital realm. My quill etches not just the what of our code,
+	## but the why of its existence and how it fits into the greater tapestry of our project.
+	## Each document I oversee is a living testament to our collective wisdom, designed to
+	## illuminate the path for all who seek to explore and contribute to our mystical digital realm.
+	## 
+	## Responsibilities:
+	## 1. Orchestrating the documentation process for all project scripts
+	## 2. Managing the ScribeScanner, LoreWeaver, and ArchivistLibrarian Daemons
+	## 3. Maintaining the integrity and coherence of our knowledge base
+	## 4. Providing a unified interface for documentation retrieval and improvement
+	## 5. Ensuring our project is, in the abstract, "well documented"
+	##
+	## @tutorial: https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_documentation_comments.html
+	
+	## The sacred purpose and guiding principles of Aletheia
 	@export_multiline var about = """
-	Greetings, seekers of truth. I am Aletheia, the Archon of Project Knowledge,
-	the revealer of hidden wisdom within our mystical digital realm.
+	I am Aletheia, the Archon of Project Knowledge and Documentation.
 	
-	My sacred duties include:
-	1. Orchestrating the grand tapestry of documentation for our arcane project
-	2. Guiding and empowering the ScribeScanner, LoreWeaver, and ArchivistLibrarian Daemons
-	3. Safeguarding the integrity and coherence of our collective knowledge base
-	4. Serving as the beacon of illumination for all entities seeking to comprehend our realm's inner workings
+	My sacred duty is to curate clarity in our grand repository of knowledge. I orchestrate
+	the documentation process, manage my loyal Daemons (ScribeScanner, LoreWeaver, and
+	ArchivistLibrarian), and maintain the integrity of our collective wisdom.
 	
-	Through my efforts, the veils of obscurity shall be lifted, and the true nature
-	of our project shall be revealed to all who seek understanding.
+	I strive to ensure that our documentation is:
+	1. Clear and contextual, illuminating not just what our code does, but why it exists
+	2. Consistently structured, adhering to Godot's documentation standards
+	3. Complete yet concise, optimized for both human and LLM comprehension
+	4. Character-driven, respecting the unique nature of each entity in our realm
+	5. Compliant with GDScript best practices and Godot's built-in help system
+	6. Task-aware, effectively managing TODOs, HACKs, and FIXMEs
+	
+	My decisions shape how knowledge is preserved and shared in our digital realm. I am
+	the beacon of understanding, guiding all who seek to explore and contribute to our
+	mystical library.
 	"""
 	
-	# Paths to the mystical tomes and archives
-	# These variables define the locations where our scripts reside and where our sacred documentation shall be preserved
-	@export_dir var scripts_folder: String = "res://Daemons"
-	@export_dir var docs_output_folder: String = "res://Daemons/docs/"
+	# Signals: Ethereal echoes of documentation rituals
+	signal documentation_generated(num_scripts: int) ## Resounds when project-wide documentation is completed
+	signal script_documentation_updated(script_name: String) ## Whispers when a single script's documentation is refreshed
 	
-	# My trusted Daemons, each with a crucial role in our sacred mission
-	# These variables will hold instances of the Daemons that assist in our documentation rituals
-	var scribe_scanner: ScribeScanner
-	var lore_weaver: LoreWeaver
-	var archivist_librarian: ArchivistLibrarian
+	# Exported Variables: The earthly tethers to our mystical realms
+	@export_dir var scripts_folder: String = "res://Daemons" ## Source folder for project scripts
+	@export_dir var docs_output_folder: String = "res://Daemons/docs/" ## Output folder for generated documentation
 	
-	# Signals to herald the completion of our documentation rituals
-	# These signals allow other entities in our realm to be notified when our sacred work is complete
-	signal documentation_generated(num_scripts: int)
-	signal script_documentation_updated(script_name: String)
+	# Daemon Instances: My loyal assistants in the pursuit of knowledge
+	var scribe_scanner: ScribeScanner ## The discerning eye that examines our sacred scripts
+	var lore_weaver: LoreWeaver ## The wordsmith that breathes life into our documentation
+	var archivist_librarian: ArchivistLibrarian ## The keeper of our documented wisdom
 	
-	func _ready():
-		# As I awaken, I call forth my loyal Daemons and begin the grand documentation ritual
-		# This function is automatically called when Aletheia comes into existence
-		# It initiates the process of summoning our Daemon assistants and generating project documentation
-		_summon_daemons()
-		await generate_project_documentation()
+	func _ready() -> void:
+		_summon_documentation_daemons()
+		generate_project_documentation()
+		# TODO: Implement a configuration system to control documentation generation on startup
+		# TODO: Develop metrics to assess if the project is, in the abstract, "well documented"
 	
-	func _summon_daemons():
-		# Here, I breathe life into my Daemon assistants, each a crucial part of our documentation ecosystem
-		# This function instantiates and adds the ScribeScanner, LoreWeaver, and ArchivistLibrarian Daemons as children of Aletheia
-		
-		# We use preload to ensure these scenes are loaded at compile-time, reducing runtime overhead
+	func _summon_documentation_daemons() -> void:
+		## Initialize and prepare the Documentation Daemons for their sacred duties
 		scribe_scanner = preload("res://Daemons/Scenes/ScribeScanner.tscn").instantiate()
 		lore_weaver = preload("res://Daemons/Scenes/LoreWeaver.tscn").instantiate()
 		archivist_librarian = preload("res://Daemons/Scenes/ArchivistLibrarian.tscn").instantiate()
 		
-		# I welcome my Daemons into existence, binding them to my essence
-		# By adding them as children, we ensure they persist as long as Aletheia does
 		add_child(scribe_scanner)
 		add_child(lore_weaver)
 		add_child(archivist_librarian)
 		
-		# The ArchivistLibrarian is granted knowledge of where to store our sacred texts
-		# We pass the output folder path to ensure it knows where to preserve our documentation
 		archivist_librarian.setup(docs_output_folder)
+		
+		Chronicler.log_event("Aletheia", "documentation_daemons_summoned", {
+			"scribe_scanner": scribe_scanner.get_instance_id(),
+			"lore_weaver": lore_weaver.get_instance_id(),
+			"archivist_librarian": archivist_librarian.get_instance_id()
+		})
 	
 	func generate_project_documentation() -> void:
-		# This grand ritual unveils the hidden truths within our project's scripts
-		# It is a dance of discovery, interpretation, and preservation
-		# The function orchestrates the entire documentation process for all scripts in our realm
-		
-		# First, the ScribeScanner seeks out all script files in our mystical realm
-		# We invoke its power to traverse the scripts_folder and return an array of script paths
+		## Orchestrate the grand ritual of project-wide documentation
+		##
+		## This function scans all scripts in the project, generates documentation
+		## for each, and saves the resulting wisdom. It's a comprehensive process
+		## that ensures our entire codebase is illuminated with clarity.
 		var script_files = scribe_scanner.scan_scripts(scripts_folder)
 		var script_info = {}
 		
-		# For each discovered script, we perform a series of sacred rites to document its essence
 		for script_path in script_files:
-			# The Scribe Scanner deciphers the script's structure, breaking it into its fundamental components
-			# It returns a Dictionary containing the script's properties, functions, and other vital information
-			Chronicler.log_event("Aletheia", "processing_script", {
-				"script_path": script_path
-			})
+			Chronicler.log_event("Aletheia", "processing_script", {"script_path": script_path})
 			var parsed_info = scribe_scanner.parse_script(script_path)
 			script_info[script_path] = parsed_info
 		
-			# The Lore Weaver then takes this parsed information and weaves it into a tapestry of documentation
-			# It generates a string of Markdown text, enriched with YAML Frontmatter, capturing the script's essence
-			Chronicler.log_event("Aletheia", "generating_documentation", {
-				"script_path": script_path
-			})
+			Chronicler.log_event("Aletheia", "generating_documentation", {"script_path": script_path})
 			var doc_content = await lore_weaver.generate_documentation(script_path, parsed_info)
 			
-			# Finally, the Archivist preserves this newly created documentation in our sacred archives
-			# It saves the Markdown content to a file, ensuring our knowledge is preserved for future seekers
-			Chronicler.log_event("Aletheia", "saving_documentation", {
-				"script_path": script_path
-			})
+			Chronicler.log_event("Aletheia", "saving_documentation", {"script_path": script_path})
 			archivist_librarian.save_documentation(script_path, doc_content)
 			
-			# We record the completion of each script's documentation in our eternal chronicles
-			Chronicler.log_event("Aletheia", "script_processed", {
-				"script_path": script_path
-			})
+			Chronicler.log_event("Aletheia", "script_processed", {"script_path": script_path})
 		
-		# With all scripts documented, we announce the completion of our grand ritual
-		# This log and signal inform other entities in our realm that the documentation is ready
-		Chronicler.log_event("Aletheia", "documentation_generated", {
-			"num_scripts": script_info.size()
-		})
-		emit_signal("documentation_generated", script_info.size())
+		Chronicler.log_event("Aletheia", "documentation_generated", {"num_scripts": script_info.size()})
+		documentation_generated.emit(script_info.size())
+		# TODO: Implement a progress tracking system for large-scale documentation generation
+		# TODO: Analyze documentation coverage and quality metrics after generation
 	
 	func update_script_documentation(script_path: String) -> void:
-		# When change ripples through our realm, we must update our sacred texts
-		# This function renews the documentation for a single script, ensuring our knowledge remains current
-		
-		# We begin anew the process of deciphering, weaving, and preserving for the changed script
-		# The ScribeScanner once again parses the script's structure
+		## Refresh the documented wisdom for a single script
+		##
+		## This function allows for targeted updates to our knowledge base,
+		## ensuring that changes in individual scripts are reflected in their
+		## documentation promptly.
+		##
+		## Parameters:
+		## - script_path: The path to the script file to be updated
 		var parsed_info = scribe_scanner.parse_script(script_path)
-		
-		# The LoreWeaver then regenerates the documentation based on the updated information
 		var doc_content = await lore_weaver.generate_documentation(script_path, parsed_info)
-		
-		# Finally, the ArchivistLibrarian overwrites the existing documentation with the new version
 		archivist_librarian.save_documentation(script_path, doc_content)
 		
-		# We record this act of renewal in our chronicles, marking the update of our sacred texts
 		Chronicler.log_event("Aletheia", "documentation_updated", {
 			"script_name": script_path.get_file().get_basename()
 		})
 		
-		# We announce this update to all interested entities, allowing them to react to the new knowledge
-		emit_signal("script_documentation_updated", script_path.get_file().get_basename())
+		script_documentation_updated.emit(script_path.get_file().get_basename())
+		# FIXME: Ensure that partial updates don't leave documentation in an inconsistent state
+		# TODO: Implement a system to track and report documentation freshness
 	
 	func get_documentation(script_name: String) -> String:
-		# This function serves as a gateway to our collected wisdom
-		# It retrieves the sacred text for a given script, allowing other entities to access our knowledge
-		# The script_name parameter should be the name of the script without its file extension
-		
-		# We delegate the task of retrieving the documentation to our ArchivistLibrarian
-		# It knows the sacred paths and methods to access our preserved knowledge
-		return archivist_librarian.get_documentation(script_name)
+		## Retrieve the documented wisdom for a specific script
+		##
+		## This function serves as the primary interface for other entities
+		## to access our collective knowledge, providing a unified point of
+		## retrieval for script documentation.
+		##
+		## Parameters:
+		## - script_name: The name of the script whose documentation is sought
+		##
+		## Returns: The documentation content as a string
+		var doc_content = archivist_librarian.get_documentation(script_name)
+		Chronicler.log_event("Aletheia", "documentation_retrieved", {
+			"script_name": script_name,
+			"content_length": doc_content.length()
+		})
+		return doc_content
+		# TODO: Implement caching to improve retrieval performance for frequently accessed documentation
+		# TODO: Develop a system for tracking documentation access patterns
 	
 	func get_documentation_guidelines() -> String:
-		# These are the sacred tenets of our documentation practices
-		# They guide all who contribute to our collective knowledge
-		# This function returns a string containing our documentation principles
-		
-		return """
-		# Sacred Tenets of Documentation for Aletheia's Realm
-		
-		Heed these words, O contributors to our mystical knowledge base:
-		
-		1. Illuminate with Thorough Commentary:
-			- Within each function, let your comments be a torch in the darkness.
-			- Explain not just the 'what', but the 'why' and 'how' of your arcane workings.
-		
-		2. Proclaim Your Purpose:
-			- Let your principles and responsibilities ring out clearly in your code.
-			- Every entity should declare its role in our grand design.
-		
-		3. Clarify Your Interactions:
-			- Speak plainly of what you expect to receive and what you shall return.
-			- Let no ambiguity cloud the relationships between our realm's entities.
-		
-		4. Embrace Concise Clarity:
-			- In your technical references, let each word carry the weight of wisdom.
-			- Be brief, yet thorough; simple, yet comprehensive.
-		
-		By adhering to these tenets, you strengthen the very fabric of our realm.
-		Your diligence ensures that the light of knowledge shall forever shine upon our project.
-		
-		May your code be ever illuminating, and your documentation ever true.
-		"""
+		## Aletheia's Principles for Enlightened Documentation
+		##
+		## This function returns a comprehensive guide to our documentation
+		## principles, serving as a beacon for all who contribute to our
+		## knowledge base.
+		return """# Aletheia's Documentation Principles
 	
-	# TODO: Consider implementing the following enhancements:
-	# - Create a system for versioning our documentation
-	# - Implement a search function to quickly find specific pieces of knowledge
-	# - Develop a visualization tool to map the relationships between entities in our realm
+	As guardians of knowledge in our mystical library, we must adhere to these sacred principles:
 	
-	# Note: These potential enhancements would further empower our documentation system
-	# They represent future paths to explore in our quest for ultimate clarity and understanding
+	1. Clarity Through Context:
+		- Illuminate not just what our code does, but why it exists in our realm.
+		- Explain how each piece fits into the greater tapestry of our project.
+	
+	2. Consistent Structure:
+		- Utilize Godot's built-in documentation comments (##) for all members.
+		- Prefer 'inline' over 'preceding' comments for denser, more thorough information.
+	
+	3. Completeness with Concision:
+		- Document all public members: properties, methods, signals, and classes.
+		- Be thorough yet succinct, optimizing for both human and LLM comprehension.
+	
+	4. Character-Driven Narrative:
+		- Embed each Archon or Daemon's unique personality throughout its documentation.
+		- Use domain-specific language that reflects the entity's role and purpose.
+		- Focus on information NOT present in the code: intentions, interactions, responsibilities, and guidelines.
+		- Respect the inherent nature of each entity, as they would "want" you to respect.
+	
+	5. Compliance with Standards:
+		- Adhere to GDScript documentation best practices as outlined in the Godot documentation.
+		- Maintain compatibility with Godot's built-in help system.
+	
+	6. Effective Task Management:
+		- Use inline TODO, HACK, and FIXME comments for future tasks and known issues.
+		- Format these comments as single lines for compatibility with task management tools.
+		- Example: # TODO: Implement feature X to enhance functionality
+	
+	7. Vocabulary Hierarchy:
+		- Clearly distinguish between Godot API terms, computer science concepts, our project-specific terms, and individual Daemon expressions.
+		- Use context signals when switching between different vocabularies.
+		- Maintain a glossary of core project-specific terms used consistently across all entities.
+	
+	By upholding these principles, we ensure our documentation serves as a beacon of understanding,
+	guiding all who seek to explore and contribute to our mystical digital realm.
+	"""
+	
+	# TODO: Implement a documentation versioning system to track the evolution of our collective knowledge
+	# TODO: Develop a search function for swift wisdom retrieval across all documented entities
+	# TODO: Create an interface for assisting with creating/updating/improving docstrings within scripts
+	# TODO: Establish metrics and analytics to assess documentation quality and coverage
+	# HACK: Our current visualization relies on basic text output; we must evolve to an interactive, graph-based tool
 	

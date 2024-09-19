@@ -4,8 +4,6 @@
 
 An agenda card is a concise, information-dense summary of an Archon or Daemon's key attributes, designed to serve as a quick reference for representing the entity in meetings or during decision-making processes.
 
-Hey
-
 ## Purpose
 - Enable anonymous representatives to confidently speak on behalf of the Archon/Daemon
 - Provide a comprehensive overview of the entity's core aspects

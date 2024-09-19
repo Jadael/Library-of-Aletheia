@@ -14,10 +14,19 @@ markdown_book/docs_folder="res://documents"
 
 [application]
 
-config/name="Scriptorium"
+config/name="Library of Aletheia"
+config/description="An LLM-powered, heavily user extensible system built in Godot for reading/writing/creating/managing Markdown documents with YAML Frontmatter, and applying both traditional and LLM-powered information management tasks."
 run/main_scene="res://main.tscn"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="Library of Aletheia"
 config/features=PackedStringArray("4.3", "GL Compatibility")
+run/max_fps=60
+run/low_processor_mode=true
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/image="res://assets/icon.png"
 config/icon="res://assets/icon.svg"
+config/macos_native_icon="res://assets/icon.icns"
+config/windows_native_icon="res://assets/icon.ico"
 
 [autoload]
 
@@ -30,7 +39,7 @@ Scribe="*res://Daemons/Scribe.gd"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/Todo_Manager/plugin.cfg", "res://addons/markdownlabel/plugin.cfg")
+enabled=PackedStringArray("res://addons/Todo_Manager/plugin.cfg")
 
 [input]
 
@@ -44,4 +53,4 @@ summon_chronicle_viewer={
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-environment/defaults/default_clear_color=Color(0.0980392, 0.0980392, 0.0980392, 1)
+environment/defaults/default_clear_color=Color(0.02, 0.0196133, 0.0196, 1)

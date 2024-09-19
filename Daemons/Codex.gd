@@ -128,7 +128,7 @@ func _parse_content():
 ## Synchronizes the Codex with its physical counterpart
 func update():
 	if has_changed():
-		_load_content()
+		await _load_content()
 		emit_signal("content_changed")
 		emit_signal("frontmatter_changed")
 

@@ -1,0 +1,16 @@
+[gd_resource type="StyleBoxTexture" load_steps=2 format=3 uid="uid://c5i876u63y35e"]
+
+[ext_resource type="Texture2D" uid="uid://dc1wysm25fwsj" path="res://assets/Fantasy Wooden GUI  Free/PNG/UI board Medium  parchment.png" id="1_si571"]
+
+[resource]
+texture = ExtResource("1_si571")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+expand_margin_left = 16.0
+expand_margin_top = 32.0
+expand_margin_right = 16.0
+expand_margin_bottom = 32.0
+axis_stretch_horizontal = 2
+axis_stretch_vertical = 2
