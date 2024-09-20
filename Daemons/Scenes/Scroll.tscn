@@ -1,10 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://cwv3l5isjb0ye"]
+[gd_scene load_steps=5 format=3 uid="uid://cwv3l5isjb0ye"]
 
 [ext_resource type="Script" path="res://Daemons/Scroll.gd" id="1_1xnsd"]
 [ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/Aletheia_theme.tres" id="1_ornhy"]
-[ext_resource type="Texture2D" uid="uid://d1a4tsekcg4ws" path="res://assets/UI/confirm.png" id="3_3abmq"]
 [ext_resource type="FontFile" uid="uid://ci7w4fd3vwgba" path="res://fonts/LibreBaskerville-Regular.ttf" id="3_vinrb"]
-[ext_resource type="Texture2D" uid="uid://dfyi1hgln4u6a" path="res://assets/UI/cancel.png" id="4_d5roj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bke8y"]
 
 [node name="Scroll" type="Window"]
 disable_3d = true
@@ -23,7 +23,35 @@ content_scale_mode = 1
 theme = ExtResource("1_ornhy")
 script = ExtResource("1_1xnsd")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="Details" type="VBoxContainer" parent="."]
+offset_right = 129.0
+offset_bottom = 212.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Details"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="SaveButton" type="Button" parent="Details/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+disabled = true
+text = "💾 Save"
+
+[node name="DiscardButton" type="Button" parent="Details/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+disabled = true
+text = "💫 Discard Changes"
+
+[node name="TabContainer" type="TabContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -31,32 +59,23 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="TabContainer" type="TabContainer" parent="MarginContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_bke8y")
 tab_alignment = 2
 current_tab = 0
 clip_tabs = false
 use_hidden_tabs_for_min_size = true
 
-[node name="📜 Read" type="MarginContainer" parent="MarginContainer/TabContainer"]
+[node name="📜 Read" type="MarginContainer" parent="TabContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-metadata/_tab_index = 1
+metadata/_tab_index = 0
 
-[node name="Read" type="TextEdit" parent="MarginContainer/TabContainer/📜 Read"]
+[node name="Read" type="TextEdit" parent="TabContainer/📜 Read"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/font_readonly_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("3_vinrb")
 text = "Lorem ipsum."
 editable = false
@@ -66,68 +85,26 @@ wrap_mode = 1
 indent_wrapped_lines = true
 caret_multiple = false
 
-[node name="✒ Edit" type="MarginContainer" parent="MarginContainer/TabContainer"]
+[node name="✒ Edit" type="MarginContainer" parent="TabContainer"]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
 metadata/_tab_index = 1
 
-[node name="Details" type="VBoxContainer" parent="MarginContainer/TabContainer/✒ Edit"]
+[node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/✒ Edit"]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 4
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/TabContainer/✒ Edit/Details"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-
-[node name="SaveButton" type="Button" parent="MarginContainer/TabContainer/✒ Edit/Details/HBoxContainer"]
+[node name="FilenameLabel" type="Label" parent="TabContainer/✒ Edit/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-text = "Save"
-icon = ExtResource("3_3abmq")
-
-[node name="DiscardButton" type="Button" parent="MarginContainer/TabContainer/✒ Edit/Details/HBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-disabled = true
-text = "Discard"
-icon = ExtResource("4_d5roj")
-
-[node name="HSeparator" type="HSeparator" parent="MarginContainer/TabContainer/✒ Edit/Details"]
-layout_mode = 2
-
-[node name="FrontmatterContainer" type="VBoxContainer" parent="MarginContainer/TabContainer/✒ Edit/Details"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
-
-[node name="HSeparator2" type="HSeparator" parent="MarginContainer/TabContainer/✒ Edit/Details"]
-layout_mode = 2
-
-[node name="FilenameLabel" type="Label" parent="MarginContainer/TabContainer/✒ Edit/Details"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 0
 theme_type_variation = &"TooltipLabel"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 8
 text = "(Filename)"
 text_overrun_behavior = 3
 
-[node name="Edit" type="TextEdit" parent="MarginContainer/TabContainer/✒ Edit/Details"]
+[node name="Edit" type="TextEdit" parent="TabContainer/✒ Edit/VBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
@@ -139,3 +116,17 @@ wrap_mode = 1
 indent_wrapped_lines = true
 draw_tabs = true
 metadata/_edit_use_anchors_ = true
+
+[node name="🔖 Metadata" type="MarginContainer" parent="TabContainer"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+metadata/_tab_index = 2
+
+[node name="FrontmatterContainer" type="VBoxContainer" parent="TabContainer/🔖 Metadata"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0

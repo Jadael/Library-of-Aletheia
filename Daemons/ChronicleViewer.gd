@@ -1,6 +1,7 @@
 # ChronicleViewer.gd
-extends Control
+extends Window
 class_name ChronicleViewer
+const NAME = "🔭 Chronicle Viewer"
 # Owner: Chronicler
 
 @export_multiline var about = """
@@ -38,9 +39,6 @@ func _ready():
 	
 	_populate_filters()
 	_update_log_display()
-	
-	%CloseButton.pressed.connect(_on_close_button_pressed)
-	%ResizeHandle.gui_input.connect(_on_resize_handle_gui_input)
 
 func _populate_filters():
 	var entities = {}
@@ -94,33 +92,3 @@ func _on_entity_selected(index):
 func _on_event_type_selected(index):
 	current_event_type = event_type_filter.get_item_text(index) if index > 0 else ""
 	_update_log_display()
-
-func _gui_input(event):
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				is_dragging = true
-				drag_start_position = get_global_mouse_position() - global_position
-			else:
-				is_dragging = false
-
-func _process(delta): # TODO: W 0:00:01:0199   The parameter "delta" is never used in the function "_process()". If this is intended, prefix it with an underscore: "_delta".
-	if is_dragging:
-		global_position = get_global_mouse_position() - drag_start_position
-
-func _on_close_button_pressed():
-	queue_free()
-
-func _on_resize_handle_gui_input(event):
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				is_dragging = true
-				drag_start_position = get_global_mouse_position()
-			else:
-				is_dragging = false
-	elif event is InputEventMouseMotion and is_dragging:
-		var new_size = size + (get_global_mouse_position() - drag_start_position)
-		custom_minimum_size = new_size.clamp(Vector2(200, 150), Vector2(1000, 800))
-		size = custom_minimum_size
-		drag_start_position = get_global_mouse_position()

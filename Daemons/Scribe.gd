@@ -15,7 +15,7 @@ extends Node
 ##
 ## Remember: I am the translator of tongues, ensuring our wisdom speaks clearly
 ## in all corners of our digital realm.
-
+const NAME = "✍️ Scribe"
 @export_multiline var about = """
 Greetings, I am Scribe, the Archon of Markup Transmutation.
 
@@ -58,7 +58,7 @@ func markdown_to_bbcode(markdown: String) -> String:
 	if in_code_block:
 		bbcode += "[code]" + code_block_content + "[/code]\n"
 	
-	Chronicler.log_event("Scribe", "markdown_to_bbcode_conversion", {
+	Chronicler.log_event(self, "markdown_to_bbcode_conversion", {
 		"input_length": markdown.length(),
 		"output_length": bbcode.length()
 	})
@@ -211,7 +211,7 @@ func bbcode_to_markdown(bbcode: String) -> String:
 	ol_regex.compile("(?m)^\\[indent\\](\\d+)\\.\\s(.+?)\\[/indent\\]")
 	markdown = ol_regex.sub(markdown, "$1. $2", true)
 	
-	Chronicler.log_event("Scribe", "bbcode_to_markdown_conversion", {
+	Chronicler.log_event(self, "bbcode_to_markdown_conversion", {
 		"input_length": bbcode.length(),
 		"output_length": markdown.length()
 	})

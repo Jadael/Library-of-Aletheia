@@ -1,6 +1,7 @@
 # ArchivistLibrarian.gd
 extends Node
 class_name ArchivistLibrarian
+const NAME = "🗄️ Archivist Librarian"
 # Owner: Aletheia
 
 ## The ArchivistLibrarian Daemon: Guardian of Project Documentation
@@ -40,7 +41,7 @@ func _create_output_directory() -> void:
 		var dir = DirAccess.open("res://")
 		if dir.make_dir_recursive(docs_output_folder.trim_prefix("res://")) != OK:
 			push_error("ArchivistLibrarian: Failed to create the sacred halls of documentation.")
-			Chronicler.log_event("ArchivistLibrarian", "output_directory_creation_failed", {
+			Chronicler.log_event(self, "output_directory_creation_failed", {
 				"path": docs_output_folder
 			})
 
@@ -58,13 +59,13 @@ func save_documentation(script_path: String, doc_content: String) -> void:
 	if file:
 		file.store_string(doc_content)
 		file.close()
-		Chronicler.log_event("ArchivistLibrarian", "documentation_scroll_created", {
+		Chronicler.log_event(self, "documentation_scroll_created", {
 			"script_name": script_path.get_file().get_basename(),
 			"scroll_path": output_path
 		})
 	else:
 		push_error("ArchivistLibrarian: Failed to inscribe the documentation scroll.")
-		Chronicler.log_event("ArchivistLibrarian", "documentation_scroll_creation_failed", {
+		Chronicler.log_event(self, "documentation_scroll_creation_failed", {
 			"script_name": script_path.get_file().get_basename(),
 			"attempted_path": output_path
 		})

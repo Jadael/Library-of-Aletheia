@@ -1,6 +1,7 @@
 # TaskMaster.gd
 extends Node
 class_name TaskMaster
+const NAME = "⏳ Task Master"
 # Owner: Shoggoth
 
 ## TaskMaster: The Efficient Organizer of Cosmic Workflow
@@ -60,7 +61,7 @@ var current_timeout_timer: SceneTreeTimer = null
 
 # Core Functions
 func _ready():
-	Chronicler.log_event("TaskMaster", "awakened", {
+	Chronicler.log_event(self, "awakened", {
 		"queue_size": task_queue.size()
 	})
 
@@ -76,7 +77,7 @@ func add_task(task: Dictionary) -> void:
 	task_queue.append(task)
 	task_queue.sort_custom(func(a, b): return a["priority"] > b["priority"])
 	
-	Chronicler.log_event("TaskMaster", "task_added", {
+	Chronicler.log_event(self, "task_added", {
 		"task_id": task["id"],
 		"task_type": TaskType.keys()[task["type"]],
 		"priority": task["priority"]
@@ -106,7 +107,7 @@ func clear_queue() -> void:
 	
 	task_queue.clear()
 	is_processing = false
-	Chronicler.log_event("TaskMaster", "queue_cleared", {})
+	Chronicler.log_event(self, "queue_cleared", {})
 
 # Private Helper Functions
 func _process_next_task() -> void:
@@ -117,7 +118,7 @@ func _process_next_task() -> void:
 	is_processing = true
 	var task = task_queue[0]
 	
-	Chronicler.log_event("TaskMaster", "processing_task", {
+	Chronicler.log_event(self, "processing_task", {
 		"task_id": task["id"],
 		"task_type": TaskType.keys()[task["type"]]
 	})
@@ -141,19 +142,19 @@ func _on_task_timeout() -> void:
 		var task = task_queue[0]
 		_handle_task_error(task, "The cosmic forces did not respond in time. Task timed out.")
 	else:
-		Chronicler.log_event("TaskMaster", "timeout_on_empty_queue", {})
+		Chronicler.log_event(self, "timeout_on_empty_queue", {})
 
 func _handle_task_error(task: Dictionary, error_message: String) -> void:
 	task["retries"] = task.get("retries", 0) + 1
 	if task["retries"] < MAX_RETRIES:
-		Chronicler.log_event("TaskMaster", "task_retry", {
+		Chronicler.log_event(self, "task_retry", {
 			"task_id": task["id"],
 			"retry_attempt": task["retries"],
 			"error_message": error_message
 		})
 		get_tree().create_timer(RETRY_DELAY).timeout.connect(_process_next_task)
 	else:
-		Chronicler.log_event("TaskMaster", "task_failed", {
+		Chronicler.log_event(self, "task_failed", {
 			"task_id": task["id"],
 			"error_message": error_message
 		})
@@ -173,7 +174,7 @@ func _simulate_task_completion(task: Dictionary) -> void:
 	_handle_task_completion(task, result)
 
 func _handle_task_completion(task: Dictionary, result: Variant) -> void:
-	Chronicler.log_event("TaskMaster", "task_completed", {
+	Chronicler.log_event(self, "task_completed", {
 		"task_id": task["id"],
 		"task_type": TaskType.keys()[task["type"]]
 	})

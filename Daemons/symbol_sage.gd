@@ -62,7 +62,7 @@ func _initialize_database():
 	if not dir.dir_exists(DB_DIR):
 		var err = dir.make_dir_recursive(DB_DIR)
 		if err != OK:
-			Chronicler.log_event("SymbolSage", "database_dir_creation_failed", {
+			Chronicler.log_event(self, "database_dir_creation_failed", {
 				"db_dir": DB_DIR,
 				"error": error_string(err)
 			})
@@ -82,7 +82,7 @@ func _initialize_database():
 		await get_tree().create_timer(1.0).timeout
 	
 	if llm_db.db == null:
-		Chronicler.log_event("SymbolSage", "database_initialization_failed", {
+		Chronicler.log_event(self, "database_initialization_failed", {
 			"db_dir": DB_DIR,
 			"db_file": DB_FILE
 		})
@@ -91,7 +91,7 @@ func _initialize_database():
 	if not llm_db.has_table(TABLE_NAME):
 		llm_db.create_llm_tables()
 	
-	Chronicler.log_event("SymbolSage", "database_initialized", {
+	Chronicler.log_event(self, "database_initialized", {
 		"db_dir": DB_DIR,
 		"db_file": DB_FILE,
 		"table_name": TABLE_NAME
@@ -119,7 +119,7 @@ func add_symbols(new_symbols: Array[String]):
 			llm_db.store_meta(meta)
 			await llm_db.run_store_text_by_id(symbol, symbol)
 	
-	Chronicler.log_event("SymbolSage", "symbols_added", {
+	Chronicler.log_event(self, "symbols_added", {
 		"new_symbols": new_symbols,
 		"total_symbols": symbols.size()
 	})
@@ -150,7 +150,7 @@ func get_similar_symbols(text: String, n_results: int = 5) -> Array[String]:
 	
 	var result = similar_symbols.slice(0, n_results).map(func(item): return item.symbol)
 	
-	Chronicler.log_event("SymbolSage", "similar_symbols_retrieved", {
+	Chronicler.log_event(self, "similar_symbols_retrieved", {
 		"input_text": text,
 		"n_results": n_results,
 		"top_symbol": result[0] if result.size() > 0 else ""
@@ -168,7 +168,7 @@ func clear_database():
 	llm_db.create_llm_tables()
 	symbols.clear()
 	
-	Chronicler.log_event("SymbolSage", "database_cleared", {})
+	Chronicler.log_event(self, "database_cleared", {})
 
 # TODO: Implement a method to update existing symbol embeddings
 # TODO: Develop a system for handling homoglyphs and variations in unicode representations

@@ -21,6 +21,7 @@ extends Node
 ## in our mystical library, always seeking harmony but never at the cost of user agency.
 
 ## The Curator's personal manifesto and guiding principles
+const NAME = "🖼️ Curator"
 @export_multiline var about = """
 I am the Curator, guardian of the visual realm within our mystical library.
 My duty is to oversee the grand stage upon which our wisdom plays out its cosmic drama.
@@ -74,7 +75,7 @@ func setup(p_main_node: Node2D):
 	Librarian.connect("codex_summoned", Callable(self, "_on_codex_summoned"))
 	Librarian.connect("codex_banished", Callable(self, "_on_codex_banished"))
 	
-	Chronicler.log_event("Curator", "setup_completed", {
+	Chronicler.log_event(self, "setup_completed", {
 		"main_node_path": main_node.get_path()
 	})
 
@@ -97,9 +98,9 @@ func _on_codex_summoned(codex: Node, scroll: Scroll):
 	
 	_place_new_scroll(scroll)
 	
-	Chronicler.log_event("Curator", "scroll_manifested", {
-		"codex_id": codex.get_instance_id(),
-		"scroll_id": scroll.get_instance_id(),
+	Chronicler.log_event(self, "scroll_manifested", {
+		"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS),
+		"scroll_id": Glyph.convert_to_custom_base(scroll.get_instance_id(),Glyph.DAEMON_GLYPHS),
 		"initial_position": scroll.position
 	})
 
@@ -128,8 +129,8 @@ func _place_new_scroll(scroll: Scroll):
 func _on_scroll_content_edited(new_content, codex):
 	Librarian.update_codex_content(codex, new_content)
 	
-	Chronicler.log_event("Curator", "scroll_content_edited", {
-		"codex_id": codex.get_instance_id(),
+	Chronicler.log_event(self, "scroll_content_edited", {
+		"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS),
 		"content_length": new_content.length()
 	})
 
@@ -145,8 +146,8 @@ func _on_scroll_metadata_edited(updates: Dictionary, codex):
 	for key in updates:
 		Librarian.update_codex_metadata(codex, key, updates[key])
 	
-	Chronicler.log_event("Curator", "scroll_metadata_edited", {
-		"codex_id": codex.get_instance_id(),
+	Chronicler.log_event(self, "scroll_metadata_edited", {
+		"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS),
 		"updated_fields": updates.keys()
 	})
 
@@ -160,7 +161,7 @@ func _on_scroll_metadata_edited(updates: Dictionary, codex):
 func _on_scroll_interaction(scroll):
 	emit_signal("scroll_interaction", scroll)
 	#scroll.remember_position()
-	Chronicler.log_event("Curator", "scroll_interaction_occurred", {
+	Chronicler.log_event(self, "scroll_interaction_occurred", {
 		"scroll_id": scroll.get_instance_id()
 	})
 
@@ -179,8 +180,8 @@ func _on_codex_banished(codex: Node):
 		scroll.queue_free()
 		scroll_collection.erase(codex)
 		
-		Chronicler.log_event("Curator", "scroll_banished", {
-			"codex_id": codex.get_instance_id(),
+		Chronicler.log_event(self, "scroll_banished", {
+			"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS),
 			"scroll_id": scroll.get_instance_id()
 		})
 
@@ -197,7 +198,7 @@ func update_visualization():
 			scroll.update_visual()
 			updated_scrolls += 1
 	
-	Chronicler.log_event("Curator", "visualization_updated", {
+	Chronicler.log_event(self, "visualization_updated", {
 		"scrolls_updated": updated_scrolls
 	})
 
@@ -207,7 +208,7 @@ func check_for_desyncs():
 		if scroll.check_for_update():
 			updated_scrolls += 1
 	return updated_scrolls
-	Chronicler.log_event("Curator", "visualization_updated", {
+	Chronicler.log_event(self, "visualization_updated", {
 		"scrolls_updated": updated_scrolls
 	})
 
@@ -228,7 +229,7 @@ func suggest_scroll_arrangement() -> Array:
 		var y = sin(angle) * radius
 		suggested_positions.append(Vector2i(int(x), int(y)))
 	
-	Chronicler.log_event("Curator", "scroll_arrangement_suggested", {
+	Chronicler.log_event(self, "scroll_arrangement_suggested", {
 		"arrangement_type": "circular",
 		"number_of_scrolls": scroll_array.size()
 	})
@@ -250,7 +251,7 @@ func summon_chronicle_viewer():
 	
 	viewer.custom_minimum_size = Vector2(400, 300)
 	
-	Chronicler.log_event("Curator", "chronicle_viewer_summoned", {
+	Chronicler.log_event(self, "chronicle_viewer_summoned", {
 		"position": viewer.position,
 		"size": viewer.custom_minimum_size
 	})
@@ -269,7 +270,7 @@ func _unhandled_input(event):
 			is_panning = event.pressed
 			if is_panning:
 				last_mouse_position = event.position
-			Chronicler.log_event("Curator", "panning_state_changed", {
+			Chronicler.log_event(self, "panning_state_changed", {
 				"is_panning": is_panning
 			})
 		elif event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and event.ctrl_pressed:
@@ -304,7 +305,7 @@ func _handle_zoom(event: InputEventMouseButton):
 		
 		current_zoom = new_zoom
 		
-		Chronicler.log_event("Curator", "zoom_changed", {
+		Chronicler.log_event(self, "zoom_changed", {
 			"new_zoom": new_zoom,
 			"zoom_center": zoom_center
 		})
@@ -322,7 +323,7 @@ func pan_scrolls(delta: Vector2):
 		var new_pos = Vector2(scroll.position) + delta
 		scroll.position = Vector2i(round(new_pos.x), round(new_pos.y))
 		scroll.remember_position()
-	Chronicler.log_event("Curator", "scrolls_panned", {
+	Chronicler.log_event(self, "scrolls_panned", {
 		"delta": delta,
 		"total_offset": scroll_offset
 	})

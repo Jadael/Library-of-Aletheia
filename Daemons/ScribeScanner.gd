@@ -18,6 +18,7 @@ class_name ScribeScanner
 ## the integrity of our knowledge base rests upon its keen observations.
 
 ## The sacred purpose and responsibilities of the ScribeScanner
+const NAME = "🔍 Scribe Scanner"
 @export_multiline var about = """
 I am the ScribeScanner, the discerning eye of Aletheia, Archon of Project Knowledge and Documentation.
 My gaze penetrates the veil of code, revealing the true nature and structure of our sacred scripts.
@@ -57,7 +58,7 @@ func scan_scripts(path: String) -> Array:
 			artifact_name = realm_gate.get_next()
 	else:
 		push_error("ScribeScanner: The path to this realm is shrouded in mystery.")
-		Chronicler.log_event("ScribeScanner", "realm_access_failed", {"attempted_path": path})
+		Chronicler.log_event(self, "realm_access_failed", {"attempted_path": path})
 	return discovered_scripts
 
 func parse_script(script_path: String) -> Dictionary:
@@ -76,7 +77,7 @@ func parse_script(script_path: String) -> Dictionary:
 	var scroll = FileAccess.open(script_path, FileAccess.READ)
 	if not scroll:
 		push_error("ScribeScanner: The script artifact resists our attempts to unroll it.")
-		Chronicler.log_event("ScribeScanner", "script_examination_failed", {"resistant_script": script_path})
+		Chronicler.log_event(self, "script_examination_failed", {"resistant_script": script_path})
 		return {}
 	
 	var script_contents = scroll.get_as_text()

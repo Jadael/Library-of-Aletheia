@@ -1,6 +1,7 @@
 # Scroll.gd
 class_name Scroll
 extends Window
+const NAME = "📃 Scroll"
 # Owner: Curator
 
 ## The Scroll: A Mystical Window to Knowledge
@@ -30,10 +31,10 @@ var codex_partner: Codex ## The Codex in charge of the document I display
 @onready var save_button: Button = %SaveButton ## Button to save changes to the Codex
 @onready var discard_button: Button = %DiscardButton ## Button to discard changes and reload from the Codex
 
-var last_checked_time: int = 0 ## The last time my Codex partner told me they checked my document for changes
-var is_updating_content: bool = false ## A mystical flag to prevent infinite loops during content updates
+var last_checked_time: int = 0 ## The last time my Codex partner told me they checked their document for changes
+var is_updating_content: bool = false ## A flag to prevent infinite loops during content updates
 var has_unsaved_changes: bool = false ## Indicates whether there are unsaved changes in the Scroll
-var needs_update: bool = true ## Indicate a need for my Codex partner to validate and re-propagate the document
+var needs_update: bool = true ## Indicate a need for my Codex partner to validate and re-share the document with me
 var target_position: Vector2i ## A cache of the position this Scroll last WANTED to be at
 
 func _ready() -> void:
@@ -61,7 +62,7 @@ func _connect_signals() -> void:
 	discard_button.pressed.connect(_on_discard_button_pressed)
 
 func setup(p_codex: Codex) -> void:
-	## Bind this Scroll to its Codex partner and establish their mystical connection
+	## Bind this Scroll to its Codex partner
 	codex_partner = p_codex
 	if codex_partner:
 		codex_partner.content_changed.connect(_on_codex_content_changed)
@@ -69,8 +70,8 @@ func setup(p_codex: Codex) -> void:
 	else:
 		push_error("Scroll: The Librarian and/or Curator failed to provide a Codex partner.")
 	
-	Chronicler.log_event("Scroll", "setup_completed", {
-		"codex_id": codex_partner.get_instance_id() if codex_partner else null
+	Chronicler.log_event(self, "setup_completed", {
+		"codex_id": Glyph.convert_to_custom_base(codex_partner.get_instance_id(),Glyph.DAEMON_GLYPHS) if codex_partner else null
 	})
 
 func update_visual() -> void:
@@ -84,7 +85,7 @@ func update_visual() -> void:
 	update_frontmatter()
 	remember_position()
 
-	Chronicler.log_event("Scroll", "visual_updated", {
+	Chronicler.log_event(self, "visual_updated", {
 		"title": title,
 		"filename": filename_label.text
 	})
@@ -96,9 +97,9 @@ func _on_codex_content_changed() -> void:
 		update_visual()
 		action = "Content updated from Codex"
 	
-	Chronicler.log_event("Scroll", "codex_content_changed", {
-		"scroll_id": get_instance_id(),
-		"codex_id": codex_partner.get_instance_id() if codex_partner else null,
+	Chronicler.log_event(self, "codex_content_changed", {
+		"scroll_id": Glyph.convert_to_custom_base(get_instance_id(),Glyph.DAEMON_GLYPHS),
+		"codex_id": Glyph.convert_to_custom_base(codex_partner.get_instance_id(),Glyph.DAEMON_GLYPHS) if codex_partner else null,
 		"action_taken": action
 	})
 
@@ -107,9 +108,9 @@ func _on_codex_frontmatter_changed() -> void:
 	if not has_unsaved_changes:
 		update_visual()
 	
-	Chronicler.log_event("Scroll", "codex_frontmatter_changed", {
-		"scroll_id": get_instance_id(),
-		"codex_id": codex_partner.get_instance_id() if codex_partner else null
+	Chronicler.log_event(self, "codex_frontmatter_changed", {
+		"scroll_id": Glyph.convert_to_custom_base(get_instance_id(),Glyph.DAEMON_GLYPHS),
+		"codex_id": Glyph.convert_to_custom_base(codex_partner.get_instance_id(),Glyph.DAEMON_GLYPHS) if codex_partner else null
 	})
 
 func _update_content_edit() -> void:
@@ -187,7 +188,7 @@ func add_new_metadata() -> void:
 	_set_unsaved_changes(true)
 	interaction_occurred.emit(self)
 	
-	Chronicler.log_event("Scroll", "new_metadata_added", {
+	Chronicler.log_event(self, "new_metadata_added", {
 		"key": new_key,
 		"value": new_value
 	})
@@ -232,7 +233,7 @@ func _on_save_button_pressed() -> void:
 		update_visual()
 		interaction_occurred.emit(self)
 		
-		Chronicler.log_event("Scroll", "changes_saved", {
+		Chronicler.log_event(self, "changes_saved", {
 			"content_changed": true,
 			"metadata_changed": not updates.is_empty()
 		})
@@ -243,12 +244,12 @@ func _on_discard_button_pressed() -> void:
 	update_visual()
 	interaction_occurred.emit(self)
 	
-	Chronicler.log_event("Scroll", "changes_discarded", {})
+	Chronicler.log_event(self, "changes_discarded", {})
 
 func _on_close_requested() -> void:
 	## Respond to a request to close the Scroll
 	interaction_occurred.emit(self)
-	Chronicler.log_event("Scroll", "close_requested", {})
+	Chronicler.log_event(self, "close_requested", {})
 
 func remember_position() -> void:
 	## Store the current position of the Scroll

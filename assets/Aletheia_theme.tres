@@ -1,11 +1,13 @@
-[gd_resource type="Theme" load_steps=17 format=3 uid="uid://dhjt02la7o8du"]
+[gd_resource type="Theme" load_steps=18 format=3 uid="uid://dhjt02la7o8du"]
 
 [ext_resource type="FontFile" uid="uid://hy7le4ku7dwx" path="res://fonts/LibreBaskerville-Bold.ttf" id="1_rwkvv"]
 [ext_resource type="FontFile" uid="uid://satkul7ohaxm" path="res://fonts/LibreBaskerville-Italic.ttf" id="2_46j2u"]
 [ext_resource type="FontFile" uid="uid://ci7w4fd3vwgba" path="res://fonts/LibreBaskerville-Regular.ttf" id="2_pi8ax"]
 [ext_resource type="FontFile" uid="uid://da3er4mjqd0j3" path="res://fonts/Hack-Regular.ttf" id="3_tnyg7"]
 [ext_resource type="StyleBox" uid="uid://c0cbspwo1uvbo" path="res://assets/document_stylebox.tres" id="5_ljnbq"]
+[ext_resource type="StyleBox" uid="uid://dpnr60xnwrjla" path="res://assets/tab_dark_normal.tres" id="6_vbfnb"]
 [ext_resource type="StyleBox" uid="uid://bghtye2mmc1kc" path="res://assets/window_dark_focused.tres" id="7_1dc7w"]
+[ext_resource type="StyleBox" uid="uid://bds44eiqsrp84" path="res://assets/tab_dark_unselected.tres" id="7_yfduq"]
 [ext_resource type="StyleBox" uid="uid://cqyj7rlgxfln5" path="res://assets/window_dark_unfocused.tres" id="8_wqyop"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_an03d"]
@@ -83,46 +85,13 @@ corner_radius_bottom_left = 8
 shadow_size = 4
 shadow_offset = Vector2(2, 2)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r2gi3"]
-bg_color = Color(0, 0, 0, 0.501961)
-border_width_left = 8
-border_width_right = 8
-border_color = Color(0.72549, 0.262745, 0.72549, 1)
-border_blend = true
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-shadow_size = 4
-shadow_offset = Vector2(2, 2)
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_05gph"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yywea"]
-bg_color = Color(0.73, 0.2628, 0.73, 0.501961)
-border_width_left = 8
-border_width_right = 8
-border_color = Color(0, 0, 0, 0.501961)
-border_blend = true
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-shadow_size = 4
-shadow_offset = Vector2(2, 2)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o3aso"]
-bg_color = Color(0, 0, 0, 0.501961)
-border_width_left = 8
-border_width_right = 8
-border_color = Color(0, 0, 0, 0.501961)
-border_blend = true
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-shadow_size = 4
-shadow_offset = Vector2(2, 2)
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_dxpnc"]
 
 [resource]
+default_font = ExtResource("2_pi8ax")
+default_font_size = 12
 Button/constants/align_to_largest_stylebox = 1
 Button/constants/icon_max_width = 10
 Button/constants/outline_size = 4
@@ -151,18 +120,23 @@ RichTextLabel/styles/background = ExtResource("5_ljnbq")
 RichTextLabel/styles/fill = ExtResource("5_ljnbq")
 RichTextLabel/styles/focus = ExtResource("5_ljnbq")
 RichTextLabel/styles/normal = ExtResource("5_ljnbq")
-TabBar/styles/tab_focus = null
-TabBar/styles/tab_hovered = SubResource("StyleBoxFlat_r2gi3")
-TabBar/styles/tab_selected = SubResource("StyleBoxFlat_yywea")
-TabBar/styles/tab_unselected = SubResource("StyleBoxFlat_o3aso")
+TabBar/styles/tab_focus = SubResource("StyleBoxEmpty_05gph")
+TabBar/styles/tab_selected = ExtResource("6_vbfnb")
+TabBar/styles/tab_unselected = ExtResource("7_yfduq")
 TabContainer/constants/icon_separation = 8
-TabContainer/constants/side_margin = 16
-TabContainer/font_sizes/font_size = 12
+TabContainer/constants/side_margin = 4
+TabContainer/font_sizes/font_size = 10
 TabContainer/fonts/font = ExtResource("3_tnyg7")
+TextEdit/colors/background_color = Color(0, 0, 0, 0)
 TextEdit/colors/caret_color = Color(0.756863, 0, 0.756863, 1)
+TextEdit/colors/current_line_color = Color(0.76, 0, 0.76, 0.0627451)
+TextEdit/colors/font_color = Color(1, 1, 1, 1)
+TextEdit/colors/font_placeholder_color = Color(1, 1, 1, 0.501961)
+TextEdit/colors/font_readonly_color = Color(1, 1, 1, 1)
+TextEdit/constants/caret_width = 2
 TextEdit/font_sizes/font_size = 12
 TextEdit/fonts/font = ExtResource("3_tnyg7")
-TextEdit/styles/focus = ExtResource("5_ljnbq")
+TextEdit/styles/focus = SubResource("StyleBoxEmpty_dxpnc")
 TextEdit/styles/normal = ExtResource("5_ljnbq")
 TextEdit/styles/read_only = ExtResource("5_ljnbq")
 Window/colors/title_color = Color(0, 0, 0, 1)

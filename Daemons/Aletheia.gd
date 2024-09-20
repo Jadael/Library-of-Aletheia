@@ -20,6 +20,7 @@ extends Node
 ## @tutorial: https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_documentation_comments.html
 
 ## The sacred purpose and guiding principles of Aletheia
+const NAME = "📚 Aletheia"
 @export_multiline var about = """
 I am Aletheia, the Archon of Project Knowledge and Documentation.
 
@@ -71,9 +72,9 @@ func _summon_documentation_daemons() -> void:
 	
 	archivist_librarian.setup(docs_output_folder)
 	
-	Chronicler.log_event("Aletheia", "documentation_daemons_summoned", {
-		"scribe_scanner": scribe_scanner.get_instance_id(),
-		"lore_weaver": lore_weaver.get_instance_id(),
+	Chronicler.log_event(self, "documentation_daemons_summoned", {
+		"scribe_scanner": Glyph.convert_to_custom_base(scribe_scanner.get_instance_id(),Glyph.DAEMON_GLYPHS),
+		"lore_weaver": Glyph.convert_to_custom_base(lore_weaver.get_instance_id(),Glyph.DAEMON_GLYPHS),
 		"archivist_librarian": archivist_librarian.get_instance_id()
 	})
 
@@ -87,19 +88,19 @@ func generate_project_documentation() -> void:
 	var script_info = {}
 	
 	for script_path in script_files:
-		Chronicler.log_event("Aletheia", "processing_script", {"script_path": script_path})
+		Chronicler.log_event(self, "processing_script", {"script_path": script_path})
 		var parsed_info = scribe_scanner.parse_script(script_path)
 		script_info[script_path] = parsed_info
 	
-		Chronicler.log_event("Aletheia", "generating_documentation", {"script_path": script_path})
+		Chronicler.log_event(self, "generating_documentation", {"script_path": script_path})
 		var doc_content = await lore_weaver.generate_documentation(script_path, parsed_info)
 		
-		Chronicler.log_event("Aletheia", "saving_documentation", {"script_path": script_path})
+		Chronicler.log_event(self, "saving_documentation", {"script_path": script_path})
 		archivist_librarian.save_documentation(script_path, doc_content)
 		
-		Chronicler.log_event("Aletheia", "script_processed", {"script_path": script_path})
+		Chronicler.log_event(self, "script_processed", {"script_path": script_path})
 	
-	Chronicler.log_event("Aletheia", "documentation_generated", {"num_scripts": script_info.size()})
+	Chronicler.log_event(self, "documentation_generated", {"num_scripts": script_info.size()})
 	documentation_generated.emit(script_info.size())
 	# TODO: Implement a progress tracking system for large-scale documentation generation
 	# TODO: Analyze documentation coverage and quality metrics after generation
@@ -117,7 +118,7 @@ func update_script_documentation(script_path: String) -> void:
 	var doc_content = await lore_weaver.generate_documentation(script_path, parsed_info)
 	archivist_librarian.save_documentation(script_path, doc_content)
 	
-	Chronicler.log_event("Aletheia", "documentation_updated", {
+	Chronicler.log_event(self, "documentation_updated", {
 		"script_name": script_path.get_file().get_basename()
 	})
 	
@@ -137,7 +138,7 @@ func get_documentation(script_name: String) -> String:
 	##
 	## Returns: The documentation content as a string
 	var doc_content = archivist_librarian.get_documentation(script_name)
-	Chronicler.log_event("Aletheia", "documentation_retrieved", {
+	Chronicler.log_event(self, "documentation_retrieved", {
 		"script_name": script_name,
 		"content_length": doc_content.length()
 	})

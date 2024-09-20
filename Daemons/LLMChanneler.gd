@@ -1,6 +1,7 @@
 # LLMChanneler.gd
 extends Node
 class_name LLMChanneler
+const NAME = "🔮 LLM Channeler"
 # Owner: Shoggoth
 
 ## LLMChanneler: The Ethereal Conduit to Realms of Artificial Cognition
@@ -64,7 +65,7 @@ func _initialize_llm():
 	llm_node.set_n_ctx(508)
 	llm_node.n_keep = 128
 	
-	Chronicler.log_event("LLMChanneler", "model_initialized", {
+	Chronicler.log_event(self, "model_initialized", {
 		"model_path": llm_model_path,
 		"context_size": model_ctx,
 		"n_keep": llm_node.n_keep
@@ -94,14 +95,14 @@ func generate_text(prompt: String, task_id: String, params: Dictionary = {}) -> 
 	var error = llm_node.run_generate_text(full_prompt, grammar, json_schema)
 	
 	if error != OK:
-		Chronicler.log_event("LLMChanneler", "text_generation_failed", {
+		Chronicler.log_event(self, "text_generation_failed", {
 			"task_id": task_id,
 			"error": error
 		})
 		# Signal Shoggoth about the failure
 		Shoggoth.task_failed.emit(task_id, "Failed to initiate the text generation ritual. Error: {0}".format([error]))
 	else:
-		Chronicler.log_event("LLMChanneler", "text_generation_started", {
+		Chronicler.log_event(self, "text_generation_started", {
 			"task_id": task_id,
 			"prompt_length": prompt.length(),
 			"max_length": max_length,
@@ -120,7 +121,7 @@ func update_context(new_context: String) -> void:
 	## - new_context: The updated context to be used in future generations
 	
 	current_context = new_context
-	Chronicler.log_event("LLMChanneler", "context_updated", {
+	Chronicler.log_event(self, "context_updated", {
 		"context_length": current_context.length()
 	})
 
@@ -131,7 +132,7 @@ func clear_context() -> void:
 	## allowing for a fresh start in our dialogues with the artificial mind.
 	
 	current_context = ""
-	Chronicler.log_event("LLMChanneler", "context_cleared", {})
+	Chronicler.log_event(self, "context_cleared", {})
 
 func get_model_stats() -> Dictionary:
 	## Reveals the current state of our cosmic conduit
@@ -161,7 +162,7 @@ func _on_generate_text_finished(result: String):
 	## Parameters:
 	## - result: The generated text
 	
-	Chronicler.log_event("LLMChanneler", "text_generation_completed", {
+	Chronicler.log_event(self, "text_generation_completed", {
 		"result_length": result.length()
 	})
 	

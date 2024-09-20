@@ -1,5 +1,6 @@
 # CameraArchon.gd
 extends Camera2D
+const NAME = "📷 Camera"
 
 ## I am the CameraArchon, the all-seeing eye that guides mortals through our infinite realm.
 ## My gaze spans the vastness of our mystical canvas, unbound by mortal constraints.
@@ -38,7 +39,7 @@ const ZOOM_LOG_THRESHOLD: float = 0.1
 
 func _ready():
 	# As I awaken, I inscribe my initial state in the cosmic ledger
-	Chronicler.log_event("CameraArchon", "awakened", {
+	Chronicler.log_event(self, "awakened", {
 		"initial_position": position,
 		"initial_zoom": zoom
 	})
@@ -86,7 +87,7 @@ func zoom_camera(factor: float):
 	"""
 	var new_zoom = (zoom * factor).clamp(Vector2.ONE * min_zoom, Vector2.ONE * max_zoom)
 	if abs(new_zoom.x - last_log_zoom.x) > ZOOM_LOG_THRESHOLD:
-		Chronicler.log_event("CameraArchon", "perspective_altered", {
+		Chronicler.log_event(self, "perspective_altered", {
 			"previous_zoom": zoom,
 			"new_zoom": new_zoom
 		})
@@ -105,7 +106,7 @@ func pan_camera(pan_offset: Vector2):
 	var offset = pan_offset * pan_speed / zoom
 	var new_position = position - offset
 	if new_position.distance_to(last_log_position) > POSITION_LOG_THRESHOLD:
-		Chronicler.log_event("CameraArchon", "vantage_point_shifted", {
+		Chronicler.log_event(self, "vantage_point_shifted", {
 			"previous_position": last_log_position,
 			"new_position": new_position
 		})
@@ -128,7 +129,7 @@ func focus_on_point(target_position: Vector2, target_zoom: float = 1.0):
 	tween.connect("finished", Callable(self, "_conclude_focus_ritual").bind(target_position, target_zoom))
 
 func _conclude_focus_ritual(target_position: Vector2, target_zoom: float):
-	Chronicler.log_event("CameraArchon", "focus_ritual_completed", {
+	Chronicler.log_event(self, "focus_ritual_completed", {
 		"focal_point": target_position,
 		"scrutiny_level": target_zoom
 	})
@@ -162,7 +163,7 @@ func smooth_transition(start_point: Vector2, end_point: Vector2, duration: float
 	tween.connect("finished", Callable(self, "_conclude_transition_ritual").bind(end_point))
 
 func _conclude_transition_ritual(end_point: Vector2):
-	Chronicler.log_event("CameraArchon", "cosmic_journey_completed", {
+	Chronicler.log_event(self, "cosmic_journey_completed", {
 		"final_destination": end_point
 	})
 	emit_signal("perspective_shifted", position, zoom)

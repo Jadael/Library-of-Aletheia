@@ -29,6 +29,7 @@ signal codex_banished(codex)
 signal codex_updated(codex)
 
 ## The Librarian's sacred purpose and responsibilities
+const NAME = "🗃️ Librarian"
 @export_multiline var about = """
 I am the Librarian Archon, gatekeeper of document interaction and shepherd of Codex Daemons.
 My sacred duty is to maintain the integrity, accessibility, and safety of our collective knowledge.
@@ -60,7 +61,7 @@ var documents_folder: String
 func setup(p_documents_folder: String):
 	documents_folder = p_documents_folder
 
-	Chronicler.log_event("Librarian", "setup_completed", {
+	Chronicler.log_event(self, "setup_completed", {
 		"documents_folder": p_documents_folder
 	})
 
@@ -80,12 +81,12 @@ func process_existing_documents():
 			file_name = dir.get_next()
 		dir.list_dir_end()
 		
-		Chronicler.log_event("Librarian", "existing_documents_processed", {
+		Chronicler.log_event(self, "existing_documents_processed", {
 			"num_codices": codex_collection.size()
 		})
 	else:
 		print("The path to our document realm is obscured.")
-		Chronicler.log_event("Librarian", "document_access_failed", {
+		Chronicler.log_event(self, "document_access_failed", {
 			"folder_path": documents_folder
 		})
 
@@ -109,9 +110,9 @@ func summon_codex(file_path: String):
 		
 	emit_signal("codex_summoned", codex, scroll)
 	
-	Chronicler.log_event("Librarian", "codex_summoned", {
+	Chronicler.log_event(self, "codex_summoned", {
 		"file_path": file_path,
-		"codex_id": codex.get_instance_id()
+		"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS)
 	})
 
 ## Banishes a Codex Daemon from the library
@@ -126,7 +127,7 @@ func banish_codex(codex: Node):
 	codex.queue_free()
 	emit_signal("codex_banished", codex)
 	
-	Chronicler.log_event("Librarian", "codex_banished", {
+	Chronicler.log_event(self, "codex_banished", {
 		"codex_id": codex.get_instance_id()
 	})
 
@@ -137,21 +138,6 @@ func banish_codex(codex: Node):
 ##
 ## Returns:
 ## - bool: True if any Codices were updated, False otherwise
-#func check_for_updates() -> bool:
-	#var updated_codices = 0
-	#for codex in codex_collection:
-		#if codex.has_changed():
-			#codex.update()
-			#emit_signal("codex_updated", codex)
-			#updated_codices += 1
-	#
-	#Chronicler.log_event("Librarian", "update_check_completed", {
-		#"codices_checked": codex_collection.size(),
-		#"codices_updated": updated_codices
-	#})
-	#
-	#return updated_codices > 0
-
 func check_for_updates() -> bool:
 	var updated_codices = 0
 	var codices_to_banish = []
@@ -170,7 +156,7 @@ func check_for_updates() -> bool:
 	for codex in codices_to_banish:
 		banish_codex(codex)
 
-	Chronicler.log_event("Librarian", "update_check_completed", {
+	Chronicler.log_event(self, "update_check_completed", {
 		"codices_checked": codex_collection.size(),
 		"codices_updated": updated_codices,
 		"codices_banished": codices_to_banish.size()
@@ -189,8 +175,8 @@ func check_for_updates() -> bool:
 func update_codex_content(codex: Node, new_content: String):
 	codex.update_content(new_content)
 	
-	Chronicler.log_event("Librarian", "codex_content_updated", {
-		"codex_id": codex.get_instance_id(),
+	Chronicler.log_event(self, "codex_content_updated", {
+		"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS),
 		"new_content_length": new_content.length()
 	})
 
@@ -206,8 +192,8 @@ func update_codex_content(codex: Node, new_content: String):
 func update_codex_metadata(codex: Node, key: String, new_value: String):
 	codex.update_frontmatter(key, new_value)
 	
-	Chronicler.log_event("Librarian", "codex_metadata_updated", {
-		"codex_id": codex.get_instance_id(),
+	Chronicler.log_event(self, "codex_metadata_updated", {
+		"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS),
 		"key": key,
 		"new_value": new_value
 	})

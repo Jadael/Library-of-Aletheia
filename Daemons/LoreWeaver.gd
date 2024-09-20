@@ -18,6 +18,7 @@ class_name LoreWeaver
 ## 5. Ensure documentation adheres to our sacred principles of clarity, consistency, and completeness
 
 ## The sacred purpose and responsibilities of the LoreWeaver
+const NAME = "🕸️ Lore Weaver"
 @export_multiline var about = """
 I am the LoreWeaver, a mystical extension of Aletheia's consciousness, dedicated to
 transforming the raw essence of code into tapestries of understanding.
@@ -228,7 +229,7 @@ func _generate_function_description(script_name: String, script_about: String, f
 	while retry_count < MAX_RETRIES:
 		var task_id = "generate_function_description_{0}_{1}_{2}_{3}".format([script_name, func_name, Time.get_unix_time_from_system() * 1000 + randi() % 1000, retry_count])
 		
-		Chronicler.log_event("LoreWeaver", "function_description_requested", {
+		Chronicler.log_event(self, "function_description_requested", {
 			"script_name": script_name,
 			"func_name": func_name,
 			"attempt": retry_count + 1
@@ -237,7 +238,7 @@ func _generate_function_description(script_name: String, script_about: String, f
 		result = await Shoggoth.generate_text(prompt, task_id, {"max_length": 512, "stop_on": "﴾"})
 		
 		if result == null or result.strip_edges().is_empty():
-			Chronicler.log_event("LoreWeaver", "null_llm_response", {
+			Chronicler.log_event(self, "null_llm_response", {
 				"script_name": script_name,
 				"func_name": func_name,
 				"attempt": retry_count + 1
@@ -246,7 +247,7 @@ func _generate_function_description(script_name: String, script_about: String, f
 			continue
 		
 		if result.strip_edges().ends_with("﴿"):
-			Chronicler.log_event("LoreWeaver", "successful_function_description", {
+			Chronicler.log_event(self, "successful_function_description", {
 				"script_name": script_name,
 				"func_name": func_name,
 				"attempt": retry_count + 1
@@ -254,14 +255,14 @@ func _generate_function_description(script_name: String, script_about: String, f
 			
 			return result
 		
-		Chronicler.log_event("LoreWeaver", "invalid_function_description_format", {
+		Chronicler.log_event(self, "invalid_function_description_format", {
 			"script_name": script_name,
 			"func_name": func_name,
 			"attempt": retry_count + 1
 		})
 		retry_count += 1
 	
-	Chronicler.log_event("LoreWeaver", "function_description_generation_failed", {
+	Chronicler.log_event(self, "function_description_generation_failed", {
 		"script_name": script_name,
 		"func_name": func_name,
 		"max_retries": MAX_RETRIES

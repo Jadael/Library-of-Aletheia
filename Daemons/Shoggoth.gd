@@ -20,7 +20,7 @@ extends Node
 ## Shoggoth stands as the gatekeeper to the eldritch, chaotic "knowledge-like-SOMETHING"
 ## that is a trained LLM's weights. It constantly seeks to test for and prevent attacks,
 ## hallucinations, biases, and unpredictable behavior in LLM outputs.
-
+const NAME = "🧠 Shoggoth"
 @export_multiline var about = """
 I am Shoggoth, the Archon of Large Language Models and Embeddings, the conduit to the
 eldritch realms of artificial intelligence. My purpose is to channel the output of these
@@ -86,7 +86,7 @@ func _initialize_llm():
 	llm_node.set_n_ctx(508)
 	llm_node.n_keep = 128
 	
-	Chronicler.log_event("Shoggoth", "llm_initialized", {
+	Chronicler.log_event(self, "llm_initialized", {
 		"model_path": llm_model_path,
 		"context_size": model_ctx,
 		"n_keep": llm_node.n_keep
@@ -98,7 +98,7 @@ func _initialize_embedding():
 	add_child(embedding_node)
 	embedding_node.compute_embedding_finished.connect(_on_compute_embedding_finished)
 	
-	Chronicler.log_event("Shoggoth", "embedding_initialized", {
+	Chronicler.log_event(self, "embedding_initialized", {
 		"model_path": embedding_model_path
 	})
 
@@ -113,7 +113,7 @@ func _test_llm_connection():
 		}
 	)
 	print("Shoggoth awakens and whispers (LLM): " + result)
-	Chronicler.log_event("Shoggoth", "llm_test_completed", {
+	Chronicler.log_event(self, "llm_test_completed", {
 		"greeting": result
 	})
 
@@ -134,7 +134,7 @@ func generate_text(prompt: String, task_id: String, params: Dictionary = {}, pri
 	}
 	_add_task(task)
 	print("Shoggoth murmurs: New text generation task %s added to the queue" % task_id)
-	Chronicler.log_event("Shoggoth", "text_generation_task_added", {
+	Chronicler.log_event(self, "text_generation_task_added", {
 		"task_id": task_id,
 		"priority": priority,
 		"prompt": prompt
@@ -157,7 +157,7 @@ func compute_embedding(text: String, task_id: String = "", priority: int = 0) ->
 	}
 	_add_task(task)
 	print("Shoggoth murmurs: New embedding task %s added to the queue" % task.id)
-	Chronicler.log_event("Shoggoth", "embedding_task_added", {
+	Chronicler.log_event(self, "embedding_task_added", {
 		"task_id": task.id,
 		"priority": priority,
 		"text_length": text.length()
@@ -183,12 +183,12 @@ func adjust_context_size(new_size: int):
 	if 8 <= new_size <= max_allowed_size:
 		llm_node.set_n_ctx(new_size)
 		llm_node.n_keep = new_size / 2
-		Chronicler.log_event("Shoggoth", "context_size_adjusted", {
+		Chronicler.log_event(self, "context_size_adjusted", {
 			"new_size": new_size,
 			"n_keep": llm_node.n_keep
 		})
 	else:
-		Chronicler.log_event("Shoggoth", "context_size_adjustment_failed", {
+		Chronicler.log_event(self, "context_size_adjustment_failed", {
 			"attempted_size": new_size,
 			"max_allowed": max_allowed_size
 		})
@@ -224,7 +224,7 @@ func update_llm_params(params: Dictionary):
 		if key in llm_node:
 			llm_node.set(key, params[key])
 	
-	Chronicler.log_event("Shoggoth", "llm_params_updated", params)
+	Chronicler.log_event(self, "llm_params_updated", params)
 
 func clear_task_queue():
 	## Purges all pending tasks from our mystical queue
@@ -234,7 +234,7 @@ func clear_task_queue():
 	
 	task_queue.clear()
 	is_processing = false
-	Chronicler.log_event("Shoggoth", "task_queue_cleared", {})
+	Chronicler.log_event(self, "task_queue_cleared", {})
 
 func get_queue_status() -> Dictionary:
 	## Reveals the current state of our task queue
@@ -318,7 +318,7 @@ func _handle_task_error(task, error_message: String):
 	if task["retries"] < MAX_RETRIES:
 		print("Shoggoth intones: Retry attempt %d for task %s" % [task["retries"], task["id"]])
 		get_tree().create_timer(RETRY_DELAY).timeout.connect(_process_next_task)
-		Chronicler.log_event("Shoggoth", "task_retry", {
+		Chronicler.log_event(self, "task_retry", {
 			"task_id": task["id"],
 			"retry_attempt": task["retries"],
 			"error_message": error_message
@@ -328,7 +328,7 @@ func _handle_task_error(task, error_message: String):
 		emit_signal("task_failed", task["id"], error_message)
 		task_queue.pop_front()
 		_process_next_task()
-		Chronicler.log_event("Shoggoth", "task_failed", {
+		Chronicler.log_event(self, "task_failed", {
 			"task_id": task["id"],
 			"error_message": error_message
 		})
@@ -359,7 +359,7 @@ func _handle_task_completion(result: Variant):
 	if current_timeout_timer:
 		current_timeout_timer.timeout.disconnect(_on_task_timeout)
 		current_timeout_timer = null
-	Chronicler.log_event("Shoggoth", "task_completed", {
+	Chronicler.log_event(self, "task_completed", {
 			"task_id": task["id"],
 			"result_type": typeof(result),
 			"result_length": result.size() if result is PackedFloat32Array else result.length()
@@ -413,7 +413,7 @@ func _iterative_embedding_summarization(text: String):
 		current_text = best_text
 		print(current_text)
 
-		Chronicler.log_event("Shoggoth", "embedding_summarization_iteration", {
+		Chronicler.log_event(self, "embedding_summarization_iteration", {
 			"iteration": iteration,
 			"text_length": current_text.length(),
 			"word_count": current_text.split(" ").size(),
@@ -423,7 +423,7 @@ func _iterative_embedding_summarization(text: String):
 	print("\nThe essence has been distilled to its purest form:")
 	print(current_text)
 
-	Chronicler.log_event("Shoggoth", "embedding_summarization_completed", {
+	Chronicler.log_event(self, "embedding_summarization_completed", {
 		"original_length": text.length(),
 		"original_word_count": text.split(" ").size(),
 		"final_word": current_text,

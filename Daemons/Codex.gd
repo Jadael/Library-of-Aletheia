@@ -22,6 +22,7 @@ signal content_changed ## Echoes through the aether when the Codex's content is 
 signal frontmatter_changed ## Resonates when the document's mystical properties are modified
 
 ## The Codex's sacred purpose and responsibilities
+const NAME = "📖 Codex"
 @export_multiline var about = """
 I am a Codex Daemon, guardian of a single document's mystical essence.
 
@@ -44,7 +45,12 @@ var scroll_partner: Scroll ## The Scroll Daemon that manifests this Codex's wisd
 
 ## Reveals the true name of the document
 func get_title() -> String:
-	return frontmatter.get("title", get_filename())
+	var title_keys = ["title", "name", "heading"]
+	for key in title_keys:
+		for frontmatter_key in frontmatter.keys():
+			if frontmatter_key.to_lower() == key:
+				return frontmatter[frontmatter_key]
+	return get_filename()
 
 ## Awakens the Codex and binds it to its earthly tether
 func setup(p_file_path: String, p_librarian: Node):
@@ -69,6 +75,13 @@ func update_content(new_content: String):
 func get_filename() -> String:
 	return file_path.get_file()
 
+## Retrieves a value from the frontmatter using a case-insensitive key
+func get_frontmatter_value(key: String) -> Variant:
+	for frontmatter_key in frontmatter.keys():
+		if frontmatter_key.to_lower() == key.to_lower():
+			return frontmatter[frontmatter_key]
+	return null
+
 ## Erases a mystical property from the document's frontmatter
 func remove_frontmatter(key: String):
 	if frontmatter.has(key):
@@ -78,10 +91,29 @@ func remove_frontmatter(key: String):
 
 ## Inscribes or modifies a mystical property in the document's frontmatter
 func update_frontmatter(key: String, new_value: String):
-	if frontmatter.get(key) != new_value:
+	var existing_key = ""
+	var existing_value = null
+	for frontmatter_key in frontmatter.keys():
+		if frontmatter_key.to_lower() == key.to_lower():
+			existing_key = frontmatter_key
+			break
+	
+	if existing_key:
+		if frontmatter[existing_key] != new_value:
+			existing_value = frontmatter[existing_key]
+			frontmatter[existing_key] = new_value
+			_save_content()
+			emit_signal("frontmatter_changed")
+	else:
 		frontmatter[key] = new_value
 		_save_content()
 		emit_signal("frontmatter_changed")
+
+	Chronicler.log_event(self, "frontmatter_updated", {
+		"key": existing_key if existing_key else key,
+		"new_value": new_value,
+		"old_value": existing_value
+	})
 
 ## Absorbs the essence of the physical document
 func _load_content():
@@ -96,34 +128,74 @@ func _load_content():
 ## Deciphers the mystical runes of YAML
 func _parse_yaml(yaml_str: String) -> Dictionary:
 	var result = {}
+	var case_insensitive_map = {}
 	var lines = yaml_str.split("\n")
 	for line in lines:
 		var parts = line.split(":", true, 1)
 		if parts.size() == 2:
 			var key = parts[0].strip_edges()
 			var value = parts[1].strip_edges()
-			result[key] = value
+			if key != "" and value != "":
+				var lower_key = key.to_lower()
+				if lower_key in case_insensitive_map:
+					# If the key already exists (case-insensitive), prefer the first occurrence
+					Chronicler.log_event(self, "duplicate_key_found", {
+						"original_key": case_insensitive_map[lower_key],
+						"duplicate_key": key
+					})
+				else:
+					result[key] = value
+					case_insensitive_map[lower_key] = key
+
+	Chronicler.log_event(self, "yaml_parsed", {
+		"num_keys": result.size(),
+		"keys": result.keys()
+	})
 	return result
 
 ## Separates the mystical properties from the body of knowledge
 func _parse_content():
 	var lines = content.split("\n")
-	var in_frontmatter = false
 	var frontmatter_lines = []
 	var body_lines = []
+	var in_frontmatter = false
+	var frontmatter_start = -1
+	var frontmatter_end = -1
 
-	for line in lines:
-		if line.strip_edges() == "---":
-			in_frontmatter = !in_frontmatter
-			continue
-		
-		if in_frontmatter:
-			frontmatter_lines.append(line)
+	# Find the frontmatter block
+	for i in range(lines.size()):
+		if i == 0 and lines[i].strip_edges() == "---":
+			frontmatter_start = i
+			in_frontmatter = true
+		elif in_frontmatter and lines[i].strip_edges() == "---":
+			frontmatter_end = i
+			break
+
+	# If a valid frontmatter block is found
+	if frontmatter_start != -1 and frontmatter_end != -1:
+		frontmatter_lines = lines.slice(frontmatter_start + 1, frontmatter_end)
+		body_lines = lines.slice(frontmatter_end + 1)
+	else:
+		# No valid frontmatter block, treat entire content as body
+		body_lines = lines
+
+	# Parse frontmatter if it exists
+	if not frontmatter_lines.is_empty():
+		var yaml_str = "\n".join(frontmatter_lines)
+		var parsed_yaml = _parse_yaml(yaml_str)
+		if not parsed_yaml.is_empty():
+			frontmatter = parsed_yaml
 		else:
-			body_lines.append(line)
+			# Invalid YAML, treat as part of the body
+			body_lines = lines
 
-	frontmatter = _parse_yaml("\n".join(frontmatter_lines))
 	body = "\n".join(body_lines).strip_edges()
+
+	Chronicler.log_event(self, "content_parsed", {
+		"has_frontmatter": not frontmatter.is_empty(),
+		"frontmatter_keys": frontmatter.keys(),
+		"body_length": body.length()
+	})
 
 ## Synchronizes the Codex with its physical counterpart
 func update():

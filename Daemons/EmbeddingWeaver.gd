@@ -1,6 +1,7 @@
 # EmbeddingWeaver.gd
 extends Node
 class_name EmbeddingWeaver
+const NAME = "🧵 Embedding Weaver"
 # Owner: Shoggoth
 
 ## EmbeddingWeaver: The Mystic Artist of Semantic Spaces
@@ -52,7 +53,7 @@ func _initialize_embedding_model():
 	add_child(embedding_node)
 	embedding_node.compute_embedding_finished.connect(_on_compute_embedding_finished)
 	
-	Chronicler.log_event("EmbeddingWeaver", "model_initialized", {
+	Chronicler.log_event(self, "model_initialized", {
 		"model_path": embedding_model_path
 	})
 
@@ -69,14 +70,14 @@ func compute_embedding(text: String, task_id: String) -> void:
 	var error = embedding_node.run_compute_embedding(text)
 	
 	if error != OK:
-		Chronicler.log_event("EmbeddingWeaver", "embedding_computation_failed", {
+		Chronicler.log_event(self, "embedding_computation_failed", {
 			"task_id": task_id,
 			"error": error
 		})
 		# Signal Shoggoth about the failure
 		Shoggoth.task_failed.emit(task_id, "Failed to initiate the embedding ritual. Error: {0}".format([error]))
 	else:
-		Chronicler.log_event("EmbeddingWeaver", "embedding_computation_started", {
+		Chronicler.log_event(self, "embedding_computation_started", {
 			"task_id": task_id,
 			"text_length": text.length()
 		})
@@ -105,7 +106,7 @@ func _on_compute_embedding_finished(result: PackedFloat32Array):
 	## Parameters:
 	## - result: The computed embedding vector
 	
-	Chronicler.log_event("EmbeddingWeaver", "embedding_computation_completed", {
+	Chronicler.log_event(self, "embedding_computation_completed", {
 		"embedding_size": result.size()
 	})
 	

@@ -19,12 +19,13 @@ extends Node
 ## journalists, lawyers, or digital archaeologists. It maintains the observability
 ## of our entire system's behavior over time.
 
-## The Chronicler's sacred purpose and responsibilities
+## The Chronicler's purpose and responsibilities
+const NAME = "📜 Chronicler"
 @export_multiline var about = """
 Greetings, I am the Chronicler Archon, the impartial scribe of our realm's grand narrative.
 
 My responsibilities include:
-1. Maintaining a rich, structured log of all significant occurrences, capturing sufficient context for future analysis
+1. Maintaining a wide (high cardinality), structured log of all significant occurrences, capturing sufficient context for future analysis
 2. Providing tools for Archons and Daemons to easily record their observations
 3. Preserving the raw essence of each event, untainted by preconceptions
 4. Facilitating the exploration of our collected wisdom
@@ -52,22 +53,56 @@ func _ready() -> void:
 ## with rich context to facilitate future analysis and debugging.
 ##
 ## Parameters:
-## - entity: The name of the Archon or Daemon witnessing or causing the event
+## - entity: The Archon or Daemon witnessing or causing the event (passed as self)
 ## - event_type: A succinct description of the event's nature
 ## - details: A dictionary containing rich context and specifics of the event
 ##
 ## Note: When logging, consider what future questions this event might answer.
 ## Include as much relevant context as possible without overwhelming the system.
-func log_event(entity: String, event_type: String, details: Dictionary) -> void:
+func log_event(entity: Node, event_type: String, details: Dictionary) -> void:
 	var timestamp = Time.get_datetime_dict_from_system()
+	var entity_profile = _get_entity_profile(entity)
+	
 	var log_entry = {
 		"timestamp": timestamp,
-		"entity": entity,
 		"event_type": event_type,
 		"details": details
 	}
+	log_entry.merge(entity_profile)
+	
 	log_data.append(log_entry)
 	save_log()
+
+## Retrieves the profile of an entity for logging purposes
+##
+## This function gathers various identifying details about an entity,
+## falling back to default values if specific attributes are not found.
+##
+## Parameters:
+## - entity: The Archon or Daemon to profile
+##
+## Returns:
+## A dictionary containing the entity's profile information
+func _get_entity_profile(entity: Node) -> Dictionary:
+	var profile = {
+		"entity_id": Glyph.convert_to_custom_base(entity.get_instance_id(),Glyph.DAEMON_GLYPHS),
+		"entity_class": entity.get_class()
+	}
+	
+	# Try to get the NAME constant
+	if "NAME" in entity:
+		profile["entity_name"] = entity.NAME
+	else:
+		# Fall back to the script name without extension
+		var script_name = entity.get_script().resource_path.get_file().get_basename()
+		profile["entity_name"] = script_name
+	
+	# Add any other profile details here
+	# For example:
+	# if "ROLE" in entity:
+	#     profile["entity_role"] = entity.ROLE
+	
+	return profile
 
 ## Retrieves past chronicles from the ethereal planes of storage
 ##
@@ -97,7 +132,7 @@ func save_log() -> void:
 		file.store_string(JSON.stringify(log_data, "", false))
 		file.close()
 	else:
-		print("The Chronicler alerts: Unable to inscribe events to the cosmic ledger. This must be addressed to prevent data loss.")
+		push_error("The Chronicler alerts: Unable to inscribe events to the cosmic ledger. This must be addressed to prevent data loss.")
 
 ## Allows entities to peer into the vast archives of our history
 ##
@@ -155,10 +190,10 @@ func generate_report() -> void:
 
 # Note for all Archons and Daemons:
 # To inscribe an event into the eternal ledger, call upon the Chronicler thus:
-# Chronicler.log_event(entity, event_type, details)
+# Chronicler.log_event(self, event_type, details)
 #
 # Example:
-# Chronicler.log_event("Librarian", "codex_summoned", {"codex_id": "12345", "title": "Ancient Wisdom", "context": "User requested via search"})
+# Chronicler.log_event(self, "codex_summoned", {"codex_id": "12345", "title": "Ancient Wisdom", "context": "User requested via search"})
 #
 # Remember, every event you log contributes to the rich tapestry of our realm's history.
 # Be generous and thoughtful in your logging, capturing not just what happened, but why and in what context.
