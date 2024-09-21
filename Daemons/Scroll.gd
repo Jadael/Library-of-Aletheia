@@ -1,4 +1,4 @@
-# Scroll.gd
+# scroll.gd
 class_name Scroll
 extends Window
 const NAME = "📃 Scroll"

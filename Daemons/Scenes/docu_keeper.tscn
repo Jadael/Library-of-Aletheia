@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bdlm3gtjamfcp"]
 
-[ext_resource type="Script" path="res://Daemons/ArchivistLibrarian.gd" id="1_6ess3"]
+[ext_resource type="Script" path="res://Daemons/docu_keeper.gd" id="1_6ess3"]
 
 [node name="ArchivistLibrarian" type="Node"]
 script = ExtResource("1_6ess3")

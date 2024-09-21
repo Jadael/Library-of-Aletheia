@@ -6,7 +6,7 @@
 [node name="CardCatalog" type="Window"]
 title = "🗃 Card Catalog"
 position = Vector2i(64, 64)
-size = Vector2i(768, 256)
+size = Vector2i(768, 512)
 theme = ExtResource("1_wlvl7")
 script = ExtResource("1_27oox")
 
@@ -18,34 +18,45 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 3
 
-[node name="DocumentTree" type="Tree" parent="HSplitContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+
+[node name="OpenUserFolderButton" type="Button" parent="HSplitContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+text = "📂 Open User Folder"
+
+[node name="DocumentTree" type="Tree" parent="HSplitContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 size_flags_stretch_ratio = 2.0
 
 [node name="TabContainer" type="TabContainer" parent="HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-size_flags_stretch_ratio = 4.0
-current_tab = 1
+size_flags_stretch_ratio = 3.0
+current_tab = 0
 
 [node name="Quick Access" type="VBoxContainer" parent="HSplitContainer/TabContainer"]
-visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
 [node name="DocumentTitle" type="Label" parent="HSplitContainer/TabContainer/Quick Access"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Lorem Ipsum"
 
 [node name="InstancesList" type="VBoxContainer" parent="HSplitContainer/TabContainer/Quick Access"]
 unique_name_in_owner = true
 layout_mode = 2
 
 [node name="Versions" type="VBoxContainer" parent="HSplitContainer/TabContainer"]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
@@ -53,7 +64,6 @@ metadata/_tab_index = 1
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-text = "Lorem ipsum."
 editable = false
 wrap_mode = 1
 indent_wrapped_lines = true
@@ -67,7 +77,6 @@ metadata/_tab_index = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-text = "Lorem ipsum."
 editable = false
 wrap_mode = 1
 indent_wrapped_lines = true

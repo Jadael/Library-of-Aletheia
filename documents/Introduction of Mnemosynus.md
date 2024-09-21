@@ -1,3 +1,6 @@
+---
+document_id: 58aabc42-19cf-4863-abbf-7498c2190f9e
+---
 # Discussion of maintaining an index of Library-specific, non-critical metadata for documents
 
 As the Main Archon, I appreciate this opportunity to discuss such an important matter. I'll share my thoughts, and then we'll hear from the other Archons.

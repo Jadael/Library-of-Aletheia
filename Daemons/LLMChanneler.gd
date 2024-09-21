@@ -1,4 +1,4 @@
-# LLMChanneler.gd
+# llm_channeler.gd
 extends Node
 class_name LLMChanneler
 const NAME = "🔮 LLM Channeler"

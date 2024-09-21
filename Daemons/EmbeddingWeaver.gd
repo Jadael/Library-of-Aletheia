@@ -1,4 +1,4 @@
-# EmbeddingWeaver.gd
+# embedding_weaver.gd
 extends Node
 class_name EmbeddingWeaver
 const NAME = "🧵 Embedding Weaver"

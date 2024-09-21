@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://opkq5ewp6mhb"]
 
-[ext_resource type="Script" path="res://Daemons/LoreWeaver.gd" id="1_gxjd2"]
+[ext_resource type="Script" path="res://Daemons/syntax_sage.gd" id="1_gxjd2"]
 
 [node name="LoreWeaver" type="Node"]
 script = ExtResource("1_gxjd2")

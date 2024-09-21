@@ -1,4 +1,4 @@
-# CameraArchon.gd
+# camera.gd
 extends Camera2D
 const NAME = "📷 Camera"
 

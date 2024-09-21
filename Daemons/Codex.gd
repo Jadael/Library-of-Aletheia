@@ -1,4 +1,4 @@
-# Codex.gd
+# codex.gd
 extends Node
 class_name Codex
 # Owner: Librarian

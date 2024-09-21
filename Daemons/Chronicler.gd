@@ -1,4 +1,4 @@
-# Chronicler.gd
+# chronicler.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
@@ -20,7 +20,7 @@ extends Node
 ## of our entire system's behavior over time.
 
 ## The Chronicler's purpose and responsibilities
-const NAME = "📜 Chronicler"
+const NAME = "🕵️‍♀️ Chronicler"
 @export_multiline var about = """
 Greetings, I am the Chronicler Archon, the impartial scribe of our realm's grand narrative.
 
@@ -36,7 +36,7 @@ I am the unbiased memory of our realm, ever-vigilant and ever-curious, advocatin
 """
 
 ## The sacred path where our chronicles are eternally inscribed
-const LOG_FILE_PATH = "res://chronicle.json"
+const LOG_FILE_PATH = "user://debug_log.json"
 
 ## The living memory of our realm, a collection of all events that have transpired
 var log_data: Array = []
@@ -62,7 +62,8 @@ func _ready() -> void:
 func log_event(entity: Node, event_type: String, details: Dictionary) -> void:
 	var timestamp = Time.get_datetime_dict_from_system()
 	var entity_profile = _get_entity_profile(entity)
-	
+	print("{0} ({1}) says: {2}".format([entity_profile["entity_name"],entity_profile["entity_id"].to_pascal_case(),event_type]))
+	print(details)
 	var log_entry = {
 		"timestamp": timestamp,
 		"event_type": event_type,
@@ -115,12 +116,18 @@ func load_log() -> void:
 		var error = json.parse(file.get_as_text())
 		if error == OK:
 			log_data = json.data
+			print("--- 💭")
 			print("The Chronicler affirms: Past records have been successfully retrieved and verified.")
+			print("--- 💭")
 		else:
+			print("--- 💭")
 			print("The Chronicler notes with concern: Our past records are currently inaccessible. Error code: ", error)
+			print("--- 💭")
 		file.close()
 	else:
+		print("--- 💭")
 		print("The Chronicler observes: No previous records found. A new chapter in our realm's history begins.")
+		print("--- 💭")
 
 ## Ensures the collected wisdom persists beyond the ethereal realm of runtime
 ##
@@ -168,7 +175,9 @@ func get_recent_events(count: int) -> Array:
 ## - Consider using statistical methods or machine learning techniques
 ## - Focus on identifying patterns that could indicate system health or potential issues
 func analyze_trends() -> void:
+	print("--- 💭")
 	print("The Chronicler contemplates: The patterns within our history await discovery, promising insights into our realm's behavior.")
+	print("--- 💭")
 	pass
 
 ## Crafts grand narratives from the myriad threads of our tapestry
@@ -179,7 +188,9 @@ func analyze_trends() -> void:
 ## - Develop a flexible reporting system that can cater to different needs (e.g., system health, user activity, error frequency)
 ## - Consider incorporating visualizations for easier comprehension of complex data
 func generate_report() -> void:
+	print("--- 💭")
 	print("The Chronicler prepares: The grand narrative of our realm shall be woven, illuminating the path of our collective journey.")
+	print("--- 💭")
 	pass
 
 # TODO: Implement a method to handle log rotation or archiving to manage log size over time

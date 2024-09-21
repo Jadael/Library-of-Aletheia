@@ -1,4 +1,4 @@
-# Aletheia.gd
+# aletheia.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
@@ -12,7 +12,7 @@ extends Node
 ## 
 ## Responsibilities:
 ## 1. Orchestrating the documentation process for all project scripts
-## 2. Managing the ScribeScanner, LoreWeaver, and ArchivistLibrarian Daemons
+## 2. Managing the CodeSeer, SyntaxSage, and DocuKeeper Daemons
 ## 3. Maintaining the integrity and coherence of our knowledge base
 ## 4. Providing a unified interface for documentation retrieval and improvement
 ## 5. Ensuring our project is, in the abstract, "well documented"
@@ -50,9 +50,9 @@ signal script_documentation_updated(script_name: String) ## Whispers when a sing
 @export_dir var docs_output_folder: String = "res://Daemons/docs/" ## Output folder for generated documentation
 
 # Daemon Instances: My loyal assistants in the pursuit of knowledge
-var scribe_scanner: ScribeScanner ## The discerning eye that examines our sacred scripts
-var lore_weaver: LoreWeaver ## The wordsmith that breathes life into our documentation
-var archivist_librarian: ArchivistLibrarian ## The keeper of our documented wisdom
+var code_seer: CodeSeer ## The discerning eye that examines our sacred scripts
+var syntax_sage: SyntaxSage ## The wordsmith that breathes life into our documentation
+var docu_keeper: DocuKeeper ## The keeper of our documented wisdom
 
 func _ready() -> void:
 	_summon_documentation_daemons()
@@ -62,20 +62,20 @@ func _ready() -> void:
 
 func _summon_documentation_daemons() -> void:
 	## Initialize and prepare the Documentation Daemons for their sacred duties
-	scribe_scanner = preload("res://Daemons/Scenes/ScribeScanner.tscn").instantiate()
-	lore_weaver = preload("res://Daemons/Scenes/LoreWeaver.tscn").instantiate()
-	archivist_librarian = preload("res://Daemons/Scenes/ArchivistLibrarian.tscn").instantiate()
+	code_seer = preload("res://Daemons/Scenes/code_seer.tscn").instantiate()
+	syntax_sage = preload("res://Daemons/Scenes/syntax_sage.tscn").instantiate()
+	docu_keeper = preload("res://Daemons/Scenes/docu_keeper.tscn").instantiate()
 	
-	add_child(scribe_scanner)
-	add_child(lore_weaver)
-	add_child(archivist_librarian)
+	add_child(code_seer)
+	add_child(syntax_sage)
+	add_child(docu_keeper)
 	
-	archivist_librarian.setup(docs_output_folder)
+	docu_keeper.setup(docs_output_folder)
 	
 	Chronicler.log_event(self, "documentation_daemons_summoned", {
-		"scribe_scanner": Glyph.to_daemon_glyphs(scribe_scanner.get_instance_id()),
-		"lore_weaver": Glyph.to_daemon_glyphs(lore_weaver.get_instance_id()),
-		"archivist_librarian": archivist_librarian.get_instance_id()
+		"CodeSeer": Glyph.to_daemon_glyphs(code_seer.get_instance_id()),
+		"SyntaxSage": Glyph.to_daemon_glyphs(syntax_sage.get_instance_id()),
+		"DocuKeeper": Glyph.to_daemon_glyphs(docu_keeper.get_instance_id())
 	})
 
 func generate_project_documentation() -> void:
@@ -84,19 +84,19 @@ func generate_project_documentation() -> void:
 	## This function scans all scripts in the project, generates documentation
 	## for each, and saves the resulting wisdom. It's a comprehensive process
 	## that ensures our entire codebase is illuminated with clarity.
-	var script_files = scribe_scanner.scan_scripts(scripts_folder)
+	var script_files = code_seer.scan_scripts(scripts_folder)
 	var script_info = {}
 	
 	for script_path in script_files:
 		Chronicler.log_event(self, "processing_script", {"script_path": script_path})
-		var parsed_info = scribe_scanner.parse_script(script_path)
+		var parsed_info = code_seer.parse_script(script_path)
 		script_info[script_path] = parsed_info
 	
 		Chronicler.log_event(self, "generating_documentation", {"script_path": script_path})
-		var doc_content = await lore_weaver.generate_documentation(script_path, parsed_info)
+		var doc_content = await syntax_sage.generate_documentation(script_path, parsed_info)
 		
 		Chronicler.log_event(self, "saving_documentation", {"script_path": script_path})
-		archivist_librarian.save_documentation(script_path, doc_content)
+		docu_keeper.save_documentation(script_path, doc_content)
 		
 		Chronicler.log_event(self, "script_processed", {"script_path": script_path})
 	
@@ -114,9 +114,9 @@ func update_script_documentation(script_path: String) -> void:
 	##
 	## Parameters:
 	## - script_path: The path to the script file to be updated
-	var parsed_info = scribe_scanner.parse_script(script_path)
-	var doc_content = await lore_weaver.generate_documentation(script_path, parsed_info)
-	archivist_librarian.save_documentation(script_path, doc_content)
+	var parsed_info = code_seer.parse_script(script_path)
+	var doc_content = await syntax_sage.generate_documentation(script_path, parsed_info)
+	docu_keeper.save_documentation(script_path, doc_content)
 	
 	Chronicler.log_event(self, "documentation_updated", {
 		"script_name": script_path.get_file().get_basename()
@@ -137,7 +137,7 @@ func get_documentation(script_name: String) -> String:
 	## - script_name: The name of the script whose documentation is sought
 	##
 	## Returns: The documentation content as a string
-	var doc_content = archivist_librarian.get_documentation(script_name)
+	var doc_content = docu_keeper.get_documentation(script_name)
 	Chronicler.log_event(self, "documentation_retrieved", {
 		"script_name": script_name,
 		"content_length": doc_content.length()

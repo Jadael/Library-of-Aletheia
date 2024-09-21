@@ -1,5 +1,6 @@
 # SymbolSage.gd
 extends Node
+class_name SymbolSage
 # Owner: Shoggoth
 
 ## SymbolSage: The Mystic Interpreter of Symbolic Essence
@@ -55,7 +56,9 @@ func _ready():
 	await add_symbols(emoji_symbols)
 	var test_text = "Shoggoth"
 	var similar_symbols = await get_similar_symbols(test_text, 3)
+	print("--- 💭")
 	print("Most similar symbols to '{0}': {1}".format([test_text, ", ".join(similar_symbols)]))
+	print("--- 💭")
 
 func _initialize_database():
 	var dir = DirAccess.open("user://")

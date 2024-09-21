@@ -1,4 +1,4 @@
-# Glyph.gd
+# glyph.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
@@ -133,11 +133,13 @@ func _perform_transmutation_tests() -> void:
 	var hex_result = convert_to_custom_base(test_number, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"])
 	var daemon_result = to_daemon_glyphs(test_number)
 
+	print("--- 💭")
 	print("Glyph Archon's Transmutation Test Results:")
 	print("- Original Number: ", test_number)
 	print("- Binary Transmutation: ", binary_result)
 	print("- Hexadecimal Transmutation: ", hex_result)
 	print("- Daemon Glyph Transmutation: ", daemon_result)
+	print("--- 💭")
 
 	Chronicler.log_event(self, "transmutation_tests_completed", {
 		"test_number": test_number,

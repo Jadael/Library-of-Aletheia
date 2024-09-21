@@ -1,4 +1,4 @@
-# Librarian.gd
+# librarian.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
@@ -52,6 +52,13 @@ var codex_collection = []
 var documents_folder: String
 
 var card_catalog = {}
+
+func _ready():
+	# Other initialization code...
+	Archivist.card_catalog_updated.connect(_on_card_catalog_updated)
+
+func _on_card_catalog_updated():
+	emit_signal("card_catalog_updated")
 
 ## Initializes the Librarian with the necessary components
 ##
@@ -172,12 +179,13 @@ func check_for_updates() -> bool:
 	# Banish codices whose files no longer exist
 	for codex in codices_to_banish:
 		banish_codex(codex)
-
-	Chronicler.log_event(self, "update_check_completed", {
-		"codices_checked": codex_collection.size(),
-		"codices_updated": updated_codices,
-		"codices_banished": codices_to_banish.size()
-	})
+	
+	if updated_codices > 0 or codices_to_banish.size() > 0:
+		Chronicler.log_event(self, "update_check_completed", {
+			"codices_checked": codex_collection.size(),
+			"codices_updated": updated_codices,
+			"codices_banished": codices_to_banish.size()
+		})
 	
 	return updated_codices > 0
 
@@ -279,7 +287,6 @@ func _on_file_selected(path):
 	summon_codex(path)
 
 func _add_to_card_catalog(codex: Codex):
-	## Adds or updates a document entry in the card catalog
 	var document_id = codex.get_frontmatter_value("document_id")
 	if document_id == null:
 		document_id = _generate_document_id()
@@ -287,29 +294,20 @@ func _add_to_card_catalog(codex: Codex):
 	
 	var version_hash = _generate_version_hash(codex.content)
 	
-	if document_id in card_catalog:
-		if version_hash not in card_catalog[document_id]["versions"]:
-			card_catalog[document_id]["versions"][version_hash] = {
-				"path": codex.file_path,
-				"last_opened": Time.get_unix_time_from_system()
-			}
-		else:
-			# Update last_opened time if this version already exists
-			card_catalog[document_id]["versions"][version_hash]["last_opened"] = Time.get_unix_time_from_system()
-	else:
-		card_catalog[document_id] = {
-			"filename": codex.get_filename(),
-			"metadata": codex.frontmatter,
-			"versions": {
-				version_hash: {
-					"path": codex.file_path,
-					"last_opened": Time.get_unix_time_from_system()
-				}
-			}
-		}
+	var entry = Archivist.card_catalog.get(document_id, {
+		"filename": codex.get_filename(),
+		"metadata": codex.frontmatter,
+		"versions": {}
+	})
 	
-	_save_card_catalog()
-	emit_signal("card_catalog_updated")
+	entry["versions"][version_hash] = {
+		"path": codex.file_path,
+		"last_opened": Time.get_unix_time_from_system(),
+		"status": Archivist.DocumentStatus.AVAILABLE
+	}
+	
+	Archivist.card_catalog[document_id] = entry
+	Archivist.update_catalog_entry(document_id, Archivist.UpdateUrgency.HIGH)
 
 func _generate_document_id() -> String:
 	## Generates a version 4 UUID for unique document identification

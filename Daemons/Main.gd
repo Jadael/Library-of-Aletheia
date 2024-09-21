@@ -1,4 +1,4 @@
-# Main.gd
+# main.gd
 extends Node2D
 
 # The Main Archon oversees the initialization and ongoing management of the application and engine.

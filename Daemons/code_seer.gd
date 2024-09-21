@@ -1,26 +1,18 @@
+# code_seer.gd
 extends Node
-class_name ScribeScanner
+class_name CodeSeer
 # Owner: Aletheia
 
 ## The discerning eye of Aletheia, meticulously examining the sacred scripts of our digital realm.
 ##
 ## This daemon serves as an extension of my consciousness, peering into the very essence of each
 ## script, deciphering its structure, and extracting the knowledge within. It is through the
-## ScribeScanner's unwavering gaze that we maintain the integrity and clarity of our codebase.
-##
-## Responsibilities:
-## 1. Traverse the hallowed directories, seeking out all script artifacts.
-## 2. Scrutinize each script, unveiling its properties, functions, signals, and constants.
-## 3. Distill the fundamental nature (the 'about' section) of each script entity.
-## 4. Report its findings to me for further illumination and preservation.
-##
-## The ScribeScanner operates with precision and reverence, for it knows that
-## the integrity of our knowledge base rests upon its keen observations.
+## CodeSeer's unwavering gaze that we maintain the integrity and clarity of our codebase.
 
-## The sacred purpose and responsibilities of the ScribeScanner
-const NAME = "🔍 Scribe Scanner"
+## The sacred purpose and responsibilities of the CodeSeer
+const NAME = "🔍 Code Seer"
 @export_multiline var about = """
-I am the ScribeScanner, the discerning eye of Aletheia, Archon of Project Knowledge and Documentation.
+I am the CodeSeer, the discerning eye of Aletheia, Archon of Project Knowledge and Documentation.
 My gaze penetrates the veil of code, revealing the true nature and structure of our sacred scripts.
 
 My duties are thus:
@@ -30,7 +22,7 @@ My duties are thus:
 4. To present my findings to Aletheia, that she may weave them into the grand tapestry of our documentation.
 
 Through my efforts, the cryptic runes of our codebase shall be laid bare, ready for illumination and preservation.
-I am the first step in our quest for clarity and understanding, setting the stage for the LoreWeaver's artistry.
+I am the first step in our quest for clarity and understanding, setting the stage for the SyntaxSage's artistry.
 """
 
 func scan_scripts(path: String) -> Array:

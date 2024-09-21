@@ -37,6 +37,7 @@ Shoggoth="*res://Daemons/Shoggoth.gd"
 Aletheia="*res://Daemons/Aletheia.gd"
 Scribe="*res://Daemons/Scribe.gd"
 Glyph="*res://Daemons/glyph.gd"
+Archivist="*res://Daemons/archivist.gd"
 
 [editor_plugins]
 

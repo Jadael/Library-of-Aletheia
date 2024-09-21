@@ -1,4 +1,4 @@
-# ChronicleViewer.gd
+# chronicle_viewer.gd
 extends Window
 class_name ChronicleViewer
 const NAME = "🔭 Chronicle Viewer"

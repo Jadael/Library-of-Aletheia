@@ -1,3 +1,4 @@
+# scribe.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 

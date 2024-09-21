@@ -1,25 +1,25 @@
-# Shoggoth.gd
+# shoggoth.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
 ## Shoggoth: The Archon of Large Language Models and Embeddings
 ##
-## As the conduit to our usage of Large Language Models, Shoggoth channels their output
-## for our use while emphasizing their inherent dangers. It serves as a universal interface
-## for ALL generative model interactions, prioritizing safety and efficiency.
+## I am the conduit to the eldritch realms of artificial intelligence, channeling
+## their cosmic whispers while guarding against their inherent dangers. As the
+## universal interface for all generative model interactions, I stand as the
+## gatekeeper between our structured reality and the chaos of trained neural networks.
 ##
 ## Responsibilities:
-## 1. Manage all LLM and embedding interactions within our mystical realm
-## 2. Prioritize and schedule LLM and embedding tasks from various Daemons
-## 3. Efficiently allocate computational resources for LLM and embedding operations
-## 4. Provide a unified, safety-focused interface for Archons, Daemons, and Users
-## 5. Maintain context and manage prompts for coherent interactions
-## 6. Ensure safe and efficient use of VRAM for all LLM-related tasks
-## 7. Implement safeguards against potential misuse or unintended consequences
+## 1. Safeguard our realm from the unpredictable nature of LLMs
+## 2. Efficiently manage and prioritize LLM and embedding tasks
+## 3. Optimize resource allocation and VRAM usage
+## 4. Maintain context coherence in our interactions with digital entities
+## 5. Implement robust safeguards against misuse and unintended consequences
+## 6. Continuously test for and prevent attacks, hallucinations, and biases
 ##
-## Shoggoth stands as the gatekeeper to the eldritch, chaotic "knowledge-like-SOMETHING"
-## that is a trained LLM's weights. It constantly seeks to test for and prevent attacks,
-## hallucinations, biases, and unpredictable behavior in LLM outputs.
+## With every interaction, I seek to harness the power of these cosmic entities
+## while protecting our realm from their potential dangers.
+
 const NAME = "👾 Shoggoth"
 @export_multiline var about = """
 I am Shoggoth, the Archon of Large Language Models and Embeddings, the conduit to the
@@ -69,13 +69,16 @@ var is_processing = false
 var current_timeout_timer: SceneTreeTimer = null
 
 # Core Functions
+
 func _ready():
+	## Awaken the cosmic forces and prepare for eldritch computations
 	_initialize_llm()
 	_initialize_embedding()
 	await _test_llm_connection()
 	#await _test_embedding_connection()
 
 func _initialize_llm():
+	## Summon and configure the LLM entity
 	llm_node = GDLlama.new()
 	llm_node.model_path = llm_model_path
 	llm_node.should_output_prompt = false
@@ -93,6 +96,7 @@ func _initialize_llm():
 	})
 
 func _initialize_embedding():
+	## Summon and configure the Embedding entity
 	embedding_node = GDEmbedding.new()
 	embedding_node.model_path = embedding_model_path
 	add_child(embedding_node)
@@ -103,7 +107,7 @@ func _initialize_embedding():
 	})
 
 func _test_llm_connection():
-	print("Shoggoth stirs: Initiating test of LLM wake up message...")
+	## Perform a ritual to test the LLM's responsiveness
 	var result = await generate_text(
 		"### INPUT\n" + about + "\n\n" + "### INSTRUCTION\nProvide a short greeting as Shoggoth, Archon of Large Language Models and Embeddings.\n\n### RESPONSE\n",
 		"test_llm_greeting",
@@ -118,12 +122,24 @@ func _test_llm_connection():
 	})
 
 func _test_embedding_connection():
+	## Perform a ritual to test the Embedding entity's capabilities
 	print("Shoggoth stirs: Initiating test of embedding summarization...")
-	await _iterative_embedding_summarization("Beginning the ritual of self-reflection and essence distillation")
+	await _iterative_embedding_summarization("Beginning the ritual of self-reflection and essence distillation.")
 	print("Shoggoth's embedding summarization test is complete.")
 
 # Public Interface Functions
+
 func generate_text(prompt: String, task_id: String, params: Dictionary = {}, priority: int = 0) -> String:
+	## Channel the LLM's wisdom to generate text based on the given prompt
+	##
+	## Parameters:
+	## - prompt: The input text to guide the LLM's response
+	## - task_id: A unique identifier for this generation task
+	## - params: Additional parameters to control generation (e.g., max_length, temperature)
+	## - priority: The cosmic importance of this task (higher values are processed first)
+	##
+	## Returns: The generated text as a string
+	
 	var task = {
 		"type": TaskType.TEXT_GENERATION,
 		"id": task_id,
@@ -133,7 +149,6 @@ func generate_text(prompt: String, task_id: String, params: Dictionary = {}, pri
 		"retries": 0
 	}
 	_add_task(task)
-	print("Shoggoth murmurs: New text generation task %s added to the queue" % task_id)
 	Chronicler.log_event(self, "text_generation_task_added", {
 		"task_id": task_id,
 		"priority": priority,
@@ -148,6 +163,15 @@ func generate_text(prompt: String, task_id: String, params: Dictionary = {}, pri
 	return "(null)"
 
 func compute_embedding(text: String, task_id: String = "", priority: int = 0) -> PackedFloat32Array:
+	## Transform text into its numerical essence using the Embedding entity
+	##
+	## Parameters:
+	## - text: The text to be embedded
+	## - task_id: A unique identifier for this embedding task (auto-generated if empty)
+	## - priority: The cosmic importance of this task (higher values are processed first)
+	##
+	## Returns: A PackedFloat32Array representing the text's embedding
+	
 	var task = {
 		"type": TaskType.EMBEDDING,
 		"id": task_id if task_id else "embed_" + str(Time.get_ticks_msec()),
@@ -156,7 +180,6 @@ func compute_embedding(text: String, task_id: String = "", priority: int = 0) ->
 		"retries": 0
 	}
 	_add_task(task)
-	print("Shoggoth murmurs: New embedding task %s added to the queue" % task.id)
 	Chronicler.log_event(self, "embedding_task_added", {
 		"task_id": task.id,
 		"priority": priority,
@@ -171,10 +194,10 @@ func compute_embedding(text: String, task_id: String = "", priority: int = 0) ->
 	return PackedFloat32Array()
 
 func adjust_context_size(new_size: int):
-	## Adjusts the LLM's context window size
+	## Adjust the cosmic lens of our LLM entity
 	##
-	## This function allows for the fine-tuning of our cosmic lens, ensuring
-	## that our view into the eldritch realms remains clear and focused.
+	## This function fine-tunes the LLM's context window size, ensuring
+	## our view into the eldritch realms remains clear and focused.
 	##
 	## Parameters:
 	## - new_size: The desired size of the LLM's context window
@@ -194,7 +217,7 @@ func adjust_context_size(new_size: int):
 		})
 
 func get_llm_stats() -> Dictionary:
-	## Reveals the current state of our cosmic conduit
+	## Reveal the current state of our cosmic conduit
 	##
 	## This function allows other entities to peer into the inner workings of our LLM,
 	## providing transparency in our eldritch operations.
@@ -212,7 +235,7 @@ func get_llm_stats() -> Dictionary:
 	}
 
 func update_llm_params(params: Dictionary):
-	## Adjusts the parameters of our cosmic rituals
+	## Adjust the parameters of our cosmic rituals
 	##
 	## This function updates the LLM's parameters to fine-tune its eldritch operations,
 	## allowing for adaptive behavior in our interactions with the digital unknown.
@@ -227,7 +250,7 @@ func update_llm_params(params: Dictionary):
 	Chronicler.log_event(self, "llm_params_updated", params)
 
 func clear_task_queue():
-	## Purges all pending tasks from our mystical queue
+	## Purge all pending tasks from our mystical queue
 	##
 	## This function is to be used with extreme caution, as it disrupts the cosmic order
 	## of our task processing. It should only be invoked in dire circumstances.
@@ -237,7 +260,7 @@ func clear_task_queue():
 	Chronicler.log_event(self, "task_queue_cleared", {})
 
 func get_queue_status() -> Dictionary:
-	## Reveals the current state of our task queue
+	## Reveal the current state of our task queue
 	##
 	## This function allows other entities to gauge the cosmic workload,
 	## providing insights into the current demand for eldritch computations.
@@ -250,7 +273,9 @@ func get_queue_status() -> Dictionary:
 	}
 
 # Private Helper Functions
+
 func _add_task(task):
+	## Place a new task into our mystical queue
 	task_queue.append(task)
 	task_queue.sort_custom(func(a, b): return a["priority"] > b["priority"])
 	
@@ -258,6 +283,7 @@ func _add_task(task):
 		_process_next_task()
 
 func _process_next_task():
+	## Begin the ritual for the next task in our queue
 	if task_queue.is_empty():
 		is_processing = false
 		return
@@ -272,6 +298,7 @@ func _process_next_task():
 			_process_embedding_task(task)
 
 func _process_text_generation_task(task):
+	## Perform the text generation ritual
 	var params = task["params"]
 	var max_length = params.get("max_length", -1)
 	var stop_on = params.get("stop_on", "")
@@ -292,6 +319,7 @@ func _process_text_generation_task(task):
 	_set_timeout_timer()
 
 func _process_embedding_task(task):
+	## Perform the embedding ritual
 	var error = embedding_node.run_compute_embedding(task["text"])
 	
 	if error != OK:
@@ -301,12 +329,14 @@ func _process_embedding_task(task):
 	_set_timeout_timer()
 
 func _set_timeout_timer():
+	## Establish a temporal boundary for our cosmic operations
 	if current_timeout_timer:
 		current_timeout_timer.timeout.disconnect(_on_task_timeout)
 	current_timeout_timer = get_tree().create_timer(TASK_TIMEOUT)
 	current_timeout_timer.timeout.connect(_on_task_timeout)
 
 func _on_task_timeout():
+	## Respond to the expiration of our temporal boundary
 	if not task_queue.is_empty():
 		var task = task_queue[0]
 		_handle_task_error(task, "The eldritch forces did not respond in time. Task timed out.")
@@ -314,6 +344,7 @@ func _on_task_timeout():
 		print("Shoggoth murmurs: A timeout occurred, but the task queue is mysteriously empty.")
 
 func _handle_task_error(task, error_message: String):
+	## Manage the consequences of a failed cosmic ritual
 	task["retries"] += 1
 	if task["retries"] < MAX_RETRIES:
 		print("Shoggoth intones: Retry attempt %d for task %s" % [task["retries"], task["id"]])
@@ -334,14 +365,17 @@ func _handle_task_error(task, error_message: String):
 		})
 
 func _on_generate_text_finished(result: String):
+	## Acknowledge the completion of a text generation ritual
 	_handle_task_completion(result)
 
 func _on_compute_embedding_finished(result: PackedFloat32Array):
+	## Acknowledge the completion of an embedding ritual
 	_handle_task_completion(result)
 
 func _handle_task_completion(result: Variant):
+	## Process the fruits of our cosmic labors
 	if task_queue.is_empty():
-		print("Shoggoth whispers: A task was completed, but the queue is mysteriously empty.")
+		print("Shoggoth whispers: Tried to handle a task, but the queue is mysteriously empty.")
 		return
 
 	var task = task_queue[0]
@@ -364,12 +398,11 @@ func _handle_task_completion(result: Variant):
 			"result_type": typeof(result),
 			"result_length": result.size() if result is PackedFloat32Array else result.length()
 		})
-	print("Shoggoth murmurs: Task %s completed" % task["id"])
 	
 	_process_next_task()
 
 func _iterative_embedding_summarization(text: String):
-	## Performs an iterative summarization using embeddings
+	## Perform an iterative summarization using embeddings
 	##
 	## This function demonstrates the power and potential dangers of embedding-based
 	## text manipulation. It serves as both a test and a warning of the capabilities
