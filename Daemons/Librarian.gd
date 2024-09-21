@@ -28,6 +28,7 @@ signal codex_banished(codex)
 ## Signals that a Codex's essence has been altered
 signal codex_updated(codex)
 
+## Signals that the card catalog has been updated
 signal card_catalog_updated
 
 ## The Librarian's sacred purpose and responsibilities
@@ -51,28 +52,15 @@ var codex_collection = []
 ## The path to the realm of document files
 var documents_folder: String
 
-var card_catalog = {}
-
 func _ready():
-	# Other initialization code...
 	Archivist.card_catalog_updated.connect(_on_card_catalog_updated)
 
 func _on_card_catalog_updated():
 	emit_signal("card_catalog_updated")
 
 ## Initializes the Librarian with the necessary components
-##
-## This ritual prepares the Librarian for its sacred duties by establishing
-## the realm of documents and setting up necessary connections.
-##
-## Parameters:
-## - p_embedding_model_path: Path to the embedding model (reserved for future use)
-## - p_llm_model_path: Path to the language model (reserved for future use)
-## - p_documents_folder: Path to the sacred documents folder
 func setup(p_documents_folder: String):
 	documents_folder = p_documents_folder
-	_load_card_catalog()  # Load the card catalog from persistent storage
-
 	Chronicler.log_event(self, "setup_completed", {
 		"documents_folder": p_documents_folder
 	})
@@ -88,9 +76,6 @@ func open_document_dialog():
 	dialog.popup_centered(Vector2(800, 600))
 
 ## Awakens the dormant knowledge within the sacred document folder
-##
-## This function scans the documents folder and summons a Codex for each
-## Markdown file found, populating our mystical library with wisdom.
 func process_existing_documents():
 	var dir = DirAccess.open(documents_folder)
 	if dir:
@@ -99,12 +84,12 @@ func process_existing_documents():
 		while file_name != "":
 			if file_name.get_extension().to_lower() == "md":
 				var full_path = documents_folder.path_join(file_name)
-				summon_codex(full_path)
+				observe_document(full_path)
 			file_name = dir.get_next()
 		dir.list_dir_end()
 		
 		Chronicler.log_event(self, "existing_documents_processed", {
-			"num_codices": codex_collection.size()
+			"num_documents": codex_collection.size()
 		})
 	else:
 		print("The path to our document realm is obscured.")
@@ -112,13 +97,26 @@ func process_existing_documents():
 			"folder_path": documents_folder
 		})
 
+## Observes a document and records its current state
+func observe_document(file_path: String):
+	var file = FileAccess.open(file_path, FileAccess.READ)
+	if file:
+		var content = file.get_as_text()
+		file.close()
+		
+		var metadata = _extract_metadata(content)
+		Archivist.observe_document(file_path, metadata)
+		
+		Chronicler.log_event(self, "document_observed", {
+			"file_path": file_path,
+			"metadata_keys": metadata.keys()
+		})
+	else:
+		Chronicler.log_event(self, "document_observation_failed", {
+			"file_path": file_path
+		})
+
 ## Summons a new Codex Daemon and its Scroll partner
-##
-## This sacred ritual brings forth a new Codex to embody the wisdom of a document
-## and manifests a Scroll as its visual representation for user interaction.
-##
-## Parameters:
-## - file_path: The path to the document file to be embodied by the Codex
 func summon_codex(file_path: String):
 	var scroll = preload("res://Daemons/Scenes/Scroll.tscn").instantiate()
 	var codex = preload("res://Daemons/Scenes/Codex.tscn").instantiate()
@@ -130,7 +128,7 @@ func summon_codex(file_path: String):
 	scroll.setup(codex)
 	scroll.update_visual()
 	
-	_add_to_card_catalog(codex)
+	observe_document(file_path)
 	
 	emit_signal("codex_summoned", codex, scroll)
 	
@@ -140,12 +138,6 @@ func summon_codex(file_path: String):
 	})
 
 ## Banishes a Codex Daemon from the library
-##
-## This solemn ritual removes a Codex when its physical counterpart
-## is no longer accessible or relevant, maintaining the library's integrity.
-##
-## Parameters:
-## - codex: The Codex Daemon to be banished
 func banish_codex(codex: Node):
 	codex_collection.erase(codex)
 	codex.queue_free()
@@ -156,27 +148,20 @@ func banish_codex(codex: Node):
 	})
 
 ## Scans all Codex Daemons to check for updates
-##
-## This function ensures that the knowledge within our Codices remains
-## current by checking for changes in their physical counterparts.
-##
-## Returns:
-## - bool: True if any Codices were updated, False otherwise
 func check_for_updates() -> bool:
 	var updated_codices = 0
 	var codices_to_banish = []
 
 	for codex in codex_collection:
 		if FileAccess.file_exists(codex.file_path):
+			observe_document(codex.file_path)
 			if codex.has_changed():
 				codex.update()
 				emit_signal("codex_updated", codex)
 				updated_codices += 1
 		else:
-			# Mark for banishment if file no longer exists
 			codices_to_banish.append(codex)
 
-	# Banish codices whose files no longer exist
 	for codex in codices_to_banish:
 		banish_codex(codex)
 	
@@ -190,15 +175,9 @@ func check_for_updates() -> bool:
 	return updated_codices > 0
 
 ## Updates the content within a Codex
-##
-## This function is typically invoked when a Scroll's content is altered,
-## ensuring that the Codex's essence reflects the changes safely.
-##
-## Parameters:
-## - codex: The Codex Daemon to be updated
-## - new_content: The new content to be inscribed within the Codex
 func update_codex_content(codex: Node, new_content: String):
 	codex.update_content(new_content)
+	observe_document(codex.file_path)
 	
 	Chronicler.log_event(self, "codex_content_updated", {
 		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()),
@@ -206,16 +185,9 @@ func update_codex_content(codex: Node, new_content: String):
 	})
 
 ## Alters the metadata of a Codex
-##
-## This function updates the metadata of a Codex, typically called
-## when a Scroll's metadata is modified, ensuring data integrity.
-##
-## Parameters:
-## - codex: The Codex Daemon whose metadata is to be altered
-## - key: The metadata key to be updated
-## - new_value: The new value for the specified metadata key
 func update_codex_metadata(codex: Node, key: String, new_value: String):
 	codex.update_frontmatter(key, new_value)
+	observe_document(codex.file_path)
 	
 	Chronicler.log_event(self, "codex_metadata_updated", {
 		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()),
@@ -224,18 +196,10 @@ func update_codex_metadata(codex: Node, key: String, new_value: String):
 	})
 
 ## Opens a document from a specific file path
-##
-## This function summons a Codex for the specified document if it doesn't already exist,
-## or focuses on the existing Codex if it's already present in our realm.
-##
-## Parameters:
-## - file_path: The path to the document file to be opened
 func open_document(file_path: String):
-	# Check if a Codex for this document already exists
 	var existing_codex = _find_codex_by_path(file_path)
 	
 	if existing_codex:
-		# If the Codex exists, focus on its Scroll
 		if existing_codex.scroll_partner:
 			existing_codex.scroll_partner.grab_focus()
 		Chronicler.log_event(self, "existing_document_focused", {
@@ -243,160 +207,42 @@ func open_document(file_path: String):
 			"codex_id": Glyph.to_daemon_glyphs(existing_codex.get_instance_id())
 		})
 	else:
-		# If the Codex doesn't exist, summon a new one
 		summon_codex(file_path)
 	
-	# Update the last_opened time in the card catalog
-	_update_document_last_opened(file_path)
+	observe_document(file_path)
 
 ## Finds a Codex by its file path
-##
-## This helper function searches the codex_collection for a Codex
-## that matches the given file path.
-##
-## Parameters:
-## - file_path: The path of the document to find
-##
-## Returns:
-## - The Codex if found, null otherwise
 func _find_codex_by_path(file_path: String) -> Codex:
 	for codex in codex_collection:
 		if codex.file_path == file_path:
 			return codex
 	return null
 
-## Updates the last_opened time for a document in the card catalog
-##
-## This helper function updates the last_opened time for a document
-## in the card catalog when it's opened.
-##
-## Parameters:
-## - file_path: The path of the document being opened
-func _update_document_last_opened(file_path: String):
-	for document_id in card_catalog:
-		var doc_info = card_catalog[document_id]
-		for version_hash in doc_info["versions"]:
-			if doc_info["versions"][version_hash]["path"] == file_path:
-				doc_info["versions"][version_hash]["last_opened"] = Time.get_unix_time_from_system()
-				_save_card_catalog()
-				emit_signal("card_catalog_updated")
-				return
-
 func _on_file_selected(path):
 	## Handles the selected file from the open document dialog
-	summon_codex(path)
+	open_document(path)
 
-func _add_to_card_catalog(codex: Codex):
-	var document_id = codex.get_frontmatter_value("document_id")
-	if document_id == null:
-		document_id = _generate_document_id()
-		codex.update_frontmatter("document_id", document_id)
+## Extracts metadata from document content
+func _extract_metadata(content: String) -> Dictionary:
+	var metadata = {}
+	var lines = content.split("\n")
+	var in_frontmatter = false
 	
-	var version_hash = _generate_version_hash(codex.content)
-	
-	var entry = Archivist.card_catalog.get(document_id, {
-		"filename": codex.get_filename(),
-		"metadata": codex.frontmatter,
-		"versions": {}
-	})
-	
-	entry["versions"][version_hash] = {
-		"path": codex.file_path,
-		"last_opened": Time.get_unix_time_from_system(),
-		"status": Archivist.DocumentStatus.AVAILABLE
-	}
-	
-	Archivist.card_catalog[document_id] = entry
-	Archivist.update_catalog_entry(document_id, Archivist.UpdateUrgency.HIGH)
-
-func _generate_document_id() -> String:
-	## Generates a version 4 UUID for unique document identification
-	##
-	## This function creates a random UUID following the version 4 standard.
-	## It's used to assign unique identifiers to documents in our mystical library.
-	##
-	## Returns:
-	## A string representation of a version 4 UUID
-
-	# Generate 16 random bytes
-	var bytes = PackedByteArray()
-	for _i in range(16):
-		bytes.append(randi() % 256)
-	
-	# Set version to 4 (random UUID)
-	bytes[6] = (bytes[6] & 0x0f) | 0x40
-	# Set variant to RFC4122
-	bytes[8] = (bytes[8] & 0x3f) | 0x80
-	
-	# Convert bytes to hex string
-	var hex = bytes.hex_encode()
-	
-	# Format UUID string
-	var uuid = "%s-%s-%s-%s-%s" % [
-		hex.substr(0, 8),
-		hex.substr(8, 4),
-		hex.substr(12, 4),
-		hex.substr(16, 4),
-		hex.substr(20, 12)
-	]
-	
-	# Verify UUID format
-	assert(uuid.length() == 36, "UUID length is incorrect")
-	assert(uuid.count("-") == 4, "UUID dash count is incorrect")
-	var parts = uuid.split("-")
-	assert(parts[0].length() == 8, "First UUID part length is incorrect")
-	assert(parts[1].length() == 4, "Second UUID part length is incorrect")
-	assert(parts[2].length() == 4, "Third UUID part length is incorrect")
-	assert(parts[3].length() == 4, "Fourth UUID part length is incorrect")
-	assert(parts[4].length() == 12, "Fifth UUID part length is incorrect")
-	
-	Chronicler.log_event(self, "document_id_generated", {
-		"new_id": uuid
-	})
-	
-	return uuid
-
-func _generate_version_hash(content: String) -> String:
-	## Generates a version hash for the document content
-	return content.md5_text()
-
-func _load_card_catalog():
-	## Loads the card catalog from a file
-	var file = FileAccess.open("user://card_catalog.json", FileAccess.READ)
-	if file:
-		var json_str = file.get_as_text()
-		file.close()
-		var json = JSON.new()
-		var error = json.parse(json_str)
-		if error == OK:
-			card_catalog = json.data
+	for line in lines:
+		if line.strip_edges() == "---":
+			in_frontmatter = not in_frontmatter
+			continue
+		
+		if in_frontmatter:
+			var parts = line.split(":", true, 1)
+			if parts.size() == 2:
+				var key = parts[0].strip_edges()
+				var value = parts[1].strip_edges()
+				metadata[key] = value
 		else:
-			Chronicler.log_event(self, "card_catalog_load_failed", {
-				"error": json.get_error_message()
-			})
-
-func _save_card_catalog():
-	## Saves the card catalog to a file
-	var file = FileAccess.open("user://card_catalog.json", FileAccess.WRITE)
-	if file:
-		var json_str = JSON.stringify(card_catalog)
-		file.store_string(json_str)
-		file.close()
-	else:
-		Chronicler.log_event(self, "card_catalog_save_failed", {})
-
-func display_card_catalog():
-	## Displays the card catalog to the user
-	# This is a placeholder. You'll need to implement a UI for displaying the catalog.
-	print("Card Catalog:")
-	for document_id in card_catalog:
-		var doc = card_catalog[document_id]
-		print("Document: ", doc.filename)
-		print("Metadata: ", doc.metadata)
-		print("Versions:")
-		for version in doc.versions:
-			print("  - ", version, ": ", doc.versions[version].path)
-		print("---")
+			break
+	
+	return metadata
 
 # TODO: Implement a robust error handling system for file operations to prevent data loss
 # TODO: Develop a versioning system for documents to track changes over time

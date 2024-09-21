@@ -29,6 +29,12 @@ layout_mode = 2
 size_flags_vertical = 4
 text = "📂 Open User Folder"
 
+[node name="AuditButton" type="Button" parent="HSplitContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+text = "🕵️‍♀️ Audit"
+
 [node name="DocumentTree" type="Tree" parent="HSplitContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
