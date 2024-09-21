@@ -1,8 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://cwv3l5isjb0ye"]
+[gd_scene load_steps=7 format=3 uid="uid://cwv3l5isjb0ye"]
 
 [ext_resource type="Script" path="res://Daemons/Scroll.gd" id="1_1xnsd"]
 [ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/Aletheia_theme.tres" id="1_ornhy"]
+[ext_resource type="Script" path="res://Daemons/Scenes/text_size_up_button.gd" id="3_dbxyv"]
 [ext_resource type="FontFile" uid="uid://ci7w4fd3vwgba" path="res://fonts/LibreBaskerville-Regular.ttf" id="3_vinrb"]
+[ext_resource type="Script" path="res://Daemons/Scenes/text_size_down_button.gd" id="4_pj7fk"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bke8y"]
 
@@ -24,8 +26,11 @@ theme = ExtResource("1_ornhy")
 script = ExtResource("1_1xnsd")
 
 [node name="Details" type="VBoxContainer" parent="."]
-offset_right = 129.0
-offset_bottom = 212.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 4
@@ -43,6 +48,9 @@ size_flags_vertical = 4
 disabled = true
 text = "💾 Save"
 
+[node name="VSeparator" type="VSeparator" parent="Details/HBoxContainer"]
+layout_mode = 2
+
 [node name="DiscardButton" type="Button" parent="Details/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -51,12 +59,31 @@ size_flags_vertical = 4
 disabled = true
 text = "💫 Discard Changes"
 
-[node name="TabContainer" type="TabContainer" parent="."]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="VSeparator2" type="VSeparator" parent="Details/HBoxContainer"]
+layout_mode = 2
+
+[node name="TextSizeLabel" type="Label" parent="Details/HBoxContainer"]
+layout_mode = 2
+text = "Text Size:"
+horizontal_alignment = 2
+
+[node name="TextSizeUpButton" type="Button" parent="Details/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "➕"
+script = ExtResource("3_dbxyv")
+
+[node name="TextSizeDownButton" type="Button" parent="Details/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "➖"
+script = ExtResource("4_pj7fk")
+
+[node name="HSeparator" type="HSeparator" parent="Details"]
+layout_mode = 2
+
+[node name="TabContainer" type="TabContainer" parent="Details"]
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_bke8y")
@@ -65,13 +92,13 @@ current_tab = 0
 clip_tabs = false
 use_hidden_tabs_for_min_size = true
 
-[node name="📜 Read" type="MarginContainer" parent="TabContainer"]
+[node name="📜 Read" type="MarginContainer" parent="Details/TabContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 metadata/_tab_index = 0
 
-[node name="Read" type="TextEdit" parent="TabContainer/📜 Read"]
+[node name="Read" type="TextEdit" parent="Details/TabContainer/📜 Read"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
@@ -85,17 +112,17 @@ wrap_mode = 1
 indent_wrapped_lines = true
 caret_multiple = false
 
-[node name="✒ Edit" type="MarginContainer" parent="TabContainer"]
+[node name="✒ Edit" type="MarginContainer" parent="Details/TabContainer"]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 metadata/_tab_index = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/✒ Edit"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Details/TabContainer/✒ Edit"]
 layout_mode = 2
 
-[node name="FilenameLabel" type="Label" parent="TabContainer/✒ Edit/VBoxContainer"]
+[node name="FilenameLabel" type="Label" parent="Details/TabContainer/✒ Edit/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"TooltipLabel"
@@ -104,7 +131,7 @@ theme_override_font_sizes/font_size = 8
 text = "(Filename)"
 text_overrun_behavior = 3
 
-[node name="Edit" type="TextEdit" parent="TabContainer/✒ Edit/VBoxContainer"]
+[node name="Edit" type="TextEdit" parent="Details/TabContainer/✒ Edit/VBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
@@ -117,16 +144,15 @@ indent_wrapped_lines = true
 draw_tabs = true
 metadata/_edit_use_anchors_ = true
 
-[node name="🔖 Metadata" type="MarginContainer" parent="TabContainer"]
+[node name="🔖 Metadata" type="MarginContainer" parent="Details/TabContainer"]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 metadata/_tab_index = 2
 
-[node name="FrontmatterContainer" type="VBoxContainer" parent="TabContainer/🔖 Metadata"]
+[node name="FrontmatterContainer" type="VBoxContainer" parent="Details/TabContainer/🔖 Metadata"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 32)
+custom_minimum_size = Vector2(128, 32)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0

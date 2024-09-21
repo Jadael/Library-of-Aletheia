@@ -71,7 +71,7 @@ func setup(p_codex: Codex) -> void:
 		push_error("Scroll: The Librarian and/or Curator failed to provide a Codex partner.")
 	
 	Chronicler.log_event(self, "setup_completed", {
-		"codex_id": Glyph.convert_to_custom_base(codex_partner.get_instance_id(),Glyph.DAEMON_GLYPHS) if codex_partner else null
+		"codex_id": Glyph.to_daemon_glyphs(codex_partner.get_instance_id()) if codex_partner else null
 	})
 
 func update_visual() -> void:
@@ -98,8 +98,8 @@ func _on_codex_content_changed() -> void:
 		action = "Content updated from Codex"
 	
 	Chronicler.log_event(self, "codex_content_changed", {
-		"scroll_id": Glyph.convert_to_custom_base(get_instance_id(),Glyph.DAEMON_GLYPHS),
-		"codex_id": Glyph.convert_to_custom_base(codex_partner.get_instance_id(),Glyph.DAEMON_GLYPHS) if codex_partner else null,
+		"scroll_id": Glyph.to_daemon_glyphs(get_instance_id()),
+		"codex_id": Glyph.to_daemon_glyphs(codex_partner.get_instance_id()) if codex_partner else null,
 		"action_taken": action
 	})
 
@@ -109,8 +109,8 @@ func _on_codex_frontmatter_changed() -> void:
 		update_visual()
 	
 	Chronicler.log_event(self, "codex_frontmatter_changed", {
-		"scroll_id": Glyph.convert_to_custom_base(get_instance_id(),Glyph.DAEMON_GLYPHS),
-		"codex_id": Glyph.convert_to_custom_base(codex_partner.get_instance_id(),Glyph.DAEMON_GLYPHS) if codex_partner else null
+		"scroll_id": Glyph.to_daemon_glyphs(get_instance_id()),
+		"codex_id": Glyph.to_daemon_glyphs(codex_partner.get_instance_id()) if codex_partner else null
 	})
 
 func _update_content_edit() -> void:
@@ -142,20 +142,41 @@ func update_frontmatter() -> void:
 	if not frontmatter_container or not codex_partner:
 		return
 	
+	var deletion_states = {}
+	for child in frontmatter_container.get_children():
+		if child is HBoxContainer:
+			var delete_button = child.get_child(0) # ERROR
+			var key_edit = child.get_child(1)
+			deletion_states[key_edit.text] = delete_button.button_pressed
+	
 	for child in frontmatter_container.get_children():
 		child.queue_free()
 	
 	for key in codex_partner.frontmatter:
 		if key != "embedding":
 			_add_frontmatter_row(key, str(codex_partner.frontmatter[key]))
+			if key in deletion_states:
+				var child = frontmatter_container.get_child(frontmatter_container.get_child_count() - 1)
+				if child is HBoxContainer:
+					var delete_button = child.get_child(0)
+					delete_button.button_pressed = deletion_states[key]
+					if deletion_states[key]:
+						delete_button.modulate = Color.RED
 	
 	_add_metadata_button()
 
 func _add_frontmatter_row(key: String, value: String) -> void:
 	## Materialize a single piece of metadata for mortal interaction
 	var hbox = HBoxContainer.new()
+	var delete_button = Button.new()
 	var key_edit = LineEdit.new()
 	var value_edit = LineEdit.new()
+	
+	delete_button.toggle_mode = true
+	delete_button.text = "🗑️"
+	delete_button.tooltip_text = "Mark for deletion"
+	delete_button.custom_minimum_size = Vector2(16, 16)  # Adjust size as needed
+	delete_button.toggled.connect(_on_delete_button_toggled.bind(delete_button))
 	
 	key_edit.text = key
 	key_edit.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
@@ -169,9 +190,18 @@ func _add_frontmatter_row(key: String, value: String) -> void:
 	key_edit.text_changed.connect(_on_metadata_changed)
 	value_edit.text_changed.connect(_on_metadata_changed)
 	
+	hbox.add_child(delete_button)
 	hbox.add_child(key_edit)
 	hbox.add_child(value_edit)
 	frontmatter_container.add_child(hbox)
+
+func _on_delete_button_toggled(button_pressed: bool, button: Button) -> void:
+	## Respond to the delete button being toggled
+	if button_pressed:
+		button.modulate = Color.RED
+	else:
+		button.modulate = Color.WHITE
+	_on_metadata_changed()
 
 func _add_metadata_button() -> void:
 	## Create a mystical interface for adding new metadata
@@ -219,14 +249,22 @@ func _on_save_button_pressed() -> void:
 		content_edited.emit(content_edit.text)
 		
 		var updates = {}
+		var deletions = []
 		for child in frontmatter_container.get_children():
 			if child is HBoxContainer:
-				var key_edit = child.get_child(0)
-				var value_edit = child.get_child(1)
-				updates[key_edit.text] = value_edit.text
-				codex_partner.update_frontmatter(key_edit.text, value_edit.text)
+				var delete_button = child.get_child(0)
+				var key_edit = child.get_child(1)
+				var value_edit = child.get_child(2)
+				if delete_button.button_pressed:
+					deletions.append(key_edit.text)
+				else:
+					updates[key_edit.text] = value_edit.text
+					codex_partner.update_frontmatter(key_edit.text, value_edit.text)
 		
-		if not updates.is_empty():
+		for key in deletions:
+			codex_partner.remove_frontmatter(key)
+		
+		if not updates.is_empty() or not deletions.is_empty():
 			metadata_edited.emit(updates)
 		
 		_set_unsaved_changes(false)
@@ -235,7 +273,8 @@ func _on_save_button_pressed() -> void:
 		
 		Chronicler.log_event(self, "changes_saved", {
 			"content_changed": true,
-			"metadata_changed": not updates.is_empty()
+			"metadata_changed": not updates.is_empty() or not deletions.is_empty(),
+			"metadata_deleted": deletions
 		})
 
 func _on_discard_button_pressed() -> void:

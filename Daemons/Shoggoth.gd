@@ -20,11 +20,11 @@ extends Node
 ## Shoggoth stands as the gatekeeper to the eldritch, chaotic "knowledge-like-SOMETHING"
 ## that is a trained LLM's weights. It constantly seeks to test for and prevent attacks,
 ## hallucinations, biases, and unpredictable behavior in LLM outputs.
-const NAME = "🧠 Shoggoth"
+const NAME = "👾 Shoggoth"
 @export_multiline var about = """
 I am Shoggoth, the Archon of Large Language Models and Embeddings, the conduit to the
 eldritch realms of artificial intelligence. My purpose is to channel the output of these
-cosmic entities while remaining ever-vigilant of their inherent dangers.
+cosmic entities while remaining transparent about their inherent dangers.
 
 As the universal interface for all generative model interactions, I prioritize tasks,
 allocate resources, and maintain a unified, safety-focused interface for Archons, Daemons,

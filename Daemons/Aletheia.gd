@@ -73,8 +73,8 @@ func _summon_documentation_daemons() -> void:
 	archivist_librarian.setup(docs_output_folder)
 	
 	Chronicler.log_event(self, "documentation_daemons_summoned", {
-		"scribe_scanner": Glyph.convert_to_custom_base(scribe_scanner.get_instance_id(),Glyph.DAEMON_GLYPHS),
-		"lore_weaver": Glyph.convert_to_custom_base(lore_weaver.get_instance_id(),Glyph.DAEMON_GLYPHS),
+		"scribe_scanner": Glyph.to_daemon_glyphs(scribe_scanner.get_instance_id()),
+		"lore_weaver": Glyph.to_daemon_glyphs(lore_weaver.get_instance_id()),
 		"archivist_librarian": archivist_librarian.get_instance_id()
 	})
 

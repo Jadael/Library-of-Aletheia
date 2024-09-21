@@ -1,3 +1,7 @@
+---
+document_id: ebf01790-2a26-430d-972c-5a7a9d2fb575
+version_hash: 628c8a1d55d5b1f70ec2b27adefe1af3
+---
 # The Library of Aletheia
 
 ## 🚧 Work in Progress 🚧

@@ -1,0 +1,73 @@
+[gd_scene load_steps=3 format=3 uid="uid://cpg8lnwvkp57h"]
+
+[ext_resource type="Script" path="res://Daemons/card_catalog.gd" id="1_27oox"]
+[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/Aletheia_theme.tres" id="1_wlvl7"]
+
+[node name="CardCatalog" type="Window"]
+title = "🗃 Card Catalog"
+position = Vector2i(64, 64)
+size = Vector2i(768, 256)
+theme = ExtResource("1_wlvl7")
+script = ExtResource("1_27oox")
+
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+
+[node name="DocumentTree" type="Tree" parent="HSplitContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+
+[node name="TabContainer" type="TabContainer" parent="HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 4.0
+current_tab = 1
+
+[node name="Quick Access" type="VBoxContainer" parent="HSplitContainer/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="DocumentTitle" type="Label" parent="HSplitContainer/TabContainer/Quick Access"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Lorem Ipsum"
+
+[node name="InstancesList" type="VBoxContainer" parent="HSplitContainer/TabContainer/Quick Access"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Versions" type="VBoxContainer" parent="HSplitContainer/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="VersionDetails" type="TextEdit" parent="HSplitContainer/TabContainer/Versions"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+text = "Lorem ipsum."
+editable = false
+wrap_mode = 1
+indent_wrapped_lines = true
+
+[node name="Locations" type="VBoxContainer" parent="HSplitContainer/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="LocationDetails" type="TextEdit" parent="HSplitContainer/TabContainer/Locations"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+text = "Lorem ipsum."
+editable = false
+wrap_mode = 1
+indent_wrapped_lines = true

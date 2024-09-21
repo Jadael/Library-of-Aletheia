@@ -85,7 +85,7 @@ func log_event(entity: Node, event_type: String, details: Dictionary) -> void:
 ## A dictionary containing the entity's profile information
 func _get_entity_profile(entity: Node) -> Dictionary:
 	var profile = {
-		"entity_id": Glyph.convert_to_custom_base(entity.get_instance_id(),Glyph.DAEMON_GLYPHS),
+		"entity_id": Glyph.to_daemon_glyphs(entity.get_instance_id()),
 		"entity_class": entity.get_class()
 	}
 	

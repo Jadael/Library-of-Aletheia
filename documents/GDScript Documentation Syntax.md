@@ -1,3 +1,7 @@
+---
+document_id: 0c3238e7-d9ea-4301-bb70-ec63492cb6a2
+version_hash: b99371afb14aeab3973bcbfe32d35245
+---
 In GDScript, comments can be used to document your code and add descriptions to the members of a script. There are two differences between a normal comment and a documentation comment. Firstly, a documentation comment should start with double hash symbols `##`. Secondly, it must immediately precede a script member, or for script descriptions, be placed at the top of the script. If an exported variable is documented, its description is used as a tooltip in the editor. This documentation can be generated as XML files by the editor.
 
 ## Documenting a script

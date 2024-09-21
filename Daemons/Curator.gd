@@ -99,8 +99,8 @@ func _on_codex_summoned(codex: Node, scroll: Scroll):
 	_place_new_scroll(scroll)
 	
 	Chronicler.log_event(self, "scroll_manifested", {
-		"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS),
-		"scroll_id": Glyph.convert_to_custom_base(scroll.get_instance_id(),Glyph.DAEMON_GLYPHS),
+		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()),
+		"scroll_id": Glyph.to_daemon_glyphs(scroll.get_instance_id()),
 		"initial_position": scroll.position
 	})
 
@@ -130,7 +130,7 @@ func _on_scroll_content_edited(new_content, codex):
 	Librarian.update_codex_content(codex, new_content)
 	
 	Chronicler.log_event(self, "scroll_content_edited", {
-		"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS),
+		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()),
 		"content_length": new_content.length()
 	})
 
@@ -147,7 +147,7 @@ func _on_scroll_metadata_edited(updates: Dictionary, codex):
 		Librarian.update_codex_metadata(codex, key, updates[key])
 	
 	Chronicler.log_event(self, "scroll_metadata_edited", {
-		"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS),
+		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()),
 		"updated_fields": updates.keys()
 	})
 
@@ -181,7 +181,7 @@ func _on_codex_banished(codex: Node):
 		scroll_collection.erase(codex)
 		
 		Chronicler.log_event(self, "scroll_banished", {
-			"codex_id": Glyph.convert_to_custom_base(codex.get_instance_id(),Glyph.DAEMON_GLYPHS),
+			"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()),
 			"scroll_id": scroll.get_instance_id()
 		})
 

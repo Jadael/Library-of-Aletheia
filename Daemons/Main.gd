@@ -21,6 +21,7 @@ I am the first to awaken and the last to slumber, ensuring the continuity and st
 @export_file("*.gguf") var embedding_model_path: String = "res://models/embedding_model.gguf"
 @export_file("*.gguf") var llm_model_path: String = "res://models/llm_model.gguf"
 @export_dir var documents_folder: String = "res://documents"
+var card_catalog_window: Window
 
 var update_interval: float = 10.0  # Start with 1 second interval
 var update_timer: Timer
@@ -36,22 +37,14 @@ func _ready():
 		"documents_folder": documents_folder
 	})
 
-	# Initialize the Librarian Archon with the paths to our mystical resources
 	var librarian_setup_success = _setup_librarian()
-	
-	# Awaken the Curator Archon, providing it with a reference to this node
 	var curator_setup_success = _setup_curator()
-	
+
 	if librarian_setup_success and curator_setup_success:
-		# Command the Librarian to process all existing mystical documents
-		Librarian.process_existing_documents()
-		
-			# Ensure that the Curator receives input events
+		_setup_card_catalog_window()
+
 		set_process_unhandled_input(false)
 		Curator.set_process_unhandled_input(true)
-		
-		Librarian.check_for_updates()
-		Curator.update_visualization()
 
 		Chronicler.log_event(self, "initialization_completed", {
 			"status": "success"
@@ -61,8 +54,30 @@ func _ready():
 			"librarian_setup_success": librarian_setup_success,
 			"curator_setup_success": curator_setup_success
 		})
-		
+
 	_setup_change_check_timer()
+	_setup_ui()
+
+func _setup_card_catalog_window():
+	card_catalog_window = preload("res://Daemons/Scenes/card_catalog.tscn").instantiate()
+	add_child(card_catalog_window)
+
+func _setup_ui():
+	# Create a button for opening documents
+	var open_button = Button.new()
+	open_button.text = "Open Document"
+	open_button.connect("pressed", Callable(Librarian, "open_document_dialog"))
+	add_child(open_button)
+	
+	# Create a button for displaying the card catalog
+	var catalog_button = Button.new()
+	catalog_button.text = "Show Card Catalog"
+	catalog_button.connect("pressed", Callable(self, "_on_show_card_catalog"))
+	catalog_button.position.y = open_button.size.y + 10
+	add_child(catalog_button)
+
+func _on_show_card_catalog():
+	card_catalog_window.show_window()
 
 func _setup_librarian() -> bool:
 	if not DirAccess.dir_exists_absolute(documents_folder):
