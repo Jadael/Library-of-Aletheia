@@ -18,38 +18,31 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.0
 
-[node name="HFlowContainer" type="HFlowContainer" parent="HSplitContainer/VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+
+[node name="HFlowContainer" type="HFlowContainer" parent="HSplitContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="OpenButton" type="Button" parent="HSplitContainer/VBoxContainer/HFlowContainer"]
+[node name="OpenButton" type="Button" parent="HSplitContainer/MarginContainer/VBoxContainer/HFlowContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "📥 Open"
 
-[node name="ScanFolderButton" type="Button" parent="HSplitContainer/VBoxContainer/HFlowContainer"]
+[node name="ScanFolderButton" type="Button" parent="HSplitContainer/MarginContainer/VBoxContainer/HFlowContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 disabled = true
 text = "🗂 Index a Folder"
 
-[node name="OpenUserFolderButton" type="Button" parent="HSplitContainer/VBoxContainer/HFlowContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 4
-text = "📂 Open User Folder"
-
-[node name="AuditButton" type="Button" parent="HSplitContainer/VBoxContainer/HFlowContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 4
-text = "🕵️‍♀️ Audit Catalog"
-
-[node name="DocumentTree" type="Tree" parent="HSplitContainer/VBoxContainer"]
+[node name="DocumentTree" type="Tree" parent="HSplitContainer/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -61,26 +54,47 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 size_flags_stretch_ratio = 3.0
-current_tab = 0
+current_tab = 1
 
-[node name="Quick Access" type="VBoxContainer" parent="HSplitContainer/TabContainer"]
+[node name="Quick Access" type="MarginContainer" parent="HSplitContainer/TabContainer"]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
-[node name="DocumentTitle" type="Label" parent="HSplitContainer/TabContainer/Quick Access"]
+[node name="Quick Access" type="VBoxContainer" parent="HSplitContainer/TabContainer/Quick Access"]
+layout_mode = 2
+
+[node name="DocumentTitle" type="Label" parent="HSplitContainer/TabContainer/Quick Access/Quick Access"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="InstancesList" type="VBoxContainer" parent="HSplitContainer/TabContainer/Quick Access"]
+[node name="InstancesList" type="VBoxContainer" parent="HSplitContainer/TabContainer/Quick Access/Quick Access"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="📜 History" type="VBoxContainer" parent="HSplitContainer/TabContainer"]
-visible = false
+[node name="📜 History" type="MarginContainer" parent="HSplitContainer/TabContainer"]
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="HistoryDetails" type="TextEdit" parent="HSplitContainer/TabContainer/📜 History"]
+[node name="📜 History" type="VBoxContainer" parent="HSplitContainer/TabContainer/📜 History"]
+layout_mode = 2
+
+[node name="HFlowContainer" type="HFlowContainer" parent="HSplitContainer/TabContainer/📜 History/📜 History"]
+layout_mode = 2
+
+[node name="AuditButton" type="Button" parent="HSplitContainer/TabContainer/📜 History/📜 History/HFlowContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+text = "🕵️‍♀️ Audit Catalog"
+
+[node name="OpenUserFolderButton" type="Button" parent="HSplitContainer/TabContainer/📜 History/📜 History/HFlowContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+text = "📂 Open User Folder"
+
+[node name="HistoryDetails" type="TextEdit" parent="HSplitContainer/TabContainer/📜 History/📜 History"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3

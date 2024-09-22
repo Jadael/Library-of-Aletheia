@@ -41,6 +41,9 @@ const LOG_FILE_PATH = "user://debug_log.json"
 ## The living memory of our realm, a collection of all events that have transpired
 var log_data: Array = []
 
+## Signal emitted when a new event is logged
+signal event_logged(event_data: Dictionary)
+
 func _ready() -> void:
 	## As the Chronicler awakens, it reaches into the depths of persistent storage,
 	## retrieving the accumulated wisdom of ages past.
@@ -56,23 +59,26 @@ func _ready() -> void:
 ## - entity: The Archon or Daemon witnessing or causing the event (passed as self)
 ## - event_type: A succinct description of the event's nature
 ## - details: A dictionary containing rich context and specifics of the event
+## - severity: An optional parameter to indicate the event's importance (0-5, with 5 being most severe)
 ##
 ## Note: When logging, consider what future questions this event might answer.
 ## Include as much relevant context as possible without overwhelming the system.
-func log_event(entity: Node, event_type: String, details: Dictionary) -> void:
+func log_event(entity: Node, event_type: String, details: Dictionary, severity: int = 0) -> void:
 	var timestamp = Time.get_datetime_dict_from_system()
 	var entity_profile = _get_entity_profile(entity)
-	print("{0} ({1}) says: {2}".format([entity_profile["entity_name"],entity_profile["entity_id"].to_pascal_case(),event_type]))
+	print("{0} ({1}) says: {2} [Severity: {3}]".format([entity_profile["entity_name"], entity_profile["entity_id"].to_pascal_case(), event_type, severity]))
 	print(details)
 	var log_entry = {
 		"timestamp": timestamp,
 		"event_type": event_type,
-		"details": details
+		"details": details,
+		"severity": severity
 	}
 	log_entry.merge(entity_profile)
 	
 	log_data.append(log_entry)
 	save_log()
+	emit_signal("event_logged", log_entry)
 
 ## Retrieves the profile of an entity for logging purposes
 ##
@@ -98,11 +104,6 @@ func _get_entity_profile(entity: Node) -> Dictionary:
 		var script_name = entity.get_script().resource_path.get_file().get_basename()
 		profile["entity_name"] = script_name
 	
-	# Add any other profile details here
-	# For example:
-	# if "ROLE" in entity:
-	#     profile["entity_role"] = entity.ROLE
-	
 	return profile
 
 ## Retrieves past chronicles from the ethereal planes of storage
@@ -116,18 +117,12 @@ func load_log() -> void:
 		var error = json.parse(file.get_as_text())
 		if error == OK:
 			log_data = json.data
-			print("--- 💭")
-			print("The Chronicler affirms: Past records have been successfully retrieved and verified.")
-			print("--- 💭")
+			print("--- 💭 The Chronicler affirms: Past records have been successfully retrieved and verified. ---")
 		else:
-			print("--- 💭")
-			print("The Chronicler notes with concern: Our past records are currently inaccessible. Error code: ", error)
-			print("--- 💭")
+			print("--- 💭 The Chronicler notes with concern: Our past records are currently inaccessible. Error code: ", error, " ---")
 		file.close()
 	else:
-		print("--- 💭")
-		print("The Chronicler observes: No previous records found. A new chapter in our realm's history begins.")
-		print("--- 💭")
+		print("--- 💭 The Chronicler observes: No previous records found. A new chapter in our realm's history begins. ---")
 
 ## Ensures the collected wisdom persists beyond the ethereal realm of runtime
 ##
@@ -148,7 +143,7 @@ func save_log() -> void:
 ##
 ## Parameters:
 ## - filter_func: A callable that determines which events are relevant
-##+
+##
 ## Returns:
 ## An array of log entries that satisfy the filter criteria
 func query_log(filter_func: Callable) -> Array:
@@ -167,44 +162,60 @@ func query_log(filter_func: Callable) -> Array:
 func get_recent_events(count: int) -> Array:
 	return log_data.slice(-count)
 
-## Divines patterns from the chaos of our history
+## Analyzes event frequency over a specified time period
 ##
-## This function will analyze trends in the recorded events,
-## offering insights into the ebb and flow of our mystical realm.
-## TODO: Implement trend analysis algorithm
-## - Consider using statistical methods or machine learning techniques
-## - Focus on identifying patterns that could indicate system health or potential issues
-func analyze_trends() -> void:
-	print("--- 💭")
-	print("The Chronicler contemplates: The patterns within our history await discovery, promising insights into our realm's behavior.")
-	print("--- 💭")
-	pass
-
-## Crafts grand narratives from the myriad threads of our tapestry
+## This function counts the occurrences of events matching certain criteria
+## within a given time frame, useful for identifying patterns or anomalies.
 ##
-## This function will generate comprehensive reports based on
-## the recorded events, weaving together the story of our realm.
-## TODO: Implement report generation logic
-## - Develop a flexible reporting system that can cater to different needs (e.g., system health, user activity, error frequency)
-## - Consider incorporating visualizations for easier comprehension of complex data
-func generate_report() -> void:
-	print("--- 💭")
-	print("The Chronicler prepares: The grand narrative of our realm shall be woven, illuminating the path of our collective journey.")
-	print("--- 💭")
-	pass
+## Parameters:
+## - event_type: The type of event to analyze (optional, if null, all events are considered)
+## - time_period: The number of seconds to look back from the current time
+## - severity_threshold: The minimum severity level to consider (optional)
+##
+## Returns:
+## The number of matching events within the specified time period
+func analyze_event_frequency(event_type: String = "", time_period: int = 3600, severity_threshold: int = 0) -> int:
+	var current_time = Time.get_unix_time_from_system()
+	var count = 0
+	for event in log_data:
+		var event_time = Time.get_unix_time_from_datetime_dict(event["timestamp"])
+		if current_time - event_time <= time_period:
+			if (event_type.is_empty() or event["event_type"] == event_type) and event["severity"] >= severity_threshold:
+				count += 1
+	return count
 
-# TODO: Implement a method to handle log rotation or archiving to manage log size over time
-# TODO: Develop a system for real-time event streaming to support live monitoring and alerting
-# TODO: Create a user-friendly interface for non-technical users to explore the log data
-# TODO: Implement advanced search capabilities, including full-text search and time-based queries
-# FIXME: Enhance error handling and logging for the Chronicler's own operations to ensure reliability
+## Generates a report of recent significant events
+##
+## This function creates a summary of recent high-severity events,
+## useful for quick status checks or security briefings.
+##
+## Parameters:
+## - time_period: The number of seconds to look back from the current time
+## - severity_threshold: The minimum severity level to include in the report
+##
+## Returns:
+## A string containing the report of recent significant events
+func generate_recent_events_report(time_period: int = 3600, severity_threshold: int = 3) -> String:
+	var current_time = Time.get_unix_time_from_system()
+	var report = "Recent Significant Events Report:\n\n"
+	
+	for event in log_data:
+		var event_time = Time.get_unix_time_from_datetime_dict(event["timestamp"])
+		if current_time - event_time <= time_period and event["severity"] >= severity_threshold:
+			report += "Time: {datetime}\n".format({"datetime": Time.get_datetime_string_from_unix_time(event_time)})
+			report += "Type: {event_type}\n".format({"event_type": event["event_type"]})
+			report += "Severity: {severity}\n".format({"severity": event["severity"]})
+			report += "Entity: {entity_name}\n".format({"entity_name": event["entity_name"]})
+			report += "Details: {details}\n\n".format({"details": str(event["details"])})
+	
+	return report
 
 # Note for all Archons and Daemons:
 # To inscribe an event into the eternal ledger, call upon the Chronicler thus:
-# Chronicler.log_event(self, event_type, details)
+# Chronicler.log_event(self, event_type, details, severity)
 #
 # Example:
-# Chronicler.log_event(self, "codex_summoned", {"codex_id": "12345", "title": "Ancient Wisdom", "context": "User requested via search"})
+# Chronicler.log_event(self, "security_breach_attempt", {"source_ip": "192.168.1.100", "target": "auth_system"}, 4)
 #
 # Remember, every event you log contributes to the rich tapestry of our realm's history.
 # Be generous and thoughtful in your logging, capturing not just what happened, but why and in what context.

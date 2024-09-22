@@ -38,6 +38,13 @@ Aletheia="*res://Daemons/Aletheia.gd"
 Scribe="*res://Daemons/Scribe.gd"
 Glyph="*res://Daemons/glyph.gd"
 Archivist="*res://Daemons/archivist.gd"
+Aegis="*res://Daemons/aegis.gd"
+AlertResponseDaemon="*res://Daemons/alert_response_daemon.gd"
+AuditDaemon="*res://Daemons/audit_daemon.gd"
+SecurityAnalysisDaemon="*res://Daemons/security_analysis_daemon.gd"
+SecurityBriefingDaemon="*res://Daemons/security_briefing_daemon.gd"
+ThreatAnalysisDaemon="*res://Daemons/threat_analysis_daemon.gd"
+SecurityProtocolDaemon="*res://Daemons/security_protocol_daemon.gd"
 
 [editor_plugins]
 

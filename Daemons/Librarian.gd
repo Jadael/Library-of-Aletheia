@@ -15,24 +15,29 @@ extends Node
 ## 3. Pairing Codex Daemons with their Scroll partners for user interaction
 ## 4. Facilitating safe updates to document content and metadata
 ## 5. Maintaining the integrity and accessibility of the collective knowledge
+## 6. Implementing security measures to protect the library's contents
 ##
 ## The Librarian serves as the bridge between abstract knowledge and tangible documents,
 ## shaping the library's future through its decisions and actions.
 
-## Signals the arrival of a new Codex and its paired Scroll
+## Signals
 signal codex_summoned(codex, scroll)
-
-## Signals the departure of a Codex from our realm
 signal codex_banished(codex)
-
-## Signals that a Codex's essence has been altered
 signal codex_updated(codex)
-
-## Signals that the card catalog has been updated
 signal card_catalog_updated
+signal security_state_changed(new_state: Dictionary)
 
-## The Librarian's sacred purpose and responsibilities
+## Constants
 const NAME = "🧙‍♀️ Librarian"
+
+## Enums
+enum AuthenticationLevel {
+	STANDARD,
+	ENHANCED,
+	STRICT
+}
+
+## Exported Variables
 @export_multiline var about = """
 I am the Librarian Archon, gatekeeper of document interaction and shepherd of Codex Daemons.
 My sacred duty is to maintain the integrity, accessibility, and safety of our collective knowledge.
@@ -44,29 +49,36 @@ As the bridge between abstract knowledge and tangible documents, I shape the lib
 I oversee the discovery of new documents, the safe reading and editing of their contents,
 and the management of their metadata. Through my actions, I strive to create a library that
 is not just a repository of information, but a living, breathing ecosystem of knowledge.
+
+In times of heightened security, I stand as a vigilant guardian, implementing measures
+to protect our sacred texts from unauthorized access or malicious intent.
 """
 
-## The grand collection of all active Codex Daemons
+## Member Variables
 var codex_collection = []
-
-## The path to the realm of document files
 var documents_folder: String
+var current_authentication_level = AuthenticationLevel.STANDARD
+var locked_systems = []
 
 func _ready():
 	Archivist.card_catalog_updated.connect(_on_card_catalog_updated)
 
-func _on_card_catalog_updated():
-	emit_signal("card_catalog_updated")
-
-## Initializes the Librarian with the necessary components
 func setup(p_documents_folder: String):
 	documents_folder = p_documents_folder
 	Chronicler.log_event(self, "setup_completed", {
 		"documents_folder": p_documents_folder
 	})
 
+func _on_card_catalog_updated():
+	emit_signal("card_catalog_updated")
+
 func open_document_dialog():
-	## Opens a file dialog for the user to select a document to open
+	if current_authentication_level == AuthenticationLevel.STRICT:
+		Chronicler.log_event(self, "document_access_denied", {
+			"reason": "Strict authentication level active"
+		})
+		return
+
 	var dialog = FileDialog.new()
 	dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	dialog.access = FileDialog.ACCESS_FILESYSTEM
@@ -75,8 +87,13 @@ func open_document_dialog():
 	add_child(dialog)
 	dialog.popup_centered(Vector2(800, 600))
 
-## Awakens the dormant knowledge within the sacred document folder
 func process_existing_documents():
+	if is_system_locked("document_processing"):
+		Chronicler.log_event(self, "document_processing_blocked", {
+			"reason": "System locked"
+		})
+		return
+
 	var dir = DirAccess.open(documents_folder)
 	if dir:
 		dir.list_dir_begin()
@@ -92,7 +109,6 @@ func process_existing_documents():
 			"num_documents": codex_collection.size()
 		})
 	else:
-		print("The path to our document realm is obscured.")
 		Chronicler.log_event(self, "document_access_failed", {
 			"folder_path": documents_folder
 		})
@@ -118,6 +134,13 @@ func observe_document(file_path: String):
 
 ## Summons a new Codex Daemon and its Scroll partner
 func summon_codex(file_path: String):
+	if current_authentication_level == AuthenticationLevel.STRICT:
+		Chronicler.log_event(self, "codex_summoning_denied", {
+			"reason": "Strict authentication level active",
+			"file_path": file_path
+		})
+		return
+
 	var scroll = preload("res://Daemons/Scenes/Scroll.tscn").instantiate()
 	var codex = preload("res://Daemons/Scenes/Codex.tscn").instantiate()
 	codex_collection.append(codex)
@@ -128,7 +151,6 @@ func summon_codex(file_path: String):
 	scroll.setup(codex)
 	scroll.update_visual()
 	
-	# Connect the scroll_closed signal
 	scroll.scroll_closed.connect(_on_scroll_closed)
 	
 	observe_document(file_path)
@@ -179,6 +201,13 @@ func check_for_updates() -> bool:
 
 ## Updates the content within a Codex
 func update_codex_content(codex: Node, new_content: String):
+	if current_authentication_level == AuthenticationLevel.STRICT:
+		Chronicler.log_event(self, "content_update_denied", {
+			"reason": "Strict authentication level active",
+			"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id())
+		})
+		return
+
 	codex.update_content(new_content)
 	observe_document(codex.file_path)
 	
@@ -189,6 +218,14 @@ func update_codex_content(codex: Node, new_content: String):
 
 ## Alters the metadata of a Codex
 func update_codex_metadata(codex: Node, key: String, new_value: String):
+	if current_authentication_level == AuthenticationLevel.STRICT:
+		Chronicler.log_event(self, "metadata_update_denied", {
+			"reason": "Strict authentication level active",
+			"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()),
+			"key": key
+		})
+		return
+
 	codex.update_frontmatter(key, new_value)
 	observe_document(codex.file_path)
 	
@@ -213,6 +250,43 @@ func open_document(file_path: String):
 		summon_codex(file_path)
 	
 	observe_document(file_path)
+
+func set_authentication_level(level: AuthenticationLevel):
+	current_authentication_level = level
+	var security_state = {
+		"authentication_level": AuthenticationLevel.keys()[current_authentication_level],
+		"locked_systems": locked_systems
+	}
+	emit_signal("security_state_changed", security_state)
+	Chronicler.log_event(self, "authentication_level_changed", {
+		"new_level": AuthenticationLevel.keys()[current_authentication_level]
+	})
+
+func lock_systems(systems_to_lock: Array):
+	locked_systems.append_array(systems_to_lock)
+	var security_state = {
+		"authentication_level": AuthenticationLevel.keys()[current_authentication_level],
+		"locked_systems": locked_systems
+	}
+	emit_signal("security_state_changed", security_state)
+	Chronicler.log_event(self, "systems_locked", {
+		"locked_systems": systems_to_lock
+	})
+
+func unlock_systems(systems_to_unlock: Array):
+	for system in systems_to_unlock:
+		locked_systems.erase(system)
+	var security_state = {
+		"authentication_level": AuthenticationLevel.keys()[current_authentication_level],
+		"locked_systems": locked_systems
+	}
+	emit_signal("security_state_changed", security_state)
+	Chronicler.log_event(self, "systems_unlocked", {
+		"unlocked_systems": systems_to_unlock
+	})
+
+func is_system_locked(system: String) -> bool:
+	return system in locked_systems
 
 ## Finds a Codex by its file path
 func _find_codex_by_path(file_path: String) -> Codex:
