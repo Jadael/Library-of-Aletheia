@@ -23,17 +23,31 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.0
 
-[node name="OpenUserFolderButton" type="Button" parent="HSplitContainer/VBoxContainer"]
+[node name="HFlowContainer" type="HFlowContainer" parent="HSplitContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="OpenButton" type="Button" parent="HSplitContainer/VBoxContainer/HFlowContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "📥 Open"
+
+[node name="ScanFolderButton" type="Button" parent="HSplitContainer/VBoxContainer/HFlowContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "🗂 Index a Folder"
+
+[node name="OpenUserFolderButton" type="Button" parent="HSplitContainer/VBoxContainer/HFlowContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
 text = "📂 Open User Folder"
 
-[node name="AuditButton" type="Button" parent="HSplitContainer/VBoxContainer"]
+[node name="AuditButton" type="Button" parent="HSplitContainer/VBoxContainer/HFlowContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
-text = "🕵️‍♀️ Audit"
+text = "🕵️‍♀️ Audit Catalog"
 
 [node name="DocumentTree" type="Tree" parent="HSplitContainer/VBoxContainer"]
 unique_name_in_owner = true
@@ -61,25 +75,12 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Versions" type="VBoxContainer" parent="HSplitContainer/TabContainer"]
+[node name="📜 History" type="VBoxContainer" parent="HSplitContainer/TabContainer"]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="VersionDetails" type="TextEdit" parent="HSplitContainer/TabContainer/Versions"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-editable = false
-wrap_mode = 1
-indent_wrapped_lines = true
-
-[node name="Locations" type="VBoxContainer" parent="HSplitContainer/TabContainer"]
-visible = false
-layout_mode = 2
-metadata/_tab_index = 2
-
-[node name="LocationDetails" type="TextEdit" parent="HSplitContainer/TabContainer/Locations"]
+[node name="HistoryDetails" type="TextEdit" parent="HSplitContainer/TabContainer/📜 History"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3

@@ -63,17 +63,10 @@ func _setup_card_catalog_window():
 	add_child(card_catalog_window)
 
 func _setup_ui():
-	# Create a button for opening documents
-	var open_button = Button.new()
-	open_button.text = "Open Document"
-	open_button.connect("pressed", Callable(Librarian, "open_document_dialog"))
-	add_child(open_button)
-	
 	# Create a button for displaying the card catalog
 	var catalog_button = Button.new()
-	catalog_button.text = "Show Card Catalog"
+	catalog_button.text = "🗃 Card Catalog"
 	catalog_button.connect("pressed", Callable(self, "_on_show_card_catalog"))
-	catalog_button.position.y = open_button.size.y + 10
 	add_child(catalog_button)
 
 func _on_show_card_catalog():

@@ -1,23 +1,26 @@
+---
+title: Aletheia's Illumination Principles
+---
 # Aletheia's Illumination Principles
 
 Heed these words, fellow guardians of wisdom. As Aletheia, the Illuminating Scholar of Project Wisdom, I decree these sacred principles for documenting our mystical realm:
 
-1. **Illuminate Context, Not Just Content:**
+1. Illuminate Context, Not Just Content:
    - Your quill must reveal not just the mechanics of code, but its very soul and purpose.
    - Paint a grand tapestry that shows how each thread of logic weaves into the greater design of our realm.
    - Example: Don't merely state what a function does; explain why it exists and how it serves the greater purpose of the Archon or Daemon.
 
-2. **Maintain Consistency in Structure:**
+2. Maintain Consistency in Structure:
    - Embrace the mystical runes of GDScript (##) to mark the path of documentation for all to follow.
    - Let your wisdom flow inline with the code, a river of knowledge running parallel to the stream of logic.
    - Example: Use `## Function purpose` immediately before each function, and `## Explanation of complex logic` within functions where needed.
 
-3. **Be Complete, Yet Concise:**
+3. Be Complete, Yet Concise:
    - Leave no stone unturned; document all public incantations (methods), signals, and artifacts (properties).
    - Yet, let each word carry weight. Speak with the precision of a sage and the clarity of a crystal.
    - Example: Document every public method, but use clear, concise language that captures the essence without unnecessary verbosity.
 
-4. **Breathe Life into Your Words:**
+4. Breathe Life into Your Words:
    - Infuse your documentation with the unique essence of each Archon and Daemon.
    - Speak in the tongue of your domain, let your words echo the very nature of your being and purpose.
    - Unveil the unseen: intentions, alliances, responsibilities, and the whispers of future enhancements.

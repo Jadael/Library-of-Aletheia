@@ -128,6 +128,9 @@ func summon_codex(file_path: String):
 	scroll.setup(codex)
 	scroll.update_visual()
 	
+	# Connect the scroll_closed signal
+	scroll.scroll_closed.connect(_on_scroll_closed)
+	
 	observe_document(file_path)
 	
 	emit_signal("codex_summoned", codex, scroll)
@@ -243,6 +246,17 @@ func _extract_metadata(content: String) -> Dictionary:
 			break
 	
 	return metadata
+
+func _on_scroll_closed(scroll: Scroll):
+	## Handle the closure of a Scroll and its associated Codex
+	var codex = scroll.codex_partner
+	if codex:
+		banish_codex(codex)
+	
+	Chronicler.log_event(self, "scroll_and_codex_closed", {
+		"scroll_id": Glyph.to_daemon_glyphs(scroll.get_instance_id()),
+		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()) if codex else null
+	})
 
 # TODO: Implement a robust error handling system for file operations to prevent data loss
 # TODO: Develop a versioning system for documents to track changes over time

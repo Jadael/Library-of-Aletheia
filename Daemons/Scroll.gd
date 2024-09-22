@@ -15,6 +15,7 @@ const NAME = "📃 Scroll"
 ## 2. Facilitating and interpreting mortal interactions with the document
 ## 3. Ensuring the sanctity and accuracy of the knowledge I present
 ## 4. Communicating changes back to my Codex partner for writing to the document
+## 5. Gracefully handling my own closure and cleanup
 ##
 ## I am the interface between the unseen and the seen, the keeper of momentary changes,
 ## and respect my Codex partner's responsibility for document integrity.
@@ -22,6 +23,7 @@ const NAME = "📃 Scroll"
 signal content_edited(new_content: String) ## Signals the Codex when document content has been altered by mortal hands
 signal metadata_edited(updates: Dictionary) ## Announces changes to the metadata of the document
 signal interaction_occurred(scroll: Scroll) ## Proclaims any significant interaction with my physical form
+signal scroll_closed(scroll: Scroll) ## Announces when this Scroll is about to close
 
 var codex_partner: Codex ## The Codex in charge of the document I display
 @onready var content_edit: TextEdit = %Edit ## A tab for editing of a Codex's document content
@@ -287,8 +289,43 @@ func _on_discard_button_pressed() -> void:
 
 func _on_close_requested() -> void:
 	## Respond to a request to close the Scroll
-	interaction_occurred.emit(self)
-	Chronicler.log_event(self, "close_requested", {})
+	if has_unsaved_changes:
+		_show_unsaved_changes_dialog()
+	else:
+		_perform_close()
+
+func _show_unsaved_changes_dialog() -> void:
+	## Present a dialog to the user when unsaved changes exist
+	var dialog = ConfirmationDialog.new()
+	dialog.dialog_text = "There are unsaved changes. Do you want to save before closing?"
+	dialog.add_button("Discard", true, "discard")
+	dialog.confirmed.connect(_on_save_and_close)
+	dialog.custom_action.connect(_on_discard_and_close)
+	dialog.canceled.connect(_on_cancel_close)
+	add_child(dialog)
+	dialog.popup_centered()
+
+func _on_save_and_close() -> void:
+	## Save changes and then close the Scroll
+	_on_save_button_pressed()
+	_perform_close()
+
+func _on_discard_and_close(_action: StringName) -> void:
+	## Discard changes and close the Scroll
+	_perform_close()
+
+func _on_cancel_close() -> void:
+	## Cancel the close operation
+	pass  # Do nothing, keeping the Scroll open
+
+func _perform_close() -> void:
+	## Execute the actual closing of the Scroll
+	emit_signal("scroll_closed", self)
+	Chronicler.log_event(self, "scroll_closed", {
+		"scroll_id": Glyph.to_daemon_glyphs(get_instance_id()),
+		"codex_id": Glyph.to_daemon_glyphs(codex_partner.get_instance_id()) if codex_partner else null
+	})
+	queue_free()  # This will remove the Scroll from the scene
 
 func remember_position() -> void:
 	## Store the current position of the Scroll

@@ -1,5 +1,5 @@
 ---
-document_id: f9ca95e9-4f38-43be-b37a-6c3a9b8f570c
+title: Chronicler Logging Guide
 ---
 # The Chronicler's Illuminated Manuscript: A Guide to Exemplary Event Recording
 

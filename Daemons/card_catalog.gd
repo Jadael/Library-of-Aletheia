@@ -1,4 +1,3 @@
-# card_catalog.gd
 extends Window
 
 const NAME = "🗃 Card Catalog"
@@ -12,8 +11,7 @@ and the mortal realm, offering insights into the grand tapestry of our collected
 @onready var document_tree: Tree = %DocumentTree
 @onready var document_title: Label = %DocumentTitle
 @onready var instances_list: VBoxContainer = %InstancesList
-@onready var versions_display: TextEdit = %VersionDetails
-@onready var locations_display: TextEdit = %LocationDetails
+@onready var history_display: TextEdit = %HistoryDetails
 
 var card_catalog: Dictionary = {}
 
@@ -28,6 +26,8 @@ func _ready():
 	document_tree.item_selected.connect(_on_document_selected)
 	update_catalog_display()
 	
+	%OpenButton.connect("pressed", Callable(Librarian, "open_document_dialog"))
+	#%ScanFolderButton.connect("pressed", Callable(Librarian, "scan_folder"))
 	%OpenUserFolderButton.pressed.connect(_on_open_user_folder_pressed)
 	%AuditButton.pressed.connect(_on_audit_pressed)
 
@@ -63,7 +63,7 @@ func _populate_document_tree():
 			})
 			continue
 
-		var latest_observation = doc_info["observations"][-1]
+		var latest_observation = _get_latest_observation(doc_info["observations"])
 		doc_item.set_text(0, latest_observation.get("metadata", {}).get("title", latest_observation["path"].get_file()))
 		doc_item.set_metadata(0, document_id)
 		items_created += 1
@@ -72,6 +72,15 @@ func _populate_document_tree():
 		"items_created": items_created,
 		"total_documents": card_catalog.size()
 	})
+
+func _get_latest_observation(observations: Dictionary) -> Dictionary:
+	var latest_timestamp = 0
+	var latest_observation = {}
+	for observation in observations.values():
+		if observation["timestamp"] > latest_timestamp:
+			latest_timestamp = observation["timestamp"]
+			latest_observation = observation
+	return latest_observation
 
 func _on_document_selected():
 	var selected_item = document_tree.get_selected()
@@ -83,27 +92,26 @@ func _on_document_selected():
 
 func _display_document_info(document_id: String):
 	var doc_info = Archivist.card_catalog[document_id]
-	var latest_observation = doc_info["observations"][-1]
+	var latest_observation = _get_latest_observation(doc_info["observations"])
 	document_title.text = latest_observation.get("metadata", {}).get("title", latest_observation["path"].get_file())
 	
 	_populate_instances_list(doc_info)
-	_update_versions_tab(doc_info)
-	_update_locations_tab(doc_info)
+	_update_history_tab(doc_info)
 
 func _populate_instances_list(doc_info: Dictionary):
 	for child in instances_list.get_children():
 		child.queue_free()
 	
+	var sorted_observations = doc_info["observations"].values()
+	sorted_observations.sort_custom(func(a, b): return a["timestamp"] > b["timestamp"])
+	
 	var unique_paths = {}
-	for observation in doc_info["observations"]:
+	for observation in sorted_observations:
 		var path = observation["path"]
-		if path not in unique_paths or observation["timestamp"] > unique_paths[path]["timestamp"]:
+		if path not in unique_paths:
 			unique_paths[path] = observation
 	
-	var sorted_paths = unique_paths.values()
-	sorted_paths.sort_custom(func(a, b): return a["timestamp"] > b["timestamp"])
-	
-	for observation in sorted_paths:
+	for observation in unique_paths.values():
 		var button = Button.new()
 		var file_name = observation["path"].get_file()
 		var status_icon = _get_status_icon(observation["status"])
@@ -115,7 +123,7 @@ func _populate_instances_list(doc_info: Dictionary):
 		instances_list.add_child(button)
 
 	Chronicler.log_event(self, "instances_list_populated", {
-		"instances_count": sorted_paths.size()
+		"instances_count": unique_paths.size()
 	})
 
 func _get_status_icon(status: int) -> String:
@@ -133,36 +141,23 @@ func _get_status_icon(status: int) -> String:
 		_:
 			return "❓"
 
-func _update_versions_tab(doc_info: Dictionary):
-	var versions_text = "Observations:\n\n"
-	for observation in doc_info["observations"]:
-		versions_text += "Timestamp: " + Time.get_datetime_string_from_unix_time(observation["timestamp"]) + "\n"
-		versions_text += "Path: " + observation["path"] + "\n"
-		versions_text += "Status: " + Archivist.DocumentStatus.keys()[observation["status"]] + "\n"
-		versions_text += "Content Hash: " + observation["content_hash"] + "\n"
+func _update_history_tab(doc_info: Dictionary):
+	var history_text = "Document History:\n\n"
+	var sorted_observations = doc_info["observations"].values()
+	sorted_observations.sort_custom(func(a, b): return a["timestamp"] > b["timestamp"])
+	
+	for observation in sorted_observations:
+		history_text += "Timestamp: " + Time.get_datetime_string_from_unix_time(observation["timestamp"]) + "\n"
+		history_text += "Path: " + observation["path"] + "\n"
+		history_text += "Status: " + Archivist.DocumentStatus.keys()[observation["status"]] + "\n"
+		history_text += "Content Hash: " + observation["content_hash"] + "\n"
 		if observation["metadata"]:
-			versions_text += "Metadata:\n"
+			history_text += "Metadata:\n"
 			for key in observation["metadata"]:
-				versions_text += "  " + key + ": " + str(observation["metadata"][key]) + "\n"
-		versions_text += "\n"
+				history_text += "  " + key + ": " + str(observation["metadata"][key]) + "\n"
+		history_text += "\n"
 	
-	versions_display.text = versions_text
-
-func _update_locations_tab(doc_info: Dictionary):
-	var locations_text = "Unique Locations:\n\n"
-	var unique_paths = {}
-	for observation in doc_info["observations"]:
-		var path = observation["path"]
-		if path not in unique_paths or observation["timestamp"] > unique_paths[path]["timestamp"]:
-			unique_paths[path] = observation
-	
-	for path in unique_paths:
-		var observation = unique_paths[path]
-		locations_text += "Path: " + path + "\n"
-		locations_text += "Status: " + Archivist.DocumentStatus.keys()[observation["status"]] + "\n"
-		locations_text += "Last Observed: " + Time.get_datetime_string_from_unix_time(observation["timestamp"]) + "\n\n"
-	
-	locations_display.text = locations_text
+	history_display.text = history_text
 
 func _on_instance_button_pressed(path: String):
 	Librarian.open_document(path)
