@@ -1,6 +1,5 @@
 ---
-document_id: ebf01790-2a26-430d-972c-5a7a9d2fb575
-version_hash: 628c8a1d55d5b1f70ec2b27adefe1af3
+title: The Library of Aletheia
 ---
 # The Library of Aletheia
 
@@ -8,57 +7,64 @@ version_hash: 628c8a1d55d5b1f70ec2b27adefe1af3
 
 The Library of Aletheia is an experimental document management system built with Godot 4, designed to explore the intersection of large language models, user interfaces, and knowledge management. It aims to create an immersive, metaphor-rich environment for interacting with documents and information.
 
-**⚠️ Warning: This project is in early development and is not yet suitable for practical use. Many core features are missing or incomplete, and there are known critical bugs.**
+**⚠️ Warning: This project is in early development and is not yet suitable for practical use. Many features are still being implemented, and there may be bugs or unexpected behavior.**
 
 ## Project Goals
 
 - Create a visually engaging and intuitive interface for document management
-- Explore novel ways of interacting with and visualizing information
-- Experiment with integrating large language models into document workflows
+- Explore novel ways of interacting with and visualizing information in and about documents
+- Integrate large language models into document workflows
 - Develop a flexible, extensible architecture for future enhancements
 
 ## Current State
 
-The Library of Aletheia is currently a conceptual prototype with limited functionality. Key components include:
+The Library of Aletheia is evolving from a conceptual prototype into a functional system. Key components and features include:
 
-- A basic visual interface representing documents arranged on a zoomable & pannable canvas
-- Rudimentary document creation and editing capabilities
-- Parsing and display of Markdown formatting
-- Parsing and editing of YAML Frontmatter
-- Initial integration with large language models for text generation and embeddings
-- A logging system for tracking events and interactions
+- Open Markdown files and parse YAML Frontmatter if present
+- Simplistic document editin
+- Integration with large language models for text generation and embeddings
+- A comprehensive "wide logging" system (Chronicler) for tracking events and interactions
+- A "card catalog" metaphor for managing documents/versions/locations- the goal being to track "documents the library knows about" as opposed to "controlling a vault/repository".
+
+## Recent Improvements
+
+- **Working with User Documents**: The system now supports opening and working with user-provided documents.
+- **Enhanced UI**: Implementation of a card catalog interface for document management.
+- **Improved LLM Integration**: Expanded use of LLMs for tasks such as self-documentation.
+- **Data Persistence**: Better handling of document changes and metadata updates.
 
 ## Known Limitations
 
-- **Cannot work with your own documents**: The system currently only works with a predefined set of test documents.
-- **Incomplete user interface**: Many planned UI elements and interactions are not yet implemented.
-- **Limited LLM integration**: While the framework for LLM integration exists, its practical applications are minimal.
-- **Performance issues**: The system may struggle with large numbers of documents or complex operations.
-- **Lack of data persistence**: Changes to documents may not be properly saved or may be lost between sessions.
+- **Performance Optimization**: The system may still struggle with large numbers of documents or complex operations.
+- **Incomplete Features**: Some planned features and interactions are still in development.
+- **LLM Dependency**: Proper functioning requires specific LLM models to be installed and configured.
 
 ## Getting Started
 
-Due to the early state of development, we do not recommend attempting to run or use the Library of Aletheia at this time. If you're a developer interested in the project's concepts, you can:
+To explore the Library of Aletheia:
 
 1. Clone the repository
-2. Open the project in Godot 4
-3. Explore the codebase to understand the architecture and design principles
-4. Download appropriate models in GGUF format (see the GDLlama plugin for recommendations) and update the paths to them in Shoggoth.gd
-5. If the LLM works, you'll see a wake up message when you run the project in the console like: Shoggoth awakens and whispers (LLM): "Greetings, mortal. I am Shoggoth, the keeper of the abyssal knowledge hidden within the neural networks. How may I assist you in navigating the unfathomable depths of our realm?"
-6. Call Aletheia.generate_documentation() to run a rudimentary system to self-document the project and write function descriptions using the LLM.
+2. Open the project in Godot 4.3
+3. Download appropriate LLM models in GGUF format (see the GDLlama plugin for recommendations)
+4. Update the paths to the LLM models in `Shoggoth.gd`
+5. Run the project in Godot (who knows if it can successfully export as-is; not me!)
+6. Explore the card catalog by clicking "Show Card Catalog"
+7. Use the "Open" button in the Card Catalog to load Markdown files
+8. Optionally, call `Aletheia.generate_documentation()` to run an experimental self-documentation system which uses LLM calls
 
 ## Contributing
 
-While we're not yet ready for major contributions, we welcome feedback, ideas, and discussions about the project's direction. Feel free to open issues for conceptual discussions or to report major architectural concerns.
+- Open issues for bug reports, feature requests, or conceptual discussions
+- Share ideas for improving the user interface or document/information management metaphors
 
 ## Future Plans
 
-- Implement core document management features (creation, deletion, organization)
-- Develop a robust system for working with user-provided documents
 - Enhance the visual metaphors and user interface
-- Expand LLM integration for document analysis and management
-- Improve performance and stability
+- Implement advanced document organization and tagging systems
+- Expand LLM integration for sophisticated document analysis and management
+- Develop collaborative features for multi-user environments
+- Improve performance and stability for handling large document collections
 
 ## Disclaimer
 
-The Library of Aletheia is an experimental project and should be treated as such. It is not intended for use with sensitive or important documents. Use at your own risk.
+The Library of Aletheia is an experimental project and should be treated as such. While it now supports working with user documents, exercise caution when using it with important files. Always maintain backups of your documents when testing or using this system.
