@@ -4,5 +4,3 @@
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_cd36u")
-embedding_model_path = "res://models/mxbai-embed-large-v1.Q8_0.gguf"
-llm_model_path = "res://models/Meta-Llama-3-8B-Instruct-Q5_K_M.gguf"

@@ -1,8 +1,6 @@
 # main.gd
 extends Node2D
 
-# The Main Archon oversees the initialization and ongoing management of the application and engine.
-# It coordinates with other Archons to ensure the smooth operation of the entire realm.
 const NAME= "🎭 Main"
 @export_multiline var about = """
 Greetings, I am the Main Archon, the foundational overseer of our mystical library realm.
@@ -16,24 +14,17 @@ My responsibilities include:
 I am the first to awaken and the last to slumber, ensuring the continuity and stability of our shared reality.
 """
 
-# Paths to the mystical models and documents
-# These are exposed in the editor for easy configuration
-@export_file("*.gguf") var embedding_model_path: String = "res://models/embedding_model.gguf"
-@export_file("*.gguf") var llm_model_path: String = "res://models/llm_model.gguf"
 @export_dir var documents_folder: String = "res://documents"
 var card_catalog_window: Window
+var ai_settings_window: Window
 
-var update_interval: float = 10.0  # Start with 1 second interval
+var update_interval: float = 10.0
 var update_timer: Timer
 const MIN_UPDATE_INTERVAL: float = 0.1
 const MAX_UPDATE_INTERVAL: float = 5.0
 
-# The awakening ritual of the Main Archon
-# This function is automatically called when the scene loads
 func _ready():
 	Chronicler.log_event(self, "initialization_started", {
-		"embedding_model": embedding_model_path,
-		"llm_model": llm_model_path,
 		"documents_folder": documents_folder
 	})
 
@@ -42,9 +33,13 @@ func _ready():
 
 	if librarian_setup_success and curator_setup_success:
 		_setup_card_catalog_window()
+		_setup_ai_settings_window()
 
 		set_process_unhandled_input(false)
 		Curator.set_process_unhandled_input(true)
+
+		Shoggoth.models_initialized.connect(_on_shoggoth_models_initialized)
+		Shoggoth._initialize_models()
 
 		Chronicler.log_event(self, "initialization_completed", {
 			"status": "success"
@@ -62,15 +57,38 @@ func _setup_card_catalog_window():
 	card_catalog_window = preload("res://Daemons/Scenes/card_catalog.tscn").instantiate()
 	add_child(card_catalog_window)
 
+func _setup_ai_settings_window():
+	ai_settings_window = preload("res://Daemons/Scenes/ai_settings.tscn").instantiate()
+	add_child(ai_settings_window)
+
 func _setup_ui():
-	# Create a button for displaying the card catalog
+	var ui_container = VBoxContainer.new()
+	add_child(ui_container)
+
 	var catalog_button = Button.new()
 	catalog_button.text = "🗃 Card Catalog"
 	catalog_button.connect("pressed", Callable(self, "_on_show_card_catalog"))
-	add_child(catalog_button)
+	ui_container.add_child(catalog_button)
+
+	var ai_settings_button = Button.new()
+	ai_settings_button.text = "🧠 AI Settings"
+	ai_settings_button.connect("pressed", Callable(self, "_on_show_ai_settings"))
+	ui_container.add_child(ai_settings_button)
 
 func _on_show_card_catalog():
 	card_catalog_window.show_window()
+
+func _on_show_ai_settings():
+	ai_settings_window.show()
+
+func _on_shoggoth_models_initialized(llm_success: bool, embedding_success: bool):
+	Chronicler.log_event(self, "ai_models_initialization_status", {
+		"llm_success": llm_success,
+		"embedding_success": embedding_success
+	})
+	# Update UI or system behavior based on AI availability
+	if not llm_success or not embedding_success:
+		print("Some AI features may be unavailable. Check AI Settings for details.")
 
 func _setup_librarian() -> bool:
 	if not DirAccess.dir_exists_absolute(documents_folder):

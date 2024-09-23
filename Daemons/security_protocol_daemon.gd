@@ -1,5 +1,6 @@
 # security_protocol_daemon.gd
 extends Node
+const NAME = "👮‍♀️ Security Protocol Daemon"
 
 var current_protocols = {}
 

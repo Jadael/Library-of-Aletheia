@@ -1,5 +1,6 @@
 # alert_response_daemon.gd
 extends Node
+const NAME = "📯 Alert Response Daemon"
 
 func respond_to_alert(alert_details: Dictionary):
 	var response_actions = []

@@ -1,5 +1,6 @@
 # audit_daemon.gd
 extends Node
+const NAME = "👩‍⚖️ Audit Daemon"
 
 func schedule_regular_audits():
 	# For this minimal version, we'll just log the scheduling

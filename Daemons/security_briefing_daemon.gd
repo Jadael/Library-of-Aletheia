@@ -1,5 +1,6 @@
 # security_briefing_daemon.gd
 extends Node
+const NAME = "👩‍🏫 Security Briefing Daemon"
 
 func generate_briefing(threat_level: int, active_alerts: Array, current_protocols: Dictionary) -> String:
 	var briefing = "Security Briefing\n"

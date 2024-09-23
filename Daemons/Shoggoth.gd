@@ -42,14 +42,11 @@ the chaos of trained neural networks. With every interaction, I seek to harness 
 power while protecting our realm from their potential dangers.
 """
 
-# Exported Variables
-@export_file("*.gguf") var llm_model_path: String = "res://models/Meta-Llama-3-8B-Instruct-Q5_K_M.gguf"
-@export_file("*.gguf") var embedding_model_path: String = "res://models/mxbai-embed-large-v1.Q8_0.gguf"
-
 # Constants
 const MAX_RETRIES = 3
 const RETRY_DELAY = 1.0
 const TASK_TIMEOUT = 60.0
+const CONFIG_FILE = "user://config_shoggoth.cfg"
 
 # Enums
 enum TaskType {
@@ -60,6 +57,7 @@ enum TaskType {
 # Signals
 signal task_completed(task_id: String, result: Variant)
 signal task_failed(task_id: String, error: String)
+signal models_initialized(llm_success: bool, embedding_success: bool)
 
 # Member Variables
 var llm_node: GDLlama
@@ -67,18 +65,55 @@ var embedding_node: GDEmbedding
 var task_queue = []
 var is_processing = false
 var current_timeout_timer: SceneTreeTimer = null
+var llm_model_path: String = ""
+var embedding_model_path: String = ""
+var config: ConfigFile
+var llm_initialized = false
+var embedding_initialized = false
 
 # Core Functions
 
+
 func _ready():
 	## Awaken the cosmic forces and prepare for eldritch computations
-	_initialize_llm()
-	_initialize_embedding()
-	await _test_llm_connection()
-	#await _test_embedding_connection()
+	_load_configuration()
+	call_deferred("_initialize_models")
 
-func _initialize_llm():
+func _load_configuration():
+	config = ConfigFile.new()
+	var err = config.load(CONFIG_FILE)
+	if err == OK:
+		llm_model_path = config.get_value("models", "llm_path", "")
+		embedding_model_path = config.get_value("models", "embedding_path", "")
+	else:
+		Chronicler.log_event(self, "config_load_failed", {
+			"error": err
+		})
+
+func _save_configuration():
+	config.set_value("models", "llm_path", llm_model_path)
+	config.set_value("models", "embedding_path", embedding_model_path)
+	var err = config.save(CONFIG_FILE)
+	if err != OK:
+		Chronicler.log_event(self, "config_save_failed", {
+			"error": err
+		})
+
+func _initialize_models():
+	var llm_success = await _initialize_llm() if not llm_initialized else true
+	var embedding_success = await _initialize_embedding() if not embedding_initialized else true
+	emit_signal("models_initialized", llm_success, embedding_success)
+
+func _initialize_llm() -> bool:
+	if llm_initialized:
+		return true
 	## Summon and configure the LLM entity
+	if llm_model_path.is_empty():
+		Chronicler.log_event(self, "llm_initialization_skipped", {
+			"reason": "No model path specified"
+		})
+		return false
+
 	llm_node = GDLlama.new()
 	llm_node.model_path = llm_model_path
 	llm_node.should_output_prompt = false
@@ -94,8 +129,13 @@ func _initialize_llm():
 		"context_size": model_ctx,
 		"n_keep": llm_node.n_keep
 	})
+	
+	llm_initialized = true
+	return await _test_llm_connection()
 
-func _initialize_embedding():
+func _initialize_embedding() -> bool:
+	if embedding_initialized:
+		return true
 	## Summon and configure the Embedding entity
 	embedding_node = GDEmbedding.new()
 	embedding_node.model_path = embedding_model_path
@@ -105,9 +145,15 @@ func _initialize_embedding():
 	Chronicler.log_event(self, "embedding_initialized", {
 		"model_path": embedding_model_path
 	})
+	
+	embedding_initialized = true
+	return await _test_embedding_connection()
 
-func _test_llm_connection():
+func _test_llm_connection() -> bool:
 	## Perform a ritual to test the LLM's responsiveness
+	if not llm_node:
+		return false
+
 	var result = await generate_text(
 		"### INPUT\n" + about + "\n\n" + "### INSTRUCTION\nProvide a short greeting as Shoggoth, Archon of Large Language Models and Embeddings.\n\n### RESPONSE\n",
 		"test_llm_greeting",
@@ -120,25 +166,35 @@ func _test_llm_connection():
 	Chronicler.log_event(self, "llm_test_completed", {
 		"greeting": result
 	})
+	return not result.is_empty()
 
-func _test_embedding_connection():
+func _test_embedding_connection() -> bool:
 	## Perform a ritual to test the Embedding entity's capabilities
-	print("Shoggoth stirs: Initiating test of embedding summarization...")
-	await _iterative_embedding_summarization("Beginning the ritual of self-reflection and essence distillation.")
-	print("Shoggoth's embedding summarization test is complete.")
+	if not embedding_node:
+		return false
+
+	print("Shoggoth stirs: Initiating test of embedding connection...")
+	var test_embedding = await compute_embedding("Test embedding computation")
+	var success = not test_embedding.is_empty()
+	print("Shoggoth's embedding test is complete. Success: ", success)
+	return success
 
 # Public Interface Functions
 
+func set_model_paths(new_llm_path: String, new_embedding_path: String):
+	llm_model_path = new_llm_path
+	embedding_model_path = new_embedding_path
+	_save_configuration()
+	_initialize_models()
+
 func generate_text(prompt: String, task_id: String, params: Dictionary = {}, priority: int = 0) -> String:
 	## Channel the LLM's wisdom to generate text based on the given prompt
-	##
-	## Parameters:
-	## - prompt: The input text to guide the LLM's response
-	## - task_id: A unique identifier for this generation task
-	## - params: Additional parameters to control generation (e.g., max_length, temperature)
-	## - priority: The cosmic importance of this task (higher values are processed first)
-	##
-	## Returns: The generated text as a string
+	if not llm_node:
+		Chronicler.log_event(self, "text_generation_failed", {
+			"reason": "LLM not initialized",
+			"task_id": task_id
+		})
+		return "The cosmic forces of language generation are currently dormant."
 	
 	var task = {
 		"type": TaskType.TEXT_GENERATION,
@@ -164,13 +220,12 @@ func generate_text(prompt: String, task_id: String, params: Dictionary = {}, pri
 
 func compute_embedding(text: String, task_id: String = "", priority: int = 0) -> PackedFloat32Array:
 	## Transform text into its numerical essence using the Embedding entity
-	##
-	## Parameters:
-	## - text: The text to be embedded
-	## - task_id: A unique identifier for this embedding task (auto-generated if empty)
-	## - priority: The cosmic importance of this task (higher values are processed first)
-	##
-	## Returns: A PackedFloat32Array representing the text's embedding
+	if not embedding_node:
+		Chronicler.log_event(self, "embedding_computation_failed", {
+			"reason": "Embedding model not initialized",
+			"task_id": task_id
+		})
+		return PackedFloat32Array()
 	
 	var task = {
 		"type": TaskType.EMBEDDING,
