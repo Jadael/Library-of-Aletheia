@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # librarian.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
@@ -28,7 +30,7 @@ signal card_catalog_updated
 signal security_state_changed(new_state: Dictionary)
 
 ## Constants
-const NAME = "🧙‍♀️ Librarian"
+const NAME = "📚 Librarian"
 
 ## Enums
 enum AuthenticationLevel {
@@ -141,8 +143,8 @@ func summon_codex(file_path: String):
 		})
 		return
 
-	var scroll = preload("res://Daemons/Scenes/Scroll.tscn").instantiate()
-	var codex = preload("res://Daemons/Scenes/Codex.tscn").instantiate()
+	var scroll = preload("res://daemons/scenes/scroll.tscn").instantiate()
+	var codex = preload("res://daemons/scenes/codex.tscn").instantiate()
 	codex_collection.append(codex)
 	add_child(codex)
 	
@@ -329,7 +331,7 @@ func _on_scroll_closed(scroll: Scroll):
 	
 	Chronicler.log_event(self, "scroll_and_codex_closed", {
 		"scroll_id": Glyph.to_daemon_glyphs(scroll.get_instance_id()),
-		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()) if codex else null
+		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()) if codex else null #FIXME: W 0:00:01:0280   Values of the ternary operator are not mutually compatible.
 	})
 
 # TODO: Implement a robust error handling system for file operations to prevent data loss

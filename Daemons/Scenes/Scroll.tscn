@@ -1,10 +1,10 @@
 [gd_scene load_steps=7 format=3 uid="uid://cwv3l5isjb0ye"]
 
-[ext_resource type="Script" path="res://Daemons/Scroll.gd" id="1_1xnsd"]
-[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/Aletheia_theme.tres" id="1_ornhy"]
-[ext_resource type="Script" path="res://Daemons/Scenes/text_size_up_button.gd" id="3_dbxyv"]
+[ext_resource type="Script" path="res://daemons/scroll.gd" id="1_1xnsd"]
+[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/aletheia_theme.tres" id="1_ornhy"]
+[ext_resource type="Script" path="res://daemons/scenes/text_size_up_button.gd" id="3_dbxyv"]
 [ext_resource type="FontFile" uid="uid://ci7w4fd3vwgba" path="res://fonts/LibreBaskerville-Regular.ttf" id="3_vinrb"]
-[ext_resource type="Script" path="res://Daemons/Scenes/text_size_down_button.gd" id="4_pj7fk"]
+[ext_resource type="Script" path="res://daemons/scenes/text_size_down_button.gd" id="4_pj7fk"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bke8y"]
 

@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # scribe.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"

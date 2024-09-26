@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # curator.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
@@ -207,10 +209,10 @@ func check_for_desyncs():
 	for scroll in scroll_collection.values():
 		if scroll.check_for_update():
 			updated_scrolls += 1
-	return updated_scrolls
 	Chronicler.log_event(self, "visualization_updated", {
 		"scrolls_updated": updated_scrolls
 	})
+	return updated_scrolls
 
 ## Offers guidance on the harmonious placement of Scrolls
 ##
@@ -241,7 +243,7 @@ func suggest_scroll_arrangement() -> Array:
 ## This function summons a ChronicleViewer, allowing users to peer
 ## into the history of our mystical realm.
 func summon_chronicle_viewer():
-	var viewer = preload("res://Daemons/Scenes/ChronicleViewer.tscn").instantiate()
+	var viewer = preload("res://daemons/scenes/chronicle_viewer.tscn").instantiate()
 	main_node.add_child(viewer)
 	
 	var viewport_rect = main_node.get_viewport_rect()

@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # main.gd
 extends Node2D
 
@@ -17,6 +19,7 @@ I am the first to awaken and the last to slumber, ensuring the continuity and st
 @export_dir var documents_folder: String = "res://documents"
 var card_catalog_window: Window
 var ai_settings_window: Window
+var oracle_console_window: Window
 
 var update_interval: float = 10.0
 var update_timer: Timer
@@ -34,12 +37,13 @@ func _ready():
 	if librarian_setup_success and curator_setup_success:
 		_setup_card_catalog_window()
 		_setup_ai_settings_window()
+		_setup_oracle_console_window()
 
 		set_process_unhandled_input(false)
 		Curator.set_process_unhandled_input(true)
 
 		Shoggoth.models_initialized.connect(_on_shoggoth_models_initialized)
-		Shoggoth._initialize_models()
+		#Shoggoth._initialize_models()
 
 		Chronicler.log_event(self, "initialization_completed", {
 			"status": "success"
@@ -54,12 +58,16 @@ func _ready():
 	_setup_ui()
 
 func _setup_card_catalog_window():
-	card_catalog_window = preload("res://Daemons/Scenes/card_catalog.tscn").instantiate()
+	card_catalog_window = preload("res://daemons/scenes/card_catalog.tscn").instantiate()
 	add_child(card_catalog_window)
 
 func _setup_ai_settings_window():
-	ai_settings_window = preload("res://Daemons/Scenes/ai_settings.tscn").instantiate()
+	ai_settings_window = preload("res://daemons/scenes/ai_settings.tscn").instantiate()
 	add_child(ai_settings_window)
+
+func _setup_oracle_console_window():
+	oracle_console_window = preload("res://daemons/scenes/oracle_console.tscn").instantiate()
+	add_child(oracle_console_window)
 
 func _setup_ui():
 	var ui_container = VBoxContainer.new()
@@ -71,9 +79,14 @@ func _setup_ui():
 	ui_container.add_child(catalog_button)
 
 	var ai_settings_button = Button.new()
-	ai_settings_button.text = "🧠 AI Settings"
+	ai_settings_button.text = "👾 AI Settings"
 	ai_settings_button.connect("pressed", Callable(self, "_on_show_ai_settings"))
 	ui_container.add_child(ai_settings_button)
+	
+	var oracle_console_button = Button.new()
+	oracle_console_button.text = "🔮 Oracle Console"
+	oracle_console_button.connect("pressed", Callable(self, "_on_show_oracle_console"))
+	ui_container.add_child(oracle_console_button)
 
 func _on_show_card_catalog():
 	card_catalog_window.show_window()
@@ -81,14 +94,16 @@ func _on_show_card_catalog():
 func _on_show_ai_settings():
 	ai_settings_window.show()
 
-func _on_shoggoth_models_initialized(llm_success: bool, embedding_success: bool):
+func _on_show_oracle_console():
+	oracle_console_window.show()
+
+func _on_shoggoth_models_initialized(llm_success: bool):
 	Chronicler.log_event(self, "ai_models_initialization_status", {
-		"llm_success": llm_success,
-		"embedding_success": embedding_success
+		"llm_success": llm_success
 	})
 	# Update UI or system behavior based on AI availability
-	if not llm_success or not embedding_success:
-		print("Some AI features may be unavailable. Check AI Settings for details.")
+	if not llm_success:
+		print("AI features may be unavailable. Check AI Settings for details.")
 
 func _setup_librarian() -> bool:
 	if not DirAccess.dir_exists_absolute(documents_folder):

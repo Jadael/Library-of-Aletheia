@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # security_protocol_daemon.gd
 extends Node
 const NAME = "👩‍💻 Security Analysis Daemon"

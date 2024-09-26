@@ -1,4 +1,6 @@
-# SyntaxSage.gd
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
+# syntax_sage.gd
 extends Node
 class_name SyntaxSage
 # Owner: Aletheia

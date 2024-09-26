@@ -1,12 +1,13 @@
 [gd_scene load_steps=3 format=3 uid="uid://cpg8lnwvkp57h"]
 
-[ext_resource type="Script" path="res://Daemons/card_catalog.gd" id="1_27oox"]
-[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/Aletheia_theme.tres" id="1_wlvl7"]
+[ext_resource type="Script" path="res://daemons/card_catalog.gd" id="1_27oox"]
+[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/aletheia_theme.tres" id="1_wlvl7"]
 
 [node name="CardCatalog" type="Window"]
 title = "🗃 Card Catalog"
 position = Vector2i(64, 64)
 size = Vector2i(768, 512)
+wrap_controls = true
 theme = ExtResource("1_wlvl7")
 script = ExtResource("1_27oox")
 

@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # aegis.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
@@ -62,7 +64,7 @@ func assess_threat_level() -> int:
 func update_threat_level(new_level: int):
 	if new_level != current_threat_level:
 		var old_level = current_threat_level
-		current_threat_level = new_level
+		current_threat_level = new_level #FIXME: W 0:00:01:0285   Integer used when an enum value is expected. If this is intended cast the integer to the enum type.
 		emit_signal("threat_level_changed", new_level)
 		Chronicler.log_event(self, "threat_level_changed", {
 			"old_level": THREAT_LEVELS.keys()[old_level],

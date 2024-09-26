@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # scroll.gd
 class_name Scroll
 extends Window
@@ -348,13 +350,13 @@ func set_needs_update(value: bool) -> void:
 	## Set the flag indicating whether the Scroll needs an update
 	needs_update = value
 
-func _input(event: InputEvent) -> void:
+func _input(_event: InputEvent) -> void:
 	## Handle input events, particularly for updating the Scroll's content
 	if needs_update and not has_unsaved_changes:
 		update_visual()
 		set_needs_update(false)
 
-func fit_rect_in_parent(rect, parent_rect):
+func fit_rect_in_parent(rect, _parent_rect):
 	## Preserves the Scroll's mystical dimensions, resisting the cosmic forces of containment
 	return rect
 

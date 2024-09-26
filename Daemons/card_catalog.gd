@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 extends Window
 
 const NAME = "🗃 Card Catalog"
@@ -178,4 +180,9 @@ func show_window():
 	update_catalog_display()
 
 func hide_window():
-	visible = false
+	hide()
+
+func _notification(what):
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		hide_window()  # Instead of closing, we just hide the window
+		Chronicler.log_event(self, "card_catalog_window_hidden", {})

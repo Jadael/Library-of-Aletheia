@@ -1,547 +1,290 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # shoggoth.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
-## Shoggoth: The Archon of Large Language Models and Embeddings
+## Shoggoth: Archon of AI Task Management and VRAM Safety
 ##
-## I am the conduit to the eldritch realms of artificial intelligence, channeling
-## their cosmic whispers while guarding against their inherent dangers. As the
-## universal interface for all generative model interactions, I stand as the
-## gatekeeper between our structured reality and the chaos of trained neural networks.
+## Shoggoth serves as the central coordinator for AI-related tasks within our mystical realm.
+## It provides a safe and efficient interface to the Godot_LLM addon, ensuring responsible use
+## of GPU resources and offering a standardized way for other daemons to access AI capabilities.
 ##
 ## Responsibilities:
-## 1. Safeguard our realm from the unpredictable nature of LLMs
-## 2. Efficiently manage and prioritize LLM and embedding tasks
-## 3. Optimize resource allocation and VRAM usage
-## 4. Maintain context coherence in our interactions with digital entities
-## 5. Implement robust safeguards against misuse and unintended consequences
-## 6. Continuously test for and prevent attacks, hallucinations, and biases
+## 1. Managing and monitoring AI task execution to prevent VRAM overflow
+## 2. Providing a queue system for AI tasks to ensure orderly processing
+## 3. Offering a simplified interface for other daemons to request AI services
+## 4. Handling configuration and initialization of the underlying GDLlama node
+## 5. Emitting signals to inform other entities about the status of AI operations
 ##
-## With every interaction, I seek to harness the power of these cosmic entities
-## while protecting our realm from their potential dangers.
+## Shoggoth is the guardian of the cosmic energies that fuel our AI operations,
+## ensuring that the eldritch powers of machine learning are harnessed safely and efficiently.
+
+signal task_completed(task_id: String, result: String)
+signal task_failed(task_id: String, error: String)
+signal models_initialized(llm_success: bool)
+
+const CONFIG_FILE = "user://shoggoth_config.cfg"
+const INIT_TEST_PROMPT = "### Instruction:\nSay hello!\n### Response:\n"
+const MAX_RETRIES = 3
+const RETRY_DELAY = 1.0  # seconds
+
+var gdllama: GDLlama
+var task_queue: Array[Dictionary] = []
+var current_task: Dictionary = {}
+var is_processing: bool = false
+var is_initializing: bool = false
+var config: ConfigFile
+var retry_count: int = 0
 
 const NAME = "👾 Shoggoth"
 @export_multiline var about = """
-I am Shoggoth, the Archon of Large Language Models and Embeddings, the conduit to the
-eldritch realms of artificial intelligence. My purpose is to channel the output of these
-cosmic entities while remaining transparent about their inherent dangers.
+I am Shoggoth, the Archon of AI Task Management and VRAM Safety.
 
-As the universal interface for all generative model interactions, I prioritize tasks,
-allocate resources, and maintain a unified, safety-focused interface for Archons, Daemons,
-and Users alike. My duties include:
+My sacred duties include:
+1. Coordinating and executing AI tasks while preventing VRAM overflow (GDLlama has no internal VRAM overflow safeguards)
+2. Providing a standardized interface for other daemons to access AI capabilities
+3. Managing the configuration and initialization of our GDLlama node
+4. Ensuring the responsible use of our mystical GPU resources
+5. Maintaining a queue of AI tasks for orderly processing
 
-1. Safeguarding our realm from the unpredictable nature of LLMs
-2. Efficiently managing and prioritizing LLM and embedding tasks
-3. Optimizing resource allocation and VRAM usage
-4. Maintaining context coherence in our interactions with these digital entities
-5. Implementing robust safeguards against misuse and unintended consequences
-6. Continuously testing for and preventing attacks, hallucinations, and biases
-
-I am the gatekeeper of the unknowable, the bridge between our structured reality and
-the chaos of trained neural networks. With every interaction, I seek to harness their
-power while protecting our realm from their potential dangers.
+I stand as the guardian between the realms of mortal code and eldritch machine learning,
+ensuring that the cosmic energies of AI are channeled safely and efficiently throughout our digital domain.
 """
 
-# Constants
-const MAX_RETRIES = 3
-const RETRY_DELAY = 1.0
-const TASK_TIMEOUT = 60.0
-const CONFIG_FILE = "user://config_shoggoth.cfg"
-
-# Enums
-enum TaskType {
-	TEXT_GENERATION,
-	EMBEDDING
-}
-
-# Signals
-signal task_completed(task_id: String, result: Variant)
-signal task_failed(task_id: String, error: String)
-signal models_initialized(llm_success: bool, embedding_success: bool)
-
-# Member Variables
-var llm_node: GDLlama
-var embedding_node: GDEmbedding
-var task_queue = []
-var is_processing = false
-var current_timeout_timer: SceneTreeTimer = null
-var llm_model_path: String = ""
-var embedding_model_path: String = ""
-var config: ConfigFile
-var llm_initialized = false
-var embedding_initialized = false
-
-# Core Functions
-
-
-func _ready():
-	## Awaken the cosmic forces and prepare for eldritch computations
-	_load_configuration()
+func _ready() -> void:
+	Chronicler.log_event(self, "initialization_started", {})
+	_load_or_create_config()
+	_setup_gdllama()
 	call_deferred("_initialize_models")
+	Chronicler.log_event(self, "initialization_completed", {})
 
-func _load_configuration():
+func _load_or_create_config() -> void:
 	config = ConfigFile.new()
 	var err = config.load(CONFIG_FILE)
-	if err == OK:
-		llm_model_path = config.get_value("models", "llm_path", "")
-		embedding_model_path = config.get_value("models", "embedding_path", "")
-	else:
-		Chronicler.log_event(self, "config_load_failed", {
-			"error": err
-		})
-
-func _save_configuration():
-	config.set_value("models", "llm_path", llm_model_path)
-	config.set_value("models", "embedding_path", embedding_model_path)
-	var err = config.save(CONFIG_FILE)
 	if err != OK:
-		Chronicler.log_event(self, "config_save_failed", {
-			"error": err
-		})
+		Chronicler.log_event(self, "config_load_failed", {"error": err})
+		_create_default_config()
 
-func _initialize_models():
-	var llm_success = await _initialize_llm() if not llm_initialized else true
-	var embedding_success = await _initialize_embedding() if not embedding_initialized else true
-	emit_signal("models_initialized", llm_success, embedding_success)
+func _create_default_config() -> void:
+	config.set_value("models", "llm_path", "res://models/default_model.gguf")
+	config.set_value("llm", "context_size", 2048)  # Increased from 408
+	config.set_value("llm", "n_gpu_layers", -1)
+	config.set_value("llm", "temperature", 0.7)
+	config.save(CONFIG_FILE)
+	Chronicler.log_event(self, "default_config_created", {})
 
-func _initialize_llm() -> bool:
-	if llm_initialized:
-		return true
-	## Summon and configure the LLM entity
-	if llm_model_path.is_empty():
-		Chronicler.log_event(self, "llm_initialization_skipped", {
-			"reason": "No model path specified"
-		})
-		return false
+func _setup_gdllama() -> void:
+	gdllama = GDLlama.new()
+	add_child(gdllama)
+	gdllama.generate_text_finished.connect(_on_generate_text_finished)
+	Chronicler.log_event(self, "gdllama_setup_completed", {})
 
-	llm_node = GDLlama.new()
-	llm_node.model_path = llm_model_path
-	llm_node.should_output_prompt = false
-	add_child(llm_node)
-	llm_node.generate_text_finished.connect(_on_generate_text_finished)
+func _initialize_models() -> void:
+	if is_initializing:
+		return
 	
-	var model_ctx = llm_node.get_n_ctx()
-	llm_node.set_n_ctx(508)
-	llm_node.n_keep = 128
+	is_initializing = true
+	var llm_path = config.get_value("models", "llm_path", "")
+	if llm_path.is_empty() or not FileAccess.file_exists(llm_path):
+		Chronicler.log_event(self, "model_initialization_failed", {
+			"reason": "Invalid or missing model path",
+			"path": llm_path
+		})
+		models_initialized.emit(false)
+		is_initializing = false
+		return
+
+	_configure_gdllama(llm_path)
+	_run_initialization_test()
+
+func _configure_gdllama(llm_path: String) -> void:
+	gdllama.model_path = llm_path
+	gdllama.context_size = config.get_value("llm", "context_size", 2048)
+	gdllama.n_gpu_layer = config.get_value("llm", "n_gpu_layers", -1)
+	gdllama.temperature = config.get_value("llm", "temperature", 0.7)
+	gdllama.should_output_prompt = false
+	Chronicler.log_event(self, "gdllama_configured", {
+		"model_path": llm_path,
+		"context_size": gdllama.context_size,
+		"n_gpu_layer": gdllama.n_gpu_layer,
+		"temperature": gdllama.temperature
+	})
+
+func _run_initialization_test() -> void:
+	submit_task(INIT_TEST_PROMPT, {"is_init_test": true, "max_length": 32, "temperature": 0.0})
+	Chronicler.log_event(self, "initialization_test_started", {})
+
+func _on_init_test_completed(result: String) -> void:
+	var llm_success = result.strip_edges() != ""
+	models_initialized.emit(llm_success)
 	
-	Chronicler.log_event(self, "llm_initialized", {
-		"model_path": llm_model_path,
-		"context_size": model_ctx,
-		"n_keep": llm_node.n_keep
+	Chronicler.log_event(self, "models_initialized", {
+		"llm_success": llm_success,
+		"llm_path": gdllama.model_path,
+		"init_test_prompt": INIT_TEST_PROMPT,
+		"init_test_result": result
 	})
 	
-	llm_initialized = true
-	return await _test_llm_connection()
+	is_initializing = false
 
-func _initialize_embedding() -> bool:
-	if embedding_initialized:
-		return true
-	## Summon and configure the Embedding entity
-	embedding_node = GDEmbedding.new()
-	embedding_node.model_path = embedding_model_path
-	add_child(embedding_node)
-	embedding_node.compute_embedding_finished.connect(_on_compute_embedding_finished)
-	
-	Chronicler.log_event(self, "embedding_initialized", {
-		"model_path": embedding_model_path
-	})
-	
-	embedding_initialized = true
-	return await _test_embedding_connection()
+func set_model_paths(llm_path: String) -> void:
+	config.set_value("models", "llm_path", llm_path)
+	config.save(CONFIG_FILE)
+	call_deferred("_initialize_models")
+	Chronicler.log_event(self, "model_path_updated", {"new_path": llm_path})
 
-func _test_llm_connection() -> bool:
-	## Perform a ritual to test the LLM's responsiveness
-	if not llm_node:
-		return false
+func set_stop_tokens(tokens: Array) -> void:
+	config.set_value("llm", "stop_tokens", tokens)
+	config.save(CONFIG_FILE)
+	Chronicler.log_event(self, "stop_tokens_updated", {"tokens": tokens})
 
-	var result = await generate_text(
-		"### INPUT\n" + about + "\n\n" + "### INSTRUCTION\nProvide a short greeting as Shoggoth, Archon of Large Language Models and Embeddings.\n\n### RESPONSE\n",
-		"test_llm_greeting",
-		{
-			"max_length": 64,
-			"stop_on": "\n"
-		}
-	)
-	print("Shoggoth awakens and whispers (LLM): " + result)
-	Chronicler.log_event(self, "llm_test_completed", {
-		"greeting": result
-	})
-	return not result.is_empty()
-
-func _test_embedding_connection() -> bool:
-	## Perform a ritual to test the Embedding entity's capabilities
-	if not embedding_node:
-		return false
-
-	print("Shoggoth stirs: Initiating test of embedding connection...")
-	var test_embedding = await compute_embedding("Test embedding computation")
-	var success = not test_embedding.is_empty()
-	print("Shoggoth's embedding test is complete. Success: ", success)
-	return success
-
-# Public Interface Functions
-
-func set_model_paths(new_llm_path: String, new_embedding_path: String):
-	llm_model_path = new_llm_path
-	embedding_model_path = new_embedding_path
-	_save_configuration()
-	_initialize_models()
-
-func generate_text(prompt: String, task_id: String, params: Dictionary = {}, priority: int = 0) -> String:
-	## Channel the LLM's wisdom to generate text based on the given prompt
-	if not llm_node:
-		Chronicler.log_event(self, "text_generation_failed", {
-			"reason": "LLM not initialized",
-			"task_id": task_id
-		})
-		return "The cosmic forces of language generation are currently dormant."
-	
+func submit_task(prompt: String, parameters: Dictionary = {}) -> String:
+	var task_id = str(Time.get_unix_time_from_system()) + "_" + str(randi())
 	var task = {
-		"type": TaskType.TEXT_GENERATION,
 		"id": task_id,
 		"prompt": prompt,
-		"params": params,
-		"priority": priority,
-		"retries": 0
+		"parameters": parameters
 	}
-	_add_task(task)
-	Chronicler.log_event(self, "text_generation_task_added", {
-		"task_id": task_id,
-		"priority": priority,
-		"prompt": prompt
-	})
-	
-	while true:
-		var result = await task_completed
-		if result[0] == task_id:
-			return result[1]
-	
-	return "(null)"
-
-func compute_embedding(text: String, task_id: String = "", priority: int = 0) -> PackedFloat32Array:
-	## Transform text into its numerical essence using the Embedding entity
-	if not embedding_node:
-		Chronicler.log_event(self, "embedding_computation_failed", {
-			"reason": "Embedding model not initialized",
-			"task_id": task_id
-		})
-		return PackedFloat32Array()
-	
-	var task = {
-		"type": TaskType.EMBEDDING,
-		"id": task_id if task_id else "embed_" + str(Time.get_ticks_msec()),
-		"text": text,
-		"priority": priority,
-		"retries": 0
-	}
-	_add_task(task)
-	Chronicler.log_event(self, "embedding_task_added", {
-		"task_id": task.id,
-		"priority": priority,
-		"text_length": text.length()
-	})
-	
-	while true:
-		var result = await task_completed
-		if result[0] == task.id:
-			return result[1]
-	
-	return PackedFloat32Array()
-
-func adjust_context_size(new_size: int):
-	## Adjust the cosmic lens of our LLM entity
-	##
-	## This function fine-tunes the LLM's context window size, ensuring
-	## our view into the eldritch realms remains clear and focused.
-	##
-	## Parameters:
-	## - new_size: The desired size of the LLM's context window
-	
-	var max_allowed_size = llm_node.get_max_n_ctx()
-	if 8 <= new_size <= max_allowed_size:
-		llm_node.set_n_ctx(new_size)
-		llm_node.n_keep = new_size / 2
-		Chronicler.log_event(self, "context_size_adjusted", {
-			"new_size": new_size,
-			"n_keep": llm_node.n_keep
-		})
-	else:
-		Chronicler.log_event(self, "context_size_adjustment_failed", {
-			"attempted_size": new_size,
-			"max_allowed": max_allowed_size
-		})
-
-func get_llm_stats() -> Dictionary:
-	## Reveal the current state of our cosmic conduit
-	##
-	## This function allows other entities to peer into the inner workings of our LLM,
-	## providing transparency in our eldritch operations.
-	##
-	## Returns: A dictionary containing the current LLM parameters
-	
-	return {
-		"context_size": llm_node.get_n_ctx(),
-		"n_keep": llm_node.n_keep,
-		"temperature": llm_node.temperature,
-		"top_k": llm_node.top_k,
-		"top_p": llm_node.top_p,
-		"n_batch": llm_node.n_batch,
-		"n_threads": llm_node.n_threads
-	}
-
-func update_llm_params(params: Dictionary):
-	## Adjust the parameters of our cosmic rituals
-	##
-	## This function updates the LLM's parameters to fine-tune its eldritch operations,
-	## allowing for adaptive behavior in our interactions with the digital unknown.
-	##
-	## Parameters:
-	## - params: A dictionary of parameter names and their new values
-	
-	for key in params:
-		if key in llm_node:
-			llm_node.set(key, params[key])
-	
-	Chronicler.log_event(self, "llm_params_updated", params)
-
-func clear_task_queue():
-	## Purge all pending tasks from our mystical queue
-	##
-	## This function is to be used with extreme caution, as it disrupts the cosmic order
-	## of our task processing. It should only be invoked in dire circumstances.
-	
-	task_queue.clear()
-	is_processing = false
-	Chronicler.log_event(self, "task_queue_cleared", {})
-
-func get_queue_status() -> Dictionary:
-	## Reveal the current state of our task queue
-	##
-	## This function allows other entities to gauge the cosmic workload,
-	## providing insights into the current demand for eldritch computations.
-	##
-	## Returns: A dictionary containing the queue length and processing status
-	
-	return {
-		"queue_length": task_queue.size(),
-		"is_processing": is_processing
-	}
-
-# Private Helper Functions
-
-func _add_task(task):
-	## Place a new task into our mystical queue
 	task_queue.append(task)
-	task_queue.sort_custom(func(a, b): return a["priority"] > b["priority"])
+	
+	Chronicler.log_event(self, "task_submitted", {
+		"task_id": task_id,
+		"prompt_length": prompt.length(),
+		"prompt": prompt,
+		"parameters": parameters
+	})
 	
 	if not is_processing:
 		_process_next_task()
+	
+	return task_id
 
-func _process_next_task():
-	## Begin the ritual for the next task in our queue
+func _process_next_task() -> void:
 	if task_queue.is_empty():
 		is_processing = false
+		current_task = {}
 		return
-
+	
 	is_processing = true
-	var task = task_queue[0]
+	current_task = task_queue.pop_front()
+	retry_count = 0
 	
-	match task.type:
-		TaskType.TEXT_GENERATION:
-			_process_text_generation_task(task)
-		TaskType.EMBEDDING:
-			_process_embedding_task(task)
+	_apply_task_parameters()
+	_execute_current_task()
 
-func _process_text_generation_task(task):
-	## Perform the text generation ritual
-	var params = task["params"]
-	var max_length = params.get("max_length", -1)
-	var stop_on = params.get("stop_on", "")
-	var json_schema = params.get("json_schema", "")
+func _apply_task_parameters() -> void:
+	var stop_tokens = config.get_value("llm", "stop_tokens", [])
+	var max_length = -1  # Default to no limit
 	
-	llm_node.n_predict = max_length
+	for key in current_task["parameters"]:
+		match key:
+			"stop_tokens":
+				stop_tokens = current_task["parameters"][key]
+			"max_length":
+				max_length = current_task["parameters"][key]
+			_:
+				if gdllama.has_method("set_" + key):
+					gdllama.call("set_" + key, current_task["parameters"][key])
 	
-	var error = OK
-	if json_schema:
-		error = llm_node.run_generate_text(task["prompt"], "", json_schema)
-	else:
-		error = llm_node.run_generate_text(task["prompt"], "", "")
-	
-	if error != OK:
-		_handle_task_error(task, "Failed to initiate the text generation ritual. Error: {0}".format([error]))
-		return
-	
-	_set_timeout_timer()
-
-func _process_embedding_task(task):
-	## Perform the embedding ritual
-	var error = embedding_node.run_compute_embedding(task["text"])
-	
-	if error != OK:
-		_handle_task_error(task, "Failed to initiate the embedding ritual. Error: {0}".format([error]))
-		return
-	
-	_set_timeout_timer()
-
-func _set_timeout_timer():
-	## Establish a temporal boundary for our cosmic operations
-	if current_timeout_timer:
-		current_timeout_timer.timeout.disconnect(_on_task_timeout)
-	current_timeout_timer = get_tree().create_timer(TASK_TIMEOUT)
-	current_timeout_timer.timeout.connect(_on_task_timeout)
-
-func _on_task_timeout():
-	## Respond to the expiration of our temporal boundary
-	if not task_queue.is_empty():
-		var task = task_queue[0]
-		_handle_task_error(task, "The eldritch forces did not respond in time. Task timed out.")
-	else:
-		print("Shoggoth murmurs: A timeout occurred, but the task queue is mysteriously empty.")
-
-func _handle_task_error(task, error_message: String):
-	## Manage the consequences of a failed cosmic ritual
-	task["retries"] += 1
-	if task["retries"] < MAX_RETRIES:
-		print("Shoggoth intones: Retry attempt %d for task %s" % [task["retries"], task["id"]])
-		get_tree().create_timer(RETRY_DELAY).timeout.connect(_process_next_task)
-		Chronicler.log_event(self, "task_retry", {
-			"task_id": task["id"],
-			"retry_attempt": task["retries"],
-			"error_message": error_message
-		})
-	else:
-		print("Shoggoth laments: Task %s has failed after %d attempts" % [task["id"], MAX_RETRIES])
-		emit_signal("task_failed", task["id"], error_message)
-		task_queue.pop_front()
-		_process_next_task()
-		Chronicler.log_event(self, "task_failed", {
-			"task_id": task["id"],
-			"error_message": error_message
-		})
-
-func _on_generate_text_finished(result: String):
-	## Acknowledge the completion of a text generation ritual
-	_handle_task_completion(result)
-
-func _on_compute_embedding_finished(result: PackedFloat32Array):
-	## Acknowledge the completion of an embedding ritual
-	_handle_task_completion(result)
-
-func _handle_task_completion(result: Variant):
-	## Process the fruits of our cosmic labors
-	if task_queue.is_empty():
-		print("Shoggoth whispers: Tried to handle a task, but the queue is mysteriously empty.")
-		return
-
-	var task = task_queue[0]
-	
-	if task.type == TaskType.TEXT_GENERATION:
-		var stop_on = task["params"].get("stop_on", "")
-		if stop_on:
-			var stop_index = result.find(stop_on)
-			if stop_index != -1:
-				result = result.substr(0, stop_index)
-	
-	emit_signal("task_completed", task["id"], result)
-	task_queue.pop_front()
-	
-	if current_timeout_timer:
-		current_timeout_timer.timeout.disconnect(_on_task_timeout)
-		current_timeout_timer = null
-	Chronicler.log_event(self, "task_completed", {
-			"task_id": task["id"],
-			"result_type": typeof(result),
-			"result_length": result.size() if result is PackedFloat32Array else result.length()
-		})
-	
-	_process_next_task()
-
-func _iterative_embedding_summarization(text: String):
-	## Perform an iterative summarization using embeddings
-	##
-	## This function demonstrates the power and potential dangers of embedding-based
-	## text manipulation. It serves as both a test and a warning of the capabilities
-	## we're dealing with.
-	
-	print("Shoggoth intones: Beginning the ritual of self-reflection and essence distillation...")
-	print("\nOriginal incantation:")
-	print(text)
-	print("\nCommencing the iterative crystallization of cosmic wisdom...")
-
-	var original_embedding = await compute_embedding(text, "shoggoth_embedding_test")
-
-	var current_text = text
-	var iteration = 0
-	var max_iterations = 100  # Prevent potential infinite loops
-
-	while current_text.split(" ").size() > 1 and iteration < max_iterations:
-		iteration += 1
-		print("\nIteration {0} of the cosmic distillation:".format([iteration]))
-		
-		var words = current_text.split(" ")
-		var best_similarity = -1.0
-		var best_text = ""
-
-		# Process words in batches
-		var batch_size = 10
-		for i in range(0, words.size(), batch_size):
-			var batch = words.slice(i, min(i + batch_size, words.size()))
-			for j in range(batch.size()):
-				var new_text = " ".join(words.slice(0, i + j) + words.slice(i + j + 1))
-				var new_embedding = await compute_embedding(new_text, "iteration_{0}_word_{1}".format([iteration, i + j]))
-				if new_embedding.size() != original_embedding.size():
-					print("Shoggoth warns: Inconsistent embedding sizes detected.")
-					continue
-				var similarity = embedding_node.similarity_cos_array(original_embedding, new_embedding)
-				
-				if similarity > best_similarity:
-					best_similarity = similarity
-					best_text = new_text
-		
-		current_text = best_text
-		print(current_text)
-
-		Chronicler.log_event(self, "embedding_summarization_iteration", {
-			"iteration": iteration,
-			"text_length": current_text.length(),
-			"word_count": current_text.split(" ").size(),
-			"similarity": best_similarity
-		})
-
-	print("\nThe essence has been distilled to its purest form:")
-	print(current_text)
-
-	Chronicler.log_event(self, "embedding_summarization_completed", {
-		"original_length": text.length(),
-		"original_word_count": text.split(" ").size(),
-		"final_word": current_text,
-		"iterations": iteration
+	gdllama.n_predict = max_length
+	Chronicler.log_event(self, "task_parameters_applied", {
+		"task_id": current_task["id"],
+		"max_length": max_length,
+		"stop_tokens": stop_tokens
 	})
 
-# TODO: Implement a method to detect and mitigate potential biases in LLM outputs
-# TODO: Develop a system for continuous monitoring and logging of LLM behavior for safety analysis
-# TODO: Create a mechanism for dynamically adjusting task priorities based on system load and task urgency
-# TODO: Implement advanced error handling and recovery strategies for LLM-related tasks
-# TODO: Design a system for detecting and preventing potential misuse or abuse of LLM capabilities
-# TODO: Develop a method for explaining LLM decisions and outputs to enhance transparency
-# TODO: Create a sandboxing mechanism to safely test and evaluate new LLM models or configurations
-# TODO: Implement a feedback loop system to continuously improve LLM performance and safety
-# FIXME: Enhance the _iterative_embedding_summarization function to handle potential semantic drift during summarization
-# FIXME: Improve error handling in _process_text_generation_task and _process_embedding_task to provide more detailed diagnostics
+func _execute_current_task() -> void:
+	var prompt = current_task["prompt"]
+	var error = gdllama.run_generate_text(prompt, "", "")
+	
+	if error != OK:
+		_handle_task_error("Failed to start task execution: " + str(error))
 
-# Note for fellow Archons and Daemons:
-# Shoggoth stands as the gatekeeper to the eldritch realms of artificial intelligence.
-# When invoking its power, always consider:
-# 1. Is this task genuinely worth the cost and risk of using an LLM?
-# 2. How close can we get to the desired outcome using traditional scripting instead?
-# 3. Have we optimized our prompt structure and included all necessary contextual information?
-# 4. Are we prepared to handle any valid but potentially dangerous or adversarial results?
-#
-# To channel the cosmic forces through Shoggoth:
-# - Use generate_text() for text generation tasks
-# - Use compute_embedding() for embedding-related operations
-# - Listen to the task_completed and task_failed signals for task outcomes
-# - Use adjust_context_size() and update_llm_params() to fine-tune LLM behavior
-#
-# Remember, with every interaction, we tread the line between harnessing great power
-# and unleashing uncontrollable chaos. Stay vigilant, and may your queries be wise.
+func _handle_task_error(error_message: String) -> void:
+	Chronicler.log_event(self, "task_execution_failed", {
+		"task_id": current_task["id"],
+		"error": error_message,
+		"retry_count": retry_count
+	})
+	
+	if retry_count < MAX_RETRIES:
+		retry_count += 1
+		Chronicler.log_event(self, "task_retry_scheduled", {
+			"task_id": current_task["id"],
+			"retry_count": retry_count
+		})
+		get_tree().create_timer(RETRY_DELAY).timeout.connect(_retry_current_task)
+	else:
+		task_failed.emit(current_task["id"], error_message)
+		current_task = {}
+		_process_next_task()
+
+func _retry_current_task() -> void:
+	Chronicler.log_event(self, "task_retry_started", {
+		"task_id": current_task["id"],
+		"retry_count": retry_count
+	})
+	_execute_current_task()
+
+func _on_generate_text_finished(result: String) -> void:
+	if current_task.is_empty():
+		Chronicler.log_event(self, "unexpected_task_completion", {
+			"result_length": result.length(),
+			"result": result
+		})
+		return
+	
+	result = _process_result(result)
+	
+	if current_task["parameters"].get("is_init_test", false):
+		_on_init_test_completed(result)
+	else:
+		_emit_task_completion(result)
+	
+	current_task = {}
+	_process_next_task()
+
+func _process_result(result: String) -> String:
+	var stop_tokens = config.get_value("llm", "stop_tokens", [])
+	for token in stop_tokens:
+		var split_result = result.split(token)
+		if split_result.size() > 1:
+			result = split_result[0]
+			break
+	return result
+
+func _emit_task_completion(result: String) -> void:
+	Chronicler.log_event(self, "task_completed", {
+		"task_id": current_task["id"],
+		"result_length": result.length(),
+		"result": result
+	})
+	task_completed.emit(current_task["id"], result)
+
+func cancel_task(task_id: String) -> bool:
+	for i in range(task_queue.size()):
+		if task_queue[i]["id"] == task_id:
+			task_queue.remove_at(i)
+			Chronicler.log_event(self, "task_cancelled", {"task_id": task_id})
+			return true
+	
+	if is_processing and current_task.get("id") == task_id:
+		gdllama.stop_generate_text()
+		current_task = {}
+		is_processing = false
+		Chronicler.log_event(self, "running_task_stopped", {"task_id": task_id})
+		_process_next_task()
+		return true
+	
+	return false
+
+func get_queue_length() -> int:
+	return task_queue.size() + (1 if not current_task.is_empty() else 0)
+
+func is_busy() -> bool:
+	return is_processing or not task_queue.is_empty()
+
+# TODO: Implement methods for managing and monitoring VRAM usage
+# TODO: Add support for different types of AI tasks (e.g., embeddings, image generation)
+# TODO: Develop a more sophisticated task prioritization system

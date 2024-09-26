@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # security_briefing_daemon.gd
 extends Node
 const NAME = "👩‍🏫 Security Briefing Daemon"

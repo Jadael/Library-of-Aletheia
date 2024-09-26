@@ -1,6 +1,7 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # chronicle_viewer.gd
 extends Window
-class_name ChronicleViewer
 const NAME = "🔭 Chronicle Viewer"
 # Owner: Chronicler
 

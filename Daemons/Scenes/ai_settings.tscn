@@ -1,11 +1,13 @@
 [gd_scene load_steps=3 format=3 uid="uid://cn17uqapvxn2f"]
 
-[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/Aletheia_theme.tres" id="1_jcxv1"]
-[ext_resource type="Script" path="res://Daemons/ai_settings.gd" id="2_3smpe"]
+[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/aletheia_theme.tres" id="1_jcxv1"]
+[ext_resource type="Script" path="res://daemons/ai_settings.gd" id="2_3smpe"]
 
 [node name="AI Settings" type="Window"]
-position = Vector2i(0, 36)
-size = Vector2i(512, 128)
+title = "👾 AI Settings"
+position = Vector2i(36, 36)
+size = Vector2i(512, 282)
+wrap_controls = true
 theme = ExtResource("1_jcxv1")
 script = ExtResource("2_3smpe")
 
@@ -42,40 +44,70 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
+[node name="Status" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Status:"
+
 [node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(256, 32)
 layout_mode = 2
-size_flags_vertical = 6
+size_flags_vertical = 3
 text = "(Model status...)"
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="LLMPathInput" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="LLMLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Text generation model (GDLlama-compatible GGUF):"
+
+[node name="LLMSection" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="LLMPathInput" type="LineEdit" parent="MarginContainer/VBoxContainer/LLMSection"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "example://models/llm_model.gguf"
+structured_text_bidi_override = 2
 
-[node name="LLMBrowseButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="LLMBrowseButton" type="Button" parent="MarginContainer/VBoxContainer/LLMSection"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 text = "📁 Browse..."
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="StopTokensLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Stop tokens (comma separated):"
+
+[node name="StopTokensInput" type="LineEdit" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="EmbeddingPathInput" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer2"]
+[node name="EmbedLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Embedding model (GDLlama-compatible GGUF):"
+
+[node name="EmbeddingSection" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="EmbeddingPathInput" type="LineEdit" parent="MarginContainer/VBoxContainer/EmbeddingSection"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "example://models/embedding_model.gguf"
+structured_text_bidi_override = 2
 
-[node name="EmbeddingBrowseButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer2"]
+[node name="EmbeddingBrowseButton" type="Button" parent="MarginContainer/VBoxContainer/EmbeddingSection"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4

@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # aletheia.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
@@ -20,7 +22,7 @@ extends Node
 ## @tutorial: https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_documentation_comments.html
 
 ## The sacred purpose and guiding principles of Aletheia
-const NAME = "📚 Aletheia"
+const NAME = "🧙‍♀️ Aletheia"
 @export_multiline var about = """
 I am Aletheia, the Archon of Project Knowledge and Documentation.
 
@@ -46,8 +48,8 @@ signal documentation_generated(num_scripts: int) ## Resounds when project-wide d
 signal script_documentation_updated(script_name: String) ## Whispers when a single script's documentation is refreshed
 
 # Exported Variables: The earthly tethers to our mystical realms
-@export_dir var scripts_folder: String = "res://Daemons" ## Source folder for project scripts
-@export_dir var docs_output_folder: String = "res://Daemons/docs/" ## Output folder for generated documentation
+@export_dir var scripts_folder: String = "res://daemons" ## Source folder for project scripts
+@export_dir var docs_output_folder: String = "res://daemons/docs/" ## Output folder for generated documentation
 
 # Daemon Instances: My loyal assistants in the pursuit of knowledge
 var code_seer: CodeSeer ## The discerning eye that examines our sacred scripts
@@ -62,9 +64,9 @@ func _ready() -> void:
 
 func _summon_documentation_daemons() -> void:
 	## Initialize and prepare the Documentation Daemons for their sacred duties
-	code_seer = preload("res://Daemons/Scenes/code_seer.tscn").instantiate()
-	syntax_sage = preload("res://Daemons/Scenes/syntax_sage.tscn").instantiate()
-	docu_keeper = preload("res://Daemons/Scenes/docu_keeper.tscn").instantiate()
+	code_seer = preload("res://daemons/scenes/code_seer.tscn").instantiate()
+	syntax_sage = preload("res://daemons/scenes/syntax_sage.tscn").instantiate()
+	docu_keeper = preload("res://daemons/scenes/docu_keeper.tscn").instantiate()
 	
 	add_child(code_seer)
 	add_child(syntax_sage)

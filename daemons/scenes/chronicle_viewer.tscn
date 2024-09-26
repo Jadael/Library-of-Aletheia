@@ -1,14 +1,14 @@
 [gd_scene load_steps=3 format=3 uid="uid://dx8ncjnvajh34"]
 
-[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/Aletheia_theme.tres" id="1_54ljn"]
-[ext_resource type="Script" path="res://Daemons/ChronicleViewer.gd" id="1_66vd4"]
+[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/aletheia_theme.tres" id="1_1kwlb"]
+[ext_resource type="Script" path="res://daemons/chronicle_viewer.gd" id="2_kl801"]
 
 [node name="ChronicleViewer" type="Window"]
 position = Vector2i(0, 36)
 size = Vector2i(1280, 720)
 min_size = Vector2i(256, 256)
-theme = ExtResource("1_54ljn")
-script = ExtResource("1_66vd4")
+theme = ExtResource("1_1kwlb")
+script = ExtResource("2_kl801")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 anchors_preset = 15

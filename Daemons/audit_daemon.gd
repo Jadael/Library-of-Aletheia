@@ -1,3 +1,5 @@
+# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
+# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # audit_daemon.gd
 extends Node
 const NAME = "👩‍⚖️ Audit Daemon"
