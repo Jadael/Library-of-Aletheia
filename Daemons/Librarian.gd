@@ -210,13 +210,18 @@ func update_codex_content(codex: Node, new_content: String):
 		})
 		return
 
-	codex.update_content(new_content)
-	observe_document(codex.file_path)
-	
-	Chronicler.log_event(self, "codex_content_updated", {
-		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()),
-		"new_content_length": new_content.length()
-	})
+	if codex.body != new_content:
+		codex.update_content(new_content)
+		observe_document(codex.file_path)
+		
+		Chronicler.log_event(self, "codex_content_updated", {
+			"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()),
+			"new_content_length": new_content.length()
+		})
+	else:
+		Chronicler.log_event(self, "codex_content_unchanged", {
+			"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id())
+		})
 
 ## Alters the metadata of a Codex
 func update_codex_metadata(codex: Node, key: String, new_value: String):

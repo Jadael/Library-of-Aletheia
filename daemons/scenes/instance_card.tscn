@@ -1,0 +1,107 @@
+[gd_scene load_steps=4 format=3 uid="uid://bjdm7mlonjmhv"]
+
+[ext_resource type="Script" path="res://daemons/scenes/instance_card.gd" id="1_2855g"]
+[ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/aletheia_theme.tres" id="1_ivk5i"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vyafr"]
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+bg_color = Color(0.164706, 0.164706, 0.164706, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="InstanceCard" type="Control"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 3
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_ivk5i")
+script = ExtResource("1_2855g")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_vyafr")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusLabel" type="Label" parent="Panel/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 32)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Status"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="TitleLabel" type="Label" parent="Panel/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 32)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Title"
+clip_text = true
+text_overrun_behavior = 4
+
+[node name="PathLabel" type="TextEdit" parent="Panel/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 32)
+layout_mode = 2
+text = "Path"
+editable = false
+wrap_mode = 1
+
+[node name="DateLabel" type="Label" parent="Panel/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 32)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Date"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="HashLabel" type="TextEdit" parent="Panel/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 32)
+layout_mode = 2
+text = "Hash"
+editable = false
+wrap_mode = 1
+indent_wrapped_lines = true
+
+[node name="MetadataLabel" type="TextEdit" parent="Panel/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Metadata"
+editable = false
+wrap_mode = 1
+indent_wrapped_lines = true
+use_custom_word_separators = true
+custom_word_separators = ",|;"
+
+[node name="OpenButton" type="Button" parent="Panel/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Open"

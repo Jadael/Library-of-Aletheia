@@ -1,7 +1,7 @@
 # A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
 # THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
+# card_catalog.gd
 extends Window
-
 const NAME = "🗃 Card Catalog"
 @export_multiline var about = """
 I am the CardCatalog, a mystical tome that reveals the hidden knowledge of our library.
@@ -10,10 +10,11 @@ without disturbing their slumber. I am the bridge between the Archivist's meticu
 and the mortal realm, offering insights into the grand tapestry of our collected wisdom.
 """
 
+const InstanceCardScene = preload("res://daemons/scenes/instance_card.tscn")
+
 @onready var document_tree: Tree = %DocumentTree
 @onready var document_title: Label = %DocumentTitle
 @onready var instances_list: VBoxContainer = %InstancesList
-@onready var history_display: TextEdit = %HistoryDetails
 
 var card_catalog: Dictionary = {}
 
@@ -29,7 +30,6 @@ func _ready():
 	update_catalog_display()
 	
 	%OpenButton.connect("pressed", Callable(Librarian, "open_document_dialog"))
-	#%ScanFolderButton.connect("pressed", Callable(Librarian, "scan_folder"))
 	%OpenUserFolderButton.pressed.connect(_on_open_user_folder_pressed)
 	%AuditButton.pressed.connect(_on_audit_pressed)
 
@@ -95,10 +95,14 @@ func _on_document_selected():
 func _display_document_info(document_id: String):
 	var doc_info = Archivist.card_catalog[document_id]
 	var latest_observation = _get_latest_observation(doc_info["observations"])
-	document_title.text = latest_observation.get("metadata", {}).get("title", latest_observation["path"].get_file())
+	if document_title:
+		document_title.text = latest_observation.get("metadata", {}).get("title", latest_observation["path"].get_file())
+	else:
+		Chronicler.log_event(self, "document_title_node_missing", {
+			"document_id": document_id
+		})
 	
 	_populate_instances_list(doc_info)
-	_update_history_tab(doc_info)
 
 func _populate_instances_list(doc_info: Dictionary):
 	for child in instances_list.get_children():
@@ -107,26 +111,25 @@ func _populate_instances_list(doc_info: Dictionary):
 	var sorted_observations = doc_info["observations"].values()
 	sorted_observations.sort_custom(func(a, b): return a["timestamp"] > b["timestamp"])
 	
-	var unique_paths = {}
+	var unique_locations = {}
 	for observation in sorted_observations:
-		var path = observation["path"]
-		if path not in unique_paths:
-			unique_paths[path] = observation
+		var location = observation["path"].get_base_dir()
+		if location not in unique_locations:
+			unique_locations[location] = observation
 	
-	for observation in unique_paths.values():
-		var button = Button.new()
-		var file_name = observation["path"].get_file()
-		var status_icon = _get_status_icon(observation["status"])
-		var status_text = Archivist.DocumentStatus.keys()[observation["status"]]
-		var last_observed_date = Time.get_date_string_from_unix_time(observation["timestamp"])
-		button.text = status_icon + " Open: " + file_name
-		button.tooltip_text = "Last observed: " + last_observed_date + "\nStatus: " + status_text + "\nPath: " + observation["path"]
-		button.pressed.connect(_on_instance_button_pressed.bind(observation["path"]))
-		instances_list.add_child(button)
+	for observation in unique_locations.values():
+		var instance_card = _create_instance_card(observation)
+		instances_list.add_child(instance_card)
 
 	Chronicler.log_event(self, "instances_list_populated", {
-		"instances_count": unique_paths.size()
+		"instances_count": unique_locations.size()
 	})
+
+func _create_instance_card(observation: Dictionary) -> Control:
+	var instance_card = InstanceCardScene.instantiate()
+	instance_card.setup(observation)
+	instance_card.open_document_requested.connect(_on_instance_button_pressed)
+	return instance_card
 
 func _get_status_icon(status: int) -> String:
 	match status:
@@ -143,27 +146,9 @@ func _get_status_icon(status: int) -> String:
 		_:
 			return "❓"
 
-func _update_history_tab(doc_info: Dictionary):
-	var history_text = "Document History:\n\n"
-	var sorted_observations = doc_info["observations"].values()
-	sorted_observations.sort_custom(func(a, b): return a["timestamp"] > b["timestamp"])
-	
-	for observation in sorted_observations:
-		history_text += "Timestamp: " + Time.get_datetime_string_from_unix_time(observation["timestamp"]) + "\n"
-		history_text += "Path: " + observation["path"] + "\n"
-		history_text += "Status: " + Archivist.DocumentStatus.keys()[observation["status"]] + "\n"
-		history_text += "Content Hash: " + observation["content_hash"] + "\n"
-		if observation["metadata"]:
-			history_text += "Metadata:\n"
-			for key in observation["metadata"]:
-				history_text += "  " + key + ": " + str(observation["metadata"][key]) + "\n"
-		history_text += "\n"
-	
-	history_display.text = history_text
-
 func _on_instance_button_pressed(path: String):
 	Librarian.open_document(path)
-	hide_window()  # Optionally hide the card catalog window after opening a document
+	#hide_window()
 
 func _on_open_user_folder_pressed():
 	var user_dir = OS.get_user_data_dir()

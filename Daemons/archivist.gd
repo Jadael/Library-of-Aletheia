@@ -71,25 +71,36 @@ func observe_document(file_path: String, metadata: Dictionary = {}) -> void:
 		"observations": {}
 	})
 	
-	var observation = {
-		"timestamp": Time.get_unix_time_from_system(),
-		"path": file_path,
-		"content_hash": content_hash,
-		"metadata": metadata,
-		"status": DocumentStatus.AVAILABLE
-	}
+	var latest_observation = _get_latest_observation(entry["observations"])
+	var current_status = _evaluate_document_status(file_path, latest_observation.get("content_hash", ""))
 	
-	var observation_key = file_path + ":" + content_hash
-	entry["observations"][observation_key] = observation
-	card_catalog[document_id] = entry
-	
-	update_catalog_entry(document_id, UpdateUrgency.HIGH)
-	
-	Chronicler.log_event(self, "document_observed", {
-		"document_id": document_id,
-		"file_path": file_path,
-		"content_hash": content_hash
-	})
+	if current_status != latest_observation.get("status", DocumentStatus.AVAILABLE) or content_hash != latest_observation.get("content_hash", ""):
+		var observation = {
+			"timestamp": Time.get_unix_time_from_system(),
+			"path": file_path,
+			"content_hash": content_hash,
+			"metadata": metadata,
+			"status": current_status
+		}
+		
+		var observation_key = file_path + ":" + content_hash
+		entry["observations"][observation_key] = observation
+		card_catalog[document_id] = entry
+		
+		update_catalog_entry(document_id, UpdateUrgency.HIGH)
+		
+		Chronicler.log_event(self, "document_observed", {
+			"document_id": document_id,
+			"file_path": file_path,
+			"content_hash": content_hash,
+			"status": DocumentStatus.keys()[current_status]
+		})
+	else:
+		Chronicler.log_event(self, "document_unchanged", {
+			"document_id": document_id,
+			"file_path": file_path,
+			"status": DocumentStatus.keys()[current_status]
+		})
 
 func update_catalog_entry(document_id: String, urgency: UpdateUrgency = UpdateUrgency.MEDIUM) -> void:
 	var entry = card_catalog.get(document_id)
@@ -150,6 +161,12 @@ func _evaluate_document_status(file_path: String, known_hash: String) -> int:
 	if current_hash == known_hash:
 		return DocumentStatus.AVAILABLE
 	else:
+		Chronicler.log_event(self, "document_status_changed", {
+			"file_path": file_path,
+			"old_hash": known_hash,
+			"new_hash": current_hash,
+			"new_status": "MODIFIED"
+		})
 		return DocumentStatus.MODIFIED
 
 func _start_background_housekeeping() -> void:
@@ -192,8 +209,23 @@ func _save_card_catalog() -> void:
 	else:
 		Chronicler.log_event(self, "card_catalog_save_failed", {})
 
-func _generate_content_hash(content: String) -> String:
-	return content.md5_text()
+func _generate_content_hash(input: String) -> String:
+	if FileAccess.file_exists(input):
+		var file = FileAccess.open(input, FileAccess.READ)
+		var content = file.get_as_text()
+		file.close()
+		return content.md5_text()
+	else:
+		return input.md5_text()
+
+func _get_latest_observation(observations: Dictionary) -> Dictionary:
+	var latest_timestamp = 0
+	var latest_observation = {}
+	for observation in observations.values():
+		if observation["timestamp"] > latest_timestamp:
+			latest_timestamp = observation["timestamp"]
+			latest_observation = observation
+	return latest_observation
 
 func _find_or_create_document_id(file_path: String, content_hash: String) -> String:
 	for document_id in card_catalog:
