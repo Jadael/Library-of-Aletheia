@@ -1,8 +1,8 @@
 # A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
 # THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
+
 # ai_settings.gd
 extends Window
-
 const NAME = "👁‍🗨 AI Settings"
 @export_multiline var about = """
 I am the AI Settings daemon, the mystical interface between mortal users and 
@@ -70,9 +70,6 @@ func _on_apply_button_pressed():
 	
 	Shoggoth.set_model_paths(new_llm_path)
 	Shoggoth.set_stop_tokens(stop_tokens)
-	
-	# Connect to the models_initialized signal
-	#Shoggoth.connect("models_initialized", Callable(self, "_on_models_initialized_after_apply"), CONNECT_ONE_SHOT)
 	
 	Chronicler.log_event(self, "ai_settings_updated", {
 		"new_llm_path": new_llm_path,

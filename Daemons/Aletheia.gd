@@ -56,11 +56,11 @@ var code_seer: CodeSeer ## The discerning eye that examines our sacred scripts
 var syntax_sage: SyntaxSage ## The wordsmith that breathes life into our documentation
 var docu_keeper: DocuKeeper ## The keeper of our documented wisdom
 
+# TODO: Implement a configuration system to control documentation generation on startup/request
+# TODO: Develop metrics to assess if the project is, in the abstract, "well documented"
 func _ready() -> void:
 	_summon_documentation_daemons()
-	#generate_project_documentation() # Uncomment to test the self-documentation process
-	# TODO: Implement a configuration system to control documentation generation on startup/request
-	# TODO: Develop metrics to assess if the project is, in the abstract, "well documented"
+	#generate_project_documentation() # Uncomment to test the self-documentation process (currently not working)
 
 func _summon_documentation_daemons() -> void:
 	## Initialize and prepare the Documentation Daemons for their sacred duties

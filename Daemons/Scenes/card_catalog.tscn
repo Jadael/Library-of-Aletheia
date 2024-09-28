@@ -20,14 +20,12 @@ grow_vertical = 2
 size_flags_vertical = 3
 
 [node name="MarginContainer" type="MarginContainer" parent="HSplitContainer"]
+custom_minimum_size = Vector2(128, 256)
 layout_mode = 2
-size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/MarginContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 2.0
 
 [node name="HFlowContainer" type="HFlowContainer" parent="HSplitContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -55,34 +53,30 @@ layout_mode = 2
 size_flags_vertical = 4
 text = "📂 Open User Folder"
 
-[node name="DocumentTree" type="Tree" parent="HSplitContainer/MarginContainer/VBoxContainer"]
+[node name="SearchBox" type="LineEdit" parent="HSplitContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Search"
+
+[node name="SortOption" type="OptionButton" parent="HSplitContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="FilterOption" type="OptionButton" parent="HSplitContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MarginContainer2" type="MarginContainer" parent="HSplitContainer"]
+custom_minimum_size = Vector2(256, 256)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 3.0
+
+[node name="DocumentTree" type="Tree" parent="HSplitContainer/MarginContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 size_flags_stretch_ratio = 2.0
-
-[node name="MarginContainer2" type="MarginContainer" parent="HSplitContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 3.0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/MarginContainer2"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="DocumentTitle" type="Label" parent="HSplitContainer/MarginContainer2/VBoxContainer"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 64)
-layout_mode = 2
-size_flags_vertical = 1
-text = "(Document title)"
-
-[node name="MarginContainer" type="MarginContainer" parent="HSplitContainer/MarginContainer2/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="InstancesList" type="VBoxContainer" parent="HSplitContainer/MarginContainer2/VBoxContainer/MarginContainer"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(256, 64)
-layout_mode = 2
+columns = 4
+column_titles_visible = true

@@ -1,5 +1,3 @@
-# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
-# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # librarian.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
@@ -18,6 +16,7 @@ extends Node
 ## 4. Facilitating safe updates to document content and metadata
 ## 5. Maintaining the integrity and accessibility of the collective knowledge
 ## 6. Implementing security measures to protect the library's contents
+## 7. Providing file status and content hash information to the Archivist
 ##
 ## The Librarian serves as the bridge between abstract knowledge and tangible documents,
 ## shaping the library's future through its decisions and actions.
@@ -37,6 +36,12 @@ enum AuthenticationLevel {
 	STANDARD,
 	ENHANCED,
 	STRICT
+}
+
+enum FileStatus {
+	AVAILABLE,
+	MISSING,
+	CORRUPTED
 }
 
 ## Exported Variables
@@ -117,11 +122,9 @@ func process_existing_documents():
 
 ## Observes a document and records its current state
 func observe_document(file_path: String):
-	var file = FileAccess.open(file_path, FileAccess.READ)
-	if file:
-		var content = file.get_as_text()
-		file.close()
-		
+	var file_status = get_file_status(file_path)
+	if file_status == FileStatus.AVAILABLE:
+		var content = _read_file_content(file_path)
 		var metadata = _extract_metadata(content)
 		Archivist.observe_document(file_path, metadata)
 		
@@ -131,7 +134,8 @@ func observe_document(file_path: String):
 		})
 	else:
 		Chronicler.log_event(self, "document_observation_failed", {
-			"file_path": file_path
+			"file_path": file_path,
+			"status": FileStatus.keys()[file_status]
 		})
 
 ## Summons a new Codex Daemon and its Scroll partner
@@ -180,7 +184,8 @@ func check_for_updates() -> bool:
 	var codices_to_banish = []
 
 	for codex in codex_collection:
-		if FileAccess.file_exists(codex.file_path):
+		var file_status = get_file_status(codex.file_path)
+		if file_status == FileStatus.AVAILABLE:
 			observe_document(codex.file_path)
 			if codex.has_changed():
 				codex.update()
@@ -336,8 +341,160 @@ func _on_scroll_closed(scroll: Scroll):
 	
 	Chronicler.log_event(self, "scroll_and_codex_closed", {
 		"scroll_id": Glyph.to_daemon_glyphs(scroll.get_instance_id()),
-		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()) if codex else null #FIXME: W 0:00:01:0280   Values of the ternary operator are not mutually compatible.
+		"codex_id": Glyph.to_daemon_glyphs(codex.get_instance_id()) if codex else null
 	})
+
+## Returns the status of a file
+func get_file_status(file_path: String) -> int:
+	if not FileAccess.file_exists(file_path):
+		return FileStatus.MISSING
+	
+	var file = FileAccess.open(file_path, FileAccess.READ)
+	if file:
+		file.close()
+		return FileStatus.AVAILABLE
+	else:
+		return FileStatus.CORRUPTED
+
+## Returns the content hash of a file
+func get_file_content_hash(file_path: String) -> String:
+	var content = _read_file_content(file_path)
+	if content.is_empty():
+		return ""
+	
+	var body = _extract_body(content)
+	return body.md5_text()
+
+## Reads the content of a file
+func _read_file_content(file_path: String) -> String:
+	var file = FileAccess.open(file_path, FileAccess.READ)
+	if file:
+		var content = file.get_as_text()
+		file.close()
+		return content
+	return ""
+
+## Extracts the body content from a document, excluding frontmatter
+func _extract_body(content: String) -> String:
+	var lines = content.split("\n")
+	var body_lines = []
+	var in_frontmatter = false
+	
+	for line in lines:
+		if line.strip_edges() == "---":
+			in_frontmatter = not in_frontmatter
+			continue
+		
+		if not in_frontmatter:
+			body_lines.append(line)
+	
+	return "\n".join(body_lines).strip_edges()
+
+## Writes content to a file
+func write_file_content(file_path: String, content: String) -> bool:
+	var file = FileAccess.open(file_path, FileAccess.WRITE)
+	if file:
+		file.store_string(content)
+		file.close()
+		Chronicler.log_event(self, "file_content_written", {
+			"file_path": file_path,
+			"content_length": content.length()
+		})
+		return true
+	else:
+		Chronicler.log_event(self, "file_write_failed", {
+			"file_path": file_path,
+			"error": FileAccess.get_open_error()
+		})
+		return false
+
+## Creates a backup of a file
+func create_file_backup(file_path: String) -> bool:
+	var backup_path = file_path + ".backup"
+	var content = _read_file_content(file_path)
+	if content.is_empty():
+		Chronicler.log_event(self, "backup_creation_failed", {
+			"file_path": file_path,
+			"reason": "Empty or unreadable file"
+		})
+		return false
+	
+	if write_file_content(backup_path, content):
+		Chronicler.log_event(self, "backup_created", {
+			"original_file": file_path,
+			"backup_file": backup_path
+		})
+		return true
+	return false
+
+## Restores a file from its backup
+func restore_file_from_backup(file_path: String) -> bool:
+	var backup_path = file_path + ".backup"
+	if not FileAccess.file_exists(backup_path):
+		Chronicler.log_event(self, "restore_failed", {
+			"file_path": file_path,
+			"reason": "Backup file not found"
+		})
+		return false
+	
+	var backup_content = _read_file_content(backup_path)
+	if backup_content.is_empty():
+		Chronicler.log_event(self, "restore_failed", {
+			"file_path": file_path,
+			"reason": "Empty or unreadable backup file"
+		})
+		return false
+	
+	if write_file_content(file_path, backup_content):
+		Chronicler.log_event(self, "file_restored", {
+			"file_path": file_path,
+			"backup_file": backup_path
+		})
+		return true
+	return false
+
+## Performs a safety check before critical operations
+func perform_safety_check(operation: String) -> bool:
+	if current_authentication_level == AuthenticationLevel.STRICT:
+		Chronicler.log_event(self, "safety_check_failed", {
+			"operation": operation,
+			"reason": "Strict authentication level active"
+		})
+		return false
+	
+	if is_system_locked("file_operations"):
+		Chronicler.log_event(self, "safety_check_failed", {
+			"operation": operation,
+			"reason": "File operations locked"
+		})
+		return false
+	
+	Chronicler.log_event(self, "safety_check_passed", {
+		"operation": operation
+	})
+	return true
+
+## Generates a summary of a document
+func generate_document_summary(file_path: String) -> String:
+	var content = _read_file_content(file_path)
+	if content.is_empty():
+		return "Unable to generate summary: Empty or unreadable file."
+	
+	var body = _extract_body(content)
+	var words = body.split(" ")
+	var summary = ""
+	
+	if words.size() <= 50:
+		summary = body
+	else:
+		summary = " ".join(words.slice(0, 50)) + "..."
+	
+	Chronicler.log_event(self, "summary_generated", {
+		"file_path": file_path,
+		"summary_length": summary.length()
+	})
+	
+	return summary
 
 # TODO: Implement a robust error handling system for file operations to prevent data loss
 # TODO: Develop a versioning system for documents to track changes over time
@@ -351,6 +508,8 @@ func _on_scroll_closed(scroll: Scroll):
 ## - Listen for the codex_summoned, codex_banished, and codex_updated signals
 ## - Call process_existing_documents() to awaken dormant knowledge
 ## - Invoke update_codex_content() or update_codex_metadata() to alter Codices
+## - Use get_file_status() and get_file_content_hash() for file operations
+## - Utilize create_file_backup() and restore_file_from_backup() for document safety
 ##
 ## Remember: Our actions shape the future of our mystical library. Let us treat each
 ## document with the reverence it deserves, for in its pages lies the potential for

@@ -1,6 +1,3 @@
-# A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
-# THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
-# archivist.gd
 extends Node
 
 const NAME = "🎬 Archivist"
@@ -53,6 +50,11 @@ func _ready() -> void:
 func perform_full_audit() -> void:
 	Chronicler.log_event(self, "full_audit_started", {})
 	
+	var document_ids = card_catalog.keys()
+	for i in range(document_ids.size()):
+		for j in range(i + 1, document_ids.size()):
+			_compare_and_merge_entries(document_ids[i], document_ids[j])
+	
 	for document_id in card_catalog.keys():
 		update_catalog_entry(document_id, UpdateUrgency.LOW)
 
@@ -62,45 +64,130 @@ func perform_full_audit() -> void:
 		"entries_audited": card_catalog.size()
 	})
 
+func _compare_and_merge_entries(id1: String, id2: String) -> void:
+	var entry1 = card_catalog.get(id1)
+	var entry2 = card_catalog.get(id2)
+	
+	if not entry1 or not entry2:
+		return
+	
+	var latest_obs1 = _get_latest_observation(entry1)
+	var latest_obs2 = _get_latest_observation(entry2)
+	
+	if not latest_obs1 or not latest_obs2:
+		return
+	
+	# Compare content hashes (most strict)
+	if latest_obs1["content_hash"] == latest_obs2["content_hash"]:
+		_merge_entries(id1, id2)
+		return
+	
+	# Compare file names
+	if latest_obs1["path"].get_file() == latest_obs2["path"].get_file():
+		# Check if metadata is compatible
+		if _are_metadata_compatible(latest_obs1["metadata"], latest_obs2["metadata"]):
+			_merge_entries(id1, id2)
+			return
+	
+	# If we reach here, entries are considered distinct
+
+func _merge_entries(id1: String, id2: String) -> void:
+	var entry1 = card_catalog[id1]
+	var entry2 = card_catalog[id2]
+	
+	# Merge observations
+	for obs_key in entry2["observations"]:
+		if obs_key not in entry1["observations"]:
+			entry1["observations"][obs_key] = entry2["observations"][obs_key]
+	
+	# Merge metadata
+	var latest_obs1 = _get_latest_observation(entry1)
+	var latest_obs2 = _get_latest_observation(entry2)
+	latest_obs1["metadata"] = _merge_metadata(latest_obs1["metadata"], latest_obs2["metadata"])
+	
+	# Remove the second entry
+	card_catalog.erase(id2)
+	
+	Chronicler.log_event(self, "entries_merged", {
+		"merged_id": id2,
+		"into_id": id1
+	})
+
+func _are_metadata_compatible(metadata1: Dictionary, metadata2: Dictionary) -> bool:
+	for key in metadata1:
+		if key in metadata2 and metadata1[key] != metadata2[key]:
+			return false
+	return true
+
+func _merge_metadata(metadata1: Dictionary, metadata2: Dictionary) -> Dictionary:
+	var merged = metadata1.duplicate()
+	for key in metadata2:
+		if key not in merged:
+			merged[key] = metadata2[key]
+	return merged
+
 func observe_document(file_path: String, metadata: Dictionary = {}) -> void:
 	var content_hash = _generate_content_hash(file_path)
-	var document_id = _find_or_create_document_id(file_path, content_hash)
+	var existing_document_id = _find_existing_document_id(file_path, content_hash)
 	
-	var entry = card_catalog.get(document_id, {
-		"document_id": document_id,
-		"observations": {}
-	})
-	
-	var latest_observation = _get_latest_observation(entry["observations"])
-	var current_status = _evaluate_document_status(file_path, latest_observation.get("content_hash", ""))
-	
-	if current_status != latest_observation.get("status", DocumentStatus.AVAILABLE) or content_hash != latest_observation.get("content_hash", ""):
+	if existing_document_id:
+		var entry = card_catalog[existing_document_id]
 		var observation = {
 			"timestamp": Time.get_unix_time_from_system(),
 			"path": file_path,
 			"content_hash": content_hash,
 			"metadata": metadata,
-			"status": current_status
+			"status": _evaluate_document_status(file_path, content_hash)
 		}
 		
-		var observation_key = file_path + ":" + content_hash
+		var observation_key = file_path
 		entry["observations"][observation_key] = observation
-		card_catalog[document_id] = entry
 		
-		update_catalog_entry(document_id, UpdateUrgency.HIGH)
+		update_catalog_entry(existing_document_id, UpdateUrgency.HIGH)
 		
 		Chronicler.log_event(self, "document_observed", {
-			"document_id": document_id,
+			"document_id": existing_document_id,
 			"file_path": file_path,
 			"content_hash": content_hash,
-			"status": DocumentStatus.keys()[current_status]
+			"status": DocumentStatus.keys()[observation["status"]],
+			"is_existing": true
 		})
 	else:
-		Chronicler.log_event(self, "document_unchanged", {
-			"document_id": document_id,
+		var new_document_id = _generate_document_id()
+		var entry = {
+			"document_id": new_document_id,
+			"observations": {}
+		}
+		
+		var observation = {
+			"timestamp": Time.get_unix_time_from_system(),
+			"path": file_path,
+			"content_hash": content_hash,
+			"metadata": metadata,
+			"status": _evaluate_document_status(file_path, content_hash)
+		}
+		
+		var observation_key = file_path
+		entry["observations"][observation_key] = observation
+		card_catalog[new_document_id] = entry
+		
+		update_catalog_entry(new_document_id, UpdateUrgency.HIGH)
+		
+		Chronicler.log_event(self, "document_observed", {
+			"document_id": new_document_id,
 			"file_path": file_path,
-			"status": DocumentStatus.keys()[current_status]
+			"content_hash": content_hash,
+			"status": DocumentStatus.keys()[observation["status"]],
+			"is_existing": false
 		})
+
+func _find_existing_document_id(file_path: String, content_hash: String) -> String:
+	for document_id in card_catalog:
+		var entry = card_catalog[document_id]
+		for observation in entry["observations"].values():
+			if observation["path"] == file_path or observation["content_hash"] == content_hash:
+				return document_id
+	return ""
 
 func update_catalog_entry(document_id: String, urgency: UpdateUrgency = UpdateUrgency.MEDIUM) -> void:
 	var entry = card_catalog.get(document_id)
@@ -133,7 +220,7 @@ func update_catalog_entry(document_id: String, urgency: UpdateUrgency = UpdateUr
 func get_document_info(document_id: String) -> Dictionary:
 	var entry = card_catalog.get(document_id, {})
 	if entry and entry["observations"]:
-		return entry["observations"].values().max(func(a, b): return a["timestamp"] > b["timestamp"])
+		return _get_latest_observation(entry)
 	return {}
 
 func _migrate_catalog_entry(entry: Dictionary) -> Dictionary:
@@ -144,30 +231,34 @@ func _migrate_catalog_entry(entry: Dictionary) -> Dictionary:
 		}
 		if "observations" in entry and entry["observations"] is Array:
 			for observation in entry["observations"]:
-				var observation_key = observation["path"] + ":" + observation["content_hash"]
+				var observation_key = observation["path"]
 				new_entry["observations"][observation_key] = observation
 		return new_entry
 	return entry
 
 func _evaluate_document_status(file_path: String, known_hash: String) -> int:
-	var file = FileAccess.open(file_path, FileAccess.READ)
-	if not file:
-		return DocumentStatus.MISSING
+	# Defer to Librarian for file status
+	var file_status = Librarian.get_file_status(file_path)
 	
-	var content = file.get_as_text()
-	file.close()
-	
-	var current_hash = _generate_content_hash(content)
-	if current_hash == known_hash:
-		return DocumentStatus.AVAILABLE
-	else:
-		Chronicler.log_event(self, "document_status_changed", {
-			"file_path": file_path,
-			"old_hash": known_hash,
-			"new_hash": current_hash,
-			"new_status": "MODIFIED"
-		})
-		return DocumentStatus.MODIFIED
+	match file_status:
+		Librarian.FileStatus.MISSING:
+			return DocumentStatus.MISSING
+		Librarian.FileStatus.AVAILABLE:
+			var current_hash = Librarian.get_file_content_hash(file_path)
+			if current_hash == known_hash:
+				return DocumentStatus.AVAILABLE
+			else:
+				Chronicler.log_event(self, "document_status_changed", {
+					"file_path": file_path,
+					"old_hash": known_hash,
+					"new_hash": current_hash,
+					"new_status": "MODIFIED"
+				})
+				return DocumentStatus.MODIFIED
+		Librarian.FileStatus.CORRUPTED:
+			return DocumentStatus.CORRUPTED
+		_:
+			return DocumentStatus.AMBIGUOUS
 
 func _start_background_housekeeping() -> void:
 	_audit_timer = Timer.new()
@@ -209,33 +300,28 @@ func _save_card_catalog() -> void:
 	else:
 		Chronicler.log_event(self, "card_catalog_save_failed", {})
 
-func _generate_content_hash(input: String) -> String:
-	if FileAccess.file_exists(input):
-		var file = FileAccess.open(input, FileAccess.READ)
-		var content = file.get_as_text()
-		file.close()
-		return content.md5_text()
-	else:
-		return input.md5_text()
-
-func _get_latest_observation(observations: Dictionary) -> Dictionary:
-	var latest_timestamp = 0
-	var latest_observation = {}
-	for observation in observations.values():
-		if observation["timestamp"] > latest_timestamp:
-			latest_timestamp = observation["timestamp"]
-			latest_observation = observation
-	return latest_observation
+func _generate_content_hash(file_path: String) -> String:
+	return Librarian.get_file_content_hash(file_path)
 
 func _find_or_create_document_id(file_path: String, content_hash: String) -> String:
+	var file_name = file_path.get_file()
+	
 	for document_id in card_catalog:
 		var entry = card_catalog[document_id]
-		for observation_key in entry["observations"]:
-			var observation = entry["observations"][observation_key]
-			if observation["path"] == file_path or observation["content_hash"] == content_hash:
+		for observation in entry["observations"].values():
+			if observation["content_hash"] == content_hash and observation["path"].get_file() == file_name:
 				return document_id
 	
 	return _generate_document_id()
 
 func _generate_document_id() -> String:
 	return str(Time.get_unix_time_from_system()) + "_" + str(randi())
+
+func _get_latest_observation(entry: Dictionary) -> Dictionary:
+	var latest_obs = {}
+	var latest_timestamp = 0
+	for obs in entry["observations"].values():
+		if obs["timestamp"] > latest_timestamp:
+			latest_obs = obs
+			latest_timestamp = obs["timestamp"]
+	return latest_obs

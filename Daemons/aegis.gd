@@ -1,5 +1,6 @@
 # A COMPUTER CAN NEVER BE HELD ACCOUNTABLE
 # THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
+
 # aegis.gd
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
@@ -111,6 +112,9 @@ func _on_librarian_security_state_changed(new_state: Dictionary):
 	# Implement any necessary responses to Librarian's security state changes
 
 # TODO: Implement periodic threat assessments
+
 # TODO: Develop a system for security drills and simulations
+
 # TODO: Create an interface for other Archons to report security concerns
+
 # FIXME: Ensure all security measures respect the Library's core values

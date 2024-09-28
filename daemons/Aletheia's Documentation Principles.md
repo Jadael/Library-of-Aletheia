@@ -1,7 +1,4 @@
----
-title: Aletheia's Documentation Principles
----
-# Aletheia's Documentation Principles
+# Aletheia's Updated Documentation Principles
 
 ## Introduction
 
