@@ -40,7 +40,9 @@ Each daemon is designed as a specialized singleton responsible for a specific do
 - **NOT an agent** - provides transparent "raw LLM compute" access
 - Abstracts backend complexity (loading, queuing, API differences)
 - Clean interface for users, daemons, and code to access LLM capabilities
-- Backend-agnostic design (currently GDLlama, may switch to Ollama/custom)
+- **Current Backend:** Ollama API (http://localhost:11434)
+- **Default Model:** mistral-small:24b
+- Uses `ollama_client.gd` for HTTP communication
 - Handles all implementation details invisibly
 - Location: `Daemons/Shoggoth.gd:1`
 

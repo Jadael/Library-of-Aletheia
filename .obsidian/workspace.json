@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "addons/godot_llm/claude.md",
+                "file": "Daemons/Archon Agendas.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "claude"
+              "title": "Archon Agendas"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "addons/godot_llm/claude.md",
+                "file": "Daemons/Archon Agendas.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for claude"
+              "title": "Backlinks for Archon Agendas"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "addons/godot_llm/claude.md",
+                "file": "Daemons/Archon Agendas.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from claude"
+              "title": "Outgoing links from Archon Agendas"
             }
           },
           {
@@ -142,13 +142,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "addons/godot_llm/claude.md",
+                "file": "Daemons/Archon Agendas.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of claude"
+              "title": "Outline of Archon Agendas"
             }
           }
         ]
@@ -172,17 +172,18 @@
   },
   "active": "e64b2e017f50b353",
   "lastOpenFiles": [
-    "Daemons/Scenes/Scroll.tscn1194442049.tmp",
-    "Daemons/Scenes/Codex.tscn1194402653.tmp",
-    "addons/Todo_Manager/todo.cfg1194296874.tmp",
-    "main.tscn~RFabc074c.TMP",
-    "main.tscn1194199936.tmp",
-    "Daemons/Scenes/Codex.tscn1162341403.tmp",
-    "addons/Todo_Manager/todo.cfg~RFabb8a8b.TMP",
-    "addons/Todo_Manager/todo.cfg1162264123.tmp",
-    "main.tscn~RFabb8a4c.TMP",
-    "main.tscn1162200621.tmp",
-    "addons/Todo_Manager/todo.cfg~RFabb8348.TMP",
+    "Daemons/Scenes/Scroll.tscn1770064815.tmp",
+    "Daemons/Scenes/Codex.tscn~RFac4d0a1.TMP",
+    "Daemons/Scenes/Codex.tscn1770021479.tmp",
+    "addons/Todo_Manager/todo.cfg~RFac4d043.TMP",
+    "addons/Todo_Manager/todo.cfg1769929107.tmp",
+    "main.tscn~RFac4d004.TMP",
+    "main.tscn1769871177.tmp",
+    "addons/Todo_Manager/todo.cfg~RFac4b122.TMP",
+    "addons/Todo_Manager/todo.cfg1761964726.tmp",
+    "Daemons/ollama_client.gd.uid",
+    "claude.md.tmp.33148.1759685414986",
+    "addons/godot_llm/claude.md",
     "docs/todo_class.md",
     "docs/resizable.md",
     "docs/plugin.md",

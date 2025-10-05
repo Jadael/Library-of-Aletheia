@@ -108,11 +108,13 @@ The project uses a "card catalog" metaphor - tracking "documents the library kno
 
 ### LLM Integration
 
-The Shoggoth daemon provides a clean, transparent API abstraction for LLM compute. It handles all backend complexity (model loading, queuing, API differences) so that users, daemons, and code can access "raw LLM compute" without worrying about implementation details.
+The Shoggoth daemon provides a clean, transparent API abstraction for LLM compute. It handles all backend complexity (HTTP communication, queuing, API differences) so that users, daemons, and code can access "raw LLM compute" without worrying about implementation details.
 
-**Current Backend:** GDLlama plugin (GGUF format models)
-**Status:** May migrate to Ollama, custom scaffolding, or bundled open-source models
+**Current Backend:** Ollama API (http://localhost:11434)
+**Default Model:** mistral-small:24b
 **Design Goal:** Backend-agnostic - Shoggoth abstracts away the specifics
+
+The system uses `ollama_client.gd` as an HTTP wrapper for communicating with Ollama's localhost API.
 
 ## Current State
 
@@ -126,12 +128,13 @@ The Shoggoth daemon provides a clean, transparent API abstraction for LLM comput
 ## Getting Started
 
 1. Clone the repository
-2. Open in Godot 4.3+
-3. Configure LLM backend:
-   - **Option A (current):** Download GGUF models, configure in `Shoggoth.gd`
-   - **Option B (future):** Use Ollama or other backend
-   - **Option C (planned):** Bundled model with custom scaffolding
-4. Run main scene
+2. Install and run Ollama (https://ollama.ai)
+3. Pull the mistral-small model:
+   ```bash
+   ollama pull mistral-small:24b
+   ```
+4. Open project in Godot 4.3+
+5. Run main scene - Shoggoth will automatically connect to Ollama
 
 ## For Claude Code Users
 
@@ -139,10 +142,10 @@ When working on this project:
 
 1. **Always read the relevant `claude.md` files first** to understand context
 2. **Check the Daemons folder** - most core logic is in autoloaded singletons
-3. **The build is currently broken** - be prepared to debug
-4. **Shoggoth is NOT an agent** - it's a transparent API for raw LLM compute
-5. **Use the Chronicler logging system** when adding new features
-6. **Follow GDScript conventions** - see `documents/GDScript Documentation Syntax.md`
+3. **Shoggoth is NOT an agent** - it's a transparent API for raw LLM compute via Ollama
+4. **Use the Chronicler logging system** when adding new features
+5. **Follow GDScript conventions** - see `documents/GDScript Documentation Syntax.md`
+6. **Ollama must be running** on localhost:11434 for LLM features to work
 
 ## Related Files
 

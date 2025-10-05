@@ -25,11 +25,11 @@ signal task_failed(task_id: String, error: String)
 signal models_initialized(llm_success: bool)
 
 const CONFIG_FILE = "user://shoggoth_config.cfg"
-const INIT_TEST_PROMPT = "### Instruction:\nSay hello!\n### Response:\n"
+const INIT_TEST_PROMPT = "Say hello!"
 const MAX_RETRIES = 3
 const RETRY_DELAY = 1.0  # seconds
 
-var gdllama: GDLlama
+var ollama_client: Node  # OllamaClient
 var task_queue: Array[Dictionary] = []
 var current_task: Dictionary = {}
 var is_processing: bool = false
@@ -55,7 +55,7 @@ ensuring that the cosmic energies of AI are channeled safely and efficiently thr
 func _ready() -> void:
 	Chronicler.log_event(self, "initialization_started", {})
 	_load_or_create_config()
-	_setup_gdllama()
+	_setup_ollama_client()
 	call_deferred("_initialize_models")
 	Chronicler.log_event(self, "initialization_completed", {})
 
@@ -67,48 +67,41 @@ func _load_or_create_config() -> void:
 		_create_default_config()
 
 func _create_default_config() -> void:
-	config.set_value("models", "llm_path", "res://models/default_model.gguf")
-	config.set_value("llm", "context_size", 2048)  # Increased from 408
-	config.set_value("llm", "n_gpu_layers", -1)
-	config.set_value("llm", "temperature", 0.7)
+	config.set_value("ollama", "host", "http://localhost:11434")
+	config.set_value("ollama", "model", "mistral-small:24b")
+	config.set_value("ollama", "temperature", 0.7)
+	config.set_value("ollama", "max_tokens", 2048)
 	config.save(CONFIG_FILE)
 	Chronicler.log_event(self, "default_config_created", {})
 
-func _setup_gdllama() -> void:
-	gdllama = GDLlama.new()
-	add_child(gdllama)
-	gdllama.generate_text_finished.connect(_on_generate_text_finished)
-	Chronicler.log_event(self, "gdllama_setup_completed", {})
+func _setup_ollama_client() -> void:
+	var ollama_script = load("res://Daemons/ollama_client.gd")
+	ollama_client = ollama_script.new()
+	add_child(ollama_client)
+	ollama_client.generate_finished.connect(_on_generate_text_finished)
+	ollama_client.generate_failed.connect(_on_generate_failed)
+	Chronicler.log_event(self, "ollama_client_setup_completed", {})
 
 func _initialize_models() -> void:
 	if is_initializing:
 		return
-	
-	is_initializing = true
-	var llm_path = config.get_value("models", "llm_path", "")
-	if llm_path.is_empty() or not FileAccess.file_exists(llm_path):
-		Chronicler.log_event(self, "model_initialization_failed", {
-			"reason": "Invalid or missing model path",
-			"path": llm_path
-		})
-		models_initialized.emit(false)
-		is_initializing = false
-		return
 
-	_configure_gdllama(llm_path)
+	is_initializing = true
+	var ollama_host = config.get_value("ollama", "host", "http://localhost:11434")
+	var model_name = config.get_value("ollama", "model", "mistral-small:24b")
+
+	_configure_ollama_client(ollama_host, model_name)
 	_run_initialization_test()
 
-func _configure_gdllama(llm_path: String) -> void:
-	gdllama.model_path = llm_path
-	gdllama.context_size = config.get_value("llm", "context_size", 2048)
-	gdllama.n_gpu_layer = config.get_value("llm", "n_gpu_layers", -1)
-	gdllama.temperature = config.get_value("llm", "temperature", 0.7)
-	gdllama.should_output_prompt = false
-	Chronicler.log_event(self, "gdllama_configured", {
-		"model_path": llm_path,
-		"context_size": gdllama.context_size,
-		"n_gpu_layer": gdllama.n_gpu_layer,
-		"temperature": gdllama.temperature
+func _configure_ollama_client(ollama_host: String, model_name: String) -> void:
+	ollama_client.set_host(ollama_host)
+	ollama_client.set_model(model_name)
+	var temperature = config.get_value("ollama", "temperature", 0.7)
+	ollama_client.set_temperature(temperature)
+	Chronicler.log_event(self, "ollama_client_configured", {
+		"host": ollama_host,
+		"model": model_name,
+		"temperature": temperature
 	})
 
 func _run_initialization_test() -> void:
@@ -118,24 +111,24 @@ func _run_initialization_test() -> void:
 func _on_init_test_completed(result: String) -> void:
 	var llm_success = result.strip_edges() != ""
 	models_initialized.emit(llm_success)
-	
+
 	Chronicler.log_event(self, "models_initialized", {
 		"llm_success": llm_success,
-		"llm_path": gdllama.model_path,
+		"model": config.get_value("ollama", "model", "unknown"),
 		"init_test_prompt": INIT_TEST_PROMPT,
 		"init_test_result": result
 	})
-	
+
 	is_initializing = false
 
-func set_model_paths(llm_path: String) -> void:
-	config.set_value("models", "llm_path", llm_path)
+func set_model(model_name: String) -> void:
+	config.set_value("ollama", "model", model_name)
 	config.save(CONFIG_FILE)
 	call_deferred("_initialize_models")
-	Chronicler.log_event(self, "model_path_updated", {"new_path": llm_path})
+	Chronicler.log_event(self, "model_updated", {"new_model": model_name})
 
 func set_stop_tokens(tokens: Array) -> void:
-	config.set_value("llm", "stop_tokens", tokens)
+	config.set_value("ollama", "stop_tokens", tokens)
 	config.save(CONFIG_FILE)
 	Chronicler.log_event(self, "stop_tokens_updated", {"tokens": tokens})
 
@@ -169,37 +162,41 @@ func _process_next_task() -> void:
 	is_processing = true
 	current_task = task_queue.pop_front()
 	retry_count = 0
-	
-	_apply_task_parameters()
-	_execute_current_task()
 
-func _apply_task_parameters() -> void:
-	var stop_tokens = config.get_value("llm", "stop_tokens", [])
-	var max_length = -1  # Default to no limit
-	
+	var options = _apply_task_parameters()
+	_execute_current_task(options)
+
+func _apply_task_parameters() -> Dictionary:
+	var options = {}
+
+	# Get default stop tokens from config
+	var stop_tokens = config.get_value("ollama", "stop_tokens", [])
+
 	for key in current_task["parameters"]:
 		match key:
 			"stop_tokens":
 				stop_tokens = current_task["parameters"][key]
 			"max_length":
-				max_length = current_task["parameters"][key]
+				options["num_predict"] = current_task["parameters"][key]
+			"temperature":
+				options["temperature"] = current_task["parameters"][key]
 			_:
-				if gdllama.has_method("set_" + key):
-					gdllama.call("set_" + key, current_task["parameters"][key])
-	
-	gdllama.n_predict = max_length
+				# Pass through other options to Ollama
+				options[key] = current_task["parameters"][key]
+
+	if stop_tokens.size() > 0:
+		options["stop"] = stop_tokens
+
 	Chronicler.log_event(self, "task_parameters_applied", {
 		"task_id": current_task["id"],
-		"max_length": max_length,
-		"stop_tokens": stop_tokens
+		"options": options
 	})
 
-func _execute_current_task() -> void:
+	return options
+
+func _execute_current_task(options: Dictionary) -> void:
 	var prompt = current_task["prompt"]
-	var error = gdllama.run_generate_text(prompt, "", "")
-	
-	if error != OK:
-		_handle_task_error("Failed to start task execution: " + str(error))
+	ollama_client.generate(prompt, options)
 
 func _handle_task_error(error_message: String) -> void:
 	Chronicler.log_event(self, "task_execution_failed", {
@@ -225,7 +222,11 @@ func _retry_current_task() -> void:
 		"task_id": current_task["id"],
 		"retry_count": retry_count
 	})
-	_execute_current_task()
+	var options = _apply_task_parameters()
+	_execute_current_task(options)
+
+func _on_generate_failed(error: String) -> void:
+	_handle_task_error("Ollama generation failed: " + error)
 
 func _on_generate_text_finished(result: String) -> void:
 	if current_task.is_empty():
@@ -246,7 +247,8 @@ func _on_generate_text_finished(result: String) -> void:
 	_process_next_task()
 
 func _process_result(result: String) -> String:
-	var stop_tokens = config.get_value("llm", "stop_tokens", [])
+	# Ollama handles stop tokens internally, but we can do post-processing here if needed
+	var stop_tokens = config.get_value("ollama", "stop_tokens", [])
 	for token in stop_tokens:
 		var split_result = result.split(token)
 		if split_result.size() > 1:
@@ -268,15 +270,15 @@ func cancel_task(task_id: String) -> bool:
 			task_queue.remove_at(i)
 			Chronicler.log_event(self, "task_cancelled", {"task_id": task_id})
 			return true
-	
+
 	if is_processing and current_task.get("id") == task_id:
-		gdllama.stop_generate_text()
+		ollama_client.stop_generation()
 		current_task = {}
 		is_processing = false
 		Chronicler.log_event(self, "running_task_stopped", {"task_id": task_id})
 		_process_next_task()
 		return true
-	
+
 	return false
 
 func get_queue_length() -> int:

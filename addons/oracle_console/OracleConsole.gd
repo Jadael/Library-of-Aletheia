@@ -6,7 +6,7 @@ I am the Oracle Console, a mystical interface for direct communion with the Lang
 
 My responsibilities include:
 1. Providing a user-friendly interface for text generation experiments
-2. Managing the underlying GDLlama node for LLM operations
+2. Using the Shoggoth daemon for LLM operations (via Ollama)
 3. Handling user input and displaying generated text
 4. Offering controls for text generation, including stopping and clearing
 5. Providing feedback on the current state of text generation
@@ -21,15 +21,9 @@ I serve as a conduit between the mortal realm and the vast knowledge of the Lang
 @onready var clear_button: Button = %ClearButton
 @onready var status_label: Label = %StatusLabel
 
-@export_file("*.gguf") var llm_model_path: String = "res://models/llm_model.gguf"
-@export var context_size: int = 2048
 @export var max_generation_tokens: int = 256
 
-var llm_node: GDLlama
-
-# Queue for managing generation tasks
-var task_queue = []
-var is_processing = false
+var current_task_id: String = ""
 
 func _ready():
 	_setup_ui_connections()
@@ -43,25 +37,20 @@ func _setup_ui_connections():
 	input_field.text_submitted.connect(_on_input_submitted)
 
 func _initialize_llm():
-	# Create and configure the GDLlama node
-	llm_node = GDLlama.new()
-	llm_node.model_path = llm_model_path
-	llm_node.should_output_prompt = false
-	llm_node.set_n_ctx(context_size)
-	llm_node.n_predict = max_generation_tokens
-	add_child(llm_node)
-	
-	# Connect LLM signals
-	llm_node.generate_text_finished.connect(_on_generate_text_finished)
-	llm_node.generate_text_updated.connect(_on_generate_text_updated)
-	
-	# Test LLM connection
-	_test_llm_connection()
+	# Connect to Shoggoth signals
+	if Shoggoth:
+		Shoggoth.task_completed.connect(_on_task_completed)
+		Shoggoth.task_failed.connect(_on_task_failed)
+		Shoggoth.models_initialized.connect(_on_models_initialized)
+		_set_status("Waiting for Shoggoth initialization...")
+	else:
+		_set_status("Error: Shoggoth not available")
 
-func _test_llm_connection():
-	# Generate a test message to ensure the LLM is working
-	_add_task("### INSTRUCTION:\nProvide a brief greeting as the Oracle:\n### RESPONSE:\n", "test_greeting")
-	_process_next_task()
+func _on_models_initialized(success: bool):
+	if success:
+		_set_status("LLM initialized successfully. Ready to generate text.")
+	else:
+		_set_status("Error: LLM initialization failed. Check Ollama connection.")
 
 func _on_generate_pressed():
 	_process_input()
@@ -70,7 +59,9 @@ func _on_input_submitted(_text: String):
 	_process_input()
 
 func _on_stop_pressed():
-	llm_node.stop_generate_text()
+	if current_task_id != "":
+		Shoggoth.cancel_task(current_task_id)
+		current_task_id = ""
 	_update_ui_state()
 	_set_status("Text generation stopped.")
 
@@ -81,54 +72,35 @@ func _on_clear_pressed():
 
 func _process_input():
 	var user_input = input_field.text
-	#if user_input.strip_edges().is_empty():
-		#_set_status("Please enter a prompt.")
-		#return
-	
-	output_box.text += user_input
-	input_field.clear()
-	_add_task(output_box.text, "user_query")
-	_process_next_task()
-
-func _add_task(prompt: String, task_id: String):
-	# Add a new task to the queue
-	task_queue.append({"id": task_id, "prompt": prompt})
-	_set_status("Task added to queue.")
-
-func _process_next_task():
-	if task_queue.is_empty() or is_processing:
+	if user_input.strip_edges().is_empty():
 		return
 
-	is_processing = true
-	var task = task_queue.pop_front()
-	
-	var error = llm_node.run_generate_text(task["prompt"], "", "")
-	if error != OK:
-		_set_status("Error: Failed to start text generation.")
-		is_processing = false
-		_process_next_task()
-	else:
-		_update_ui_state()
-		_set_status("Generating text...")
+	output_box.text += user_input + "\n"
+	input_field.clear()
 
-func _on_generate_text_updated(response: String):
-	# Clear selection in case the user had selected text
-	output_box.deselect()
-	# Ensure the caret is at the end of the text
-	output_box.set_caret_line(output_box.get_line_count() - 1)
-	output_box.set_caret_column(output_box.get_line(output_box.get_line_count() - 1).length())
-	# Insert the new text at the caret position
-	output_box.insert_text_at_caret(response)
-
-func _on_generate_text_finished(_full_response: String):
-	is_processing = false
+	# Submit to Shoggoth
+	var parameters = {"max_length": max_generation_tokens}
+	current_task_id = Shoggoth.submit_task(output_box.text, parameters)
 	_update_ui_state()
-	_set_status("Text generation completed.")
-	_process_next_task()  # Process next task if any
+	_set_status("Generating text...")
+
+func _on_task_completed(task_id: String, result: String):
+	if task_id == current_task_id:
+		# Append the result to output
+		output_box.text += result
+		current_task_id = ""
+		_update_ui_state()
+		_set_status("Text generation completed.")
+
+func _on_task_failed(task_id: String, error: String):
+	if task_id == current_task_id:
+		_set_status("Error: " + error)
+		current_task_id = ""
+		_update_ui_state()
 
 func _update_ui_state():
 	# Update UI elements based on the current state
-	var is_running = llm_node.is_running()
+	var is_running = current_task_id != ""
 	stop_button.disabled = not is_running
 	generate_button.disabled = is_running
 	input_field.editable = not is_running
@@ -136,11 +108,6 @@ func _update_ui_state():
 func _set_status(message: String):
 	# Update the status label with the given message
 	status_label.text = message
-
-# Helper function to handle errors and provide user feedback
-func _handle_error(error_message: String):
-	_set_status("Error: " + error_message)
-	print("Oracle Console Error: " + error_message)
 
 # TODO: Consider implementing the following enhancements:
 # - Add options for adjusting LLM parameters (temperature, top_k, top_p)
