@@ -1,31 +1,41 @@
 # godot_llm - LLM Integration GDExtension
 
-## Overview
+## ⚠️ DEPRECATED - Replaced by Ollama Integration
 
-The `godot_llm` addon is a GDExtension that provides Large Language Model (LLM) capabilities to Godot. It enables running local GGUF format models for text generation and embeddings directly within the Godot engine.
+This plugin is **NO LONGER USED** in the Library of Aletheia project.
+
+**Replaced by:** Ollama API integration via `Daemons/ollama_client.gd`
+**Migration date:** 2025
+**Reason:** GDLlama not updated in 2+ years; Ollama provides better maintenance and flexibility
+
+## Historical Overview
+
+The `godot_llm` addon was a GDExtension that provided Large Language Model (LLM) capabilities to Godot. It enabled running local GGUF format models for text generation and embeddings directly within the Godot engine.
 
 **Type:** GDExtension (Native Library)
 **Location:** `/addons/godot_llm/`
-**Status:** ⚠️ Current backend, but may be replaced (not updated in 2+ years)
+**Status:** ❌ DEPRECATED - No longer used
 
 **Related Documentation:**
 - [../../claude.md](../../claude.md) - Root project documentation
 - [../claude.md](../claude.md) - Parent addons documentation
 
-## Purpose
+## Historical Purpose
 
-This extension is **ONE POSSIBLE BACKEND** for LLM capabilities. The Shoggoth daemon abstracts this completely - it could be replaced with Ollama, custom scaffolding, or a bundled open-source model without affecting other code.
+This extension was **ONE POSSIBLE BACKEND** for LLM capabilities. The Shoggoth daemon abstracted this completely, allowing it to be replaced without affecting other code.
 
-**Current Uses:**
+**Previous Uses:**
 - Text generation for document analysis
 - Embeddings for semantic search
 - LLM-assisted documentation generation
 - Interactive AI features
 
-**Future Alternatives:**
-- Ollama API integration (more actively maintained)
-- Custom LLM scaffolding (lighter weight)
-- Bundled small open-source model (distribution-friendly)
+**Replacement:**
+- ✅ **Ollama API integration** (actively maintained, now implemented)
+  - Via `Daemons/ollama_client.gd`
+  - Default model: mistral-small:24b
+  - Clean HTTP-based API
+  - No native library dependencies
 
 ## Components
 

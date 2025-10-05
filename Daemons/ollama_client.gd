@@ -1,7 +1,22 @@
 ## OllamaClient - HTTP Client for Ollama API
 ##
-## Provides a clean interface for communicating with Ollama's localhost API
-## Handles HTTP requests, streaming responses, and error handling
+## Provides a clean HTTP interface for communicating with Ollama's localhost API.
+## Used by Shoggoth daemon to abstract away backend implementation details.
+##
+## Responsibilities:
+## 1. Managing HTTP requests to Ollama's /api/generate endpoint
+## 2. Handling JSON request/response serialization
+## 3. Emitting signals for generation lifecycle (started, finished, failed)
+## 4. Configurable model, temperature, and host settings
+##
+## Default Configuration:
+## - Host: http://localhost:11434
+## - Model: mistral-small:24b
+## - Temperature: 0.7
+## - Streaming: Currently disabled (may be added later)
+##
+## Note: This is a backend implementation detail. Most code should interact
+## with Shoggoth daemon instead of using this directly.
 extends Node
 
 signal generate_started()

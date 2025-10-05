@@ -69,8 +69,10 @@ The `Daemons/Scenes/` folder contains Godot scene files (`.tscn`) and their asso
 - Parent daemon: `../oracle_console.gd`
 
 **ai_settings.tscn** - *AI Configuration Interface*
-- LLM and AI parameter configuration UI
-- Model selection and settings
+- Ollama configuration UI (host, model selection)
+- AI parameter configuration (temperature, stop tokens)
+- Model: mistral-small:24b (default)
+- Host: http://localhost:11434 (default)
 - Parent daemon: `../ai_settings.gd`
 
 ## Scene Scripts

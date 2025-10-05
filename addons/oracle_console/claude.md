@@ -2,10 +2,12 @@
 
 ## Overview
 
-The `oracle_console` addon is a Godot editor plugin that provides an LLM-powered chatbot console interface within the Godot editor. It enables developers to interact with AI models during development.
+The `oracle_console` addon is a Godot editor plugin that provides an LLM-powered chatbot console interface within the Godot editor. It enables developers to interact with AI models (via Ollama) during development.
 
 **Type:** Editor Plugin
 **Location:** `/addons/oracle_console/`
+**Backend:** Ollama API via Shoggoth daemon
+**Default Model:** mistral-small:24b
 **Related Documentation:**
 - [../../claude.md](../../claude.md) - Root project documentation
 - [../claude.md](../claude.md) - Parent addons documentation
@@ -14,10 +16,11 @@ The `oracle_console` addon is a Godot editor plugin that provides an LLM-powered
 ## Purpose
 
 This plugin adds a console interface to the Godot editor for:
-- Interactive LLM conversations during development
+- Interactive LLM conversations during development (via Ollama)
 - Quick AI assistance while coding
 - Testing LLM functionality
 - Development-time AI experimentation
+- Text generation and continuation
 
 ## Components
 
@@ -43,8 +46,9 @@ script="OracleConsolePlugin.gd"
 
 **OracleConsole.gd** - Console implementation
 - Main console logic and UI handling
-- LLM interaction management
-- Message processing
+- Uses Shoggoth daemon for LLM interaction (Ollama backend)
+- Includes full text box content in prompts for context-aware generation
+- Message processing and display
 - ~4839 bytes (core implementation)
 
 ### Scene
@@ -88,8 +92,9 @@ addons/oracle_console/
 ### Dependencies
 
 **Requires:**
-- `addons/godot_llm` - For LLM capabilities
-- `Daemons/Shoggoth.gd` - For model management (runtime)
+- `Daemons/Shoggoth.gd` - For LLM task management (Ollama backend)
+- `Daemons/ollama_client.gd` - HTTP client for Ollama API (used by Shoggoth)
+- Ollama running on localhost:11434
 
 **Note:** The editor plugin version may have limited access to runtime autoloads depending on when it's initialized.
 
@@ -123,9 +128,11 @@ func _exit_tree():
 ```
 Developer → Types query in console
          ↓
-Console → Processes input
+Console → Includes full text box content as context
          ↓
-LLM (via godot_llm) → Generates response
+Shoggoth → Sends to Ollama via HTTP (ollama_client.gd)
+         ↓
+Ollama (mistral-small:24b) → Generates response
          ↓
 Console → Displays response
 ```
@@ -184,12 +191,13 @@ As an editor plugin:
 
 ## Configuration
 
-The plugin appears to be configured through:
+The plugin is configured through:
 - `plugin.cfg` - Plugin metadata
-- Shoggoth daemon - Model configuration (if accessible)
-- Possibly hard-coded settings in `OracleConsole.gd`
+- Shoggoth daemon - Model configuration (Ollama host, model name, temperature)
+- AI Settings window - User-configurable Ollama settings
+- Default: mistral-small:24b on localhost:11434
 
-No separate config file visible in this folder.
+No separate config file in this folder - configuration is managed by Shoggoth.
 
 ## Development Notes
 

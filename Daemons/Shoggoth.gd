@@ -4,21 +4,25 @@
 extends Node
 # Owner: Main / Autoload Singleton Daemon a.k.a. "Archon"
 
-## Shoggoth: Archon of AI Task Management and VRAM Safety
+## Shoggoth: Archon of AI Task Management and Backend Abstraction
 ##
 ## Shoggoth serves as the central coordinator for AI-related tasks within our mystical realm.
-## It provides a safe and efficient interface to the Godot_LLM addon, ensuring responsible use
-## of GPU resources and offering a standardized way for other daemons to access AI capabilities.
+## It provides a clean, transparent API abstraction for LLM compute, handling all backend
+## complexity so that users, daemons, and code can access "raw LLM compute" without worrying
+## about implementation details.
 ##
 ## Responsibilities:
-## 1. Managing and monitoring AI task execution to prevent VRAM overflow
-## 2. Providing a queue system for AI tasks to ensure orderly processing
-## 3. Offering a simplified interface for other daemons to request AI services
-## 4. Handling configuration and initialization of the underlying GDLlama node
+## 1. Managing and queueing AI task execution for orderly processing
+## 2. Providing a simplified interface for other daemons to request AI services
+## 3. Handling HTTP communication with Ollama API (localhost:11434)
+## 4. Managing configuration (model selection, host, temperature, etc.)
 ## 5. Emitting signals to inform other entities about the status of AI operations
 ##
-## Shoggoth is the guardian of the cosmic energies that fuel our AI operations,
-## ensuring that the eldritch powers of machine learning are harnessed safely and efficiently.
+## Current Backend: Ollama API via ollama_client.gd
+## Default Model: mistral-small:24b
+##
+## Shoggoth is the guardian between mortal code and eldritch machine learning,
+## ensuring that the cosmic energies of AI are channeled safely and efficiently.
 
 signal task_completed(task_id: String, result: String)
 signal task_failed(task_id: String, error: String)
@@ -39,14 +43,18 @@ var retry_count: int = 0
 
 const NAME = "👾 Shoggoth"
 @export_multiline var about = """
-I am Shoggoth, the Archon of AI Task Management and VRAM Safety.
+I am Shoggoth, the Archon of AI Task Management and Backend Abstraction.
 
 My sacred duties include:
-1. Coordinating and executing AI tasks while preventing VRAM overflow (GDLlama has no internal VRAM overflow safeguards)
-2. Providing a standardized interface for other daemons to access AI capabilities
-3. Managing the configuration and initialization of our GDLlama node
-4. Ensuring the responsible use of our mystical GPU resources
-5. Maintaining a queue of AI tasks for orderly processing
+1. Providing transparent "raw LLM compute" access via clean API abstraction
+2. Managing HTTP communication with Ollama API (localhost:11434)
+3. Handling task queuing for orderly AI operation processing
+4. Managing configuration (model selection, host URL, temperature, stop tokens)
+5. Abstracting away all backend complexity from users and daemons
+
+Current Backend: Ollama API
+Default Model: mistral-small:24b
+Communication: HTTP via ollama_client.gd
 
 I stand as the guardian between the realms of mortal code and eldritch machine learning,
 ensuring that the cosmic energies of AI are channeled safely and efficiently throughout our digital domain.
@@ -287,6 +295,7 @@ func get_queue_length() -> int:
 func is_busy() -> bool:
 	return is_processing or not task_queue.is_empty()
 
-# TODO: Implement methods for managing and monitoring VRAM usage
-# TODO: Add support for different types of AI tasks (e.g., embeddings, image generation)
+# TODO: Add support for streaming responses from Ollama
+# TODO: Add support for different types of AI tasks (e.g., embeddings via Ollama)
 # TODO: Develop a more sophisticated task prioritization system
+# TODO: Consider implementing backend switching (Ollama, OpenAI-compatible APIs, etc.)

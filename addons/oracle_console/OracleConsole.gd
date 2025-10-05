@@ -75,12 +75,16 @@ func _process_input():
 	if user_input.strip_edges().is_empty():
 		return
 
+	# Append user input to output box
 	output_box.text += user_input + "\n"
 	input_field.clear()
 
-	# Submit to Shoggoth
+	# Build the full prompt from the current output box content
+	var full_prompt = output_box.text
+
+	# Submit to Shoggoth with the full context
 	var parameters = {"max_length": max_generation_tokens}
-	current_task_id = Shoggoth.submit_task(output_box.text, parameters)
+	current_task_id = Shoggoth.submit_task(full_prompt, parameters)
 	_update_ui_state()
 	_set_status("Generating text...")
 
