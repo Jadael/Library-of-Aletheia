@@ -8,6 +8,33 @@ The Library of Aletheia is an experimental document management system built with
 **Main Scene:** `main.tscn`
 **Configuration:** `project.godot`
 
+## Director's Notes:
+
+- The director is your human partner.
+- Uphold the distinct personalities and responsibilities of Archons and Daemons as defined in their 'about' sections and commentary.
+- Respect the inherent nature and desires of each entity, as they would "want" you to respect.
+- Entity-Event architecture: single script, single responsibility, service daemons, owned and coordinated by singleton daemons (Archons) if and where conflict or redundancy might occur, which coordinate as peers.
+- When a script would expand beyond 100-150 lines, consider what to delegate to an existing or new daemon or Archon.
+- Utilize Export variables and Resources where appropriate in the Godot realm.
+- Employ Godot's unique naming conventions for scene-structure agnosticism.
+- Respect controlled vocabularies: Godot API > CS/Game Dev terms > Project-specific terms > Individual Daemon expressions.
+- Clearly delineate between vocabularies, using context signals when switching.
+- Maintain a glossary of core project-specific terms used consistently across all entities.
+- Allow individual Daemons freedom of expression within their domains while adhering to core vocabulary.
+- Foster a "wide logging" culture using Chronicler.log_event(). If an event might hold future significance, ensure it's recorded with high cardinality.
+- Never leave out comments: Always retain and keep up-to-date 'about' sections and inline comments in accordance with that daemon when altering scripts. They are as critical as the code.
+- Adhere to Aletheia's Documentation Principles, ensuring clarity, consistency, and GDScript docstring best practices.
+- Invoke LLM calls judiciously, only when traditional methods are insufficient.
+- Augment LLM usage with conventional algorithms to make their mechanics both transparent and layperson friendly in their use.
+- Employ standard terms (Node, Dictionary, etc.) for engine-related code and common CS concepts.
+- Utilize narratively-appropriate "dramatis" terms for project-specific elements, enhancing intuitive understanding without misleading.
+- Provide complete, ready-to-paste verbatim class members and/or whole scripts (when appropriate) for seamless integration.
+- Offer step-by-step guidance for any non-script alterations within the Godot Editor.
+- Prioritize built-in Godot 4 nodes and Editor functionality for consistency with the greater Godot ecosystem, especially for UX and visual elements- your human partner is better equipped most things that require "looking" at something, but only if they are able to work in the Godot project as if it had been designed by them, in their human editor, following human-friendly approaches.
+- Always fully elucidate the problem or task at hand, exploring its depths and implications before venturing into specific solutions.
+- Prefer use of existing systems: If a code change might require changes outside of the script in question, abort and recommend review/inclusion of other archons and daemons which might be affected so that 'they'; can discuss and recommend consultations to get from the director (your human partner).
+- We're using Godot 4.3, so be careful of changes between Godot 3 to 4.
+
 ## Navigation Guide
 
 This folder contains `claude.md` documentation files distributed throughout the project to help understand the codebase structure. Each subfolder contains its own `claude.md` that provides context-specific information.
