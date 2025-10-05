@@ -25,6 +25,19 @@ are properly channeled and accessible within our mystical library.
 @onready var status_label: Label = %StatusLabel
 @onready var apply_button: Button = %ApplyButton
 @onready var stop_tokens_input: LineEdit = %StopTokensInput
+@onready var temperature_input: SpinBox = %TemperatureInput
+@onready var max_tokens_input: SpinBox = %MaxTokensInput
+
+# Advanced parameters
+@onready var advanced_toggle: Button = %AdvancedToggle
+@onready var advanced_panel: PanelContainer = %AdvancedPanel
+@onready var top_k_input: SpinBox = %TopKInput
+@onready var top_p_input: SpinBox = %TopPInput
+@onready var min_p_input: SpinBox = %MinPInput
+@onready var repeat_penalty_input: SpinBox = %RepeatPenaltyInput
+@onready var repeat_last_n_input: SpinBox = %RepeatLastNInput
+@onready var num_ctx_input: SpinBox = %NumCtxInput
+@onready var seed_input: SpinBox = %SeedInput
 
 var config: ConfigFile
 
@@ -35,25 +48,45 @@ func _ready():
 		Chronicler.log_event(self, "config_load_failed", {"error": err})
 
 	apply_button.pressed.connect(_on_apply_button_pressed)
+	advanced_toggle.pressed.connect(_on_advanced_toggle_pressed)
 
 	Shoggoth.models_initialized.connect(_on_models_initialized_after_apply)
 
 	_load_current_settings()
 	_update_status_display("Initializing...", false)
 
+func _on_advanced_toggle_pressed():
+	advanced_panel.visible = not advanced_panel.visible
+	advanced_toggle.text = "⚙️ Advanced Parameters " + ("▼" if advanced_panel.visible else "▶")
+
 func _load_current_settings():
 	model_name_input.text = config.get_value("ollama", "model", "mistral-small:24b")
 	ollama_host_input.text = config.get_value("ollama", "host", "http://localhost:11434")
+	temperature_input.value = config.get_value("ollama", "temperature", 0.7)
+	max_tokens_input.value = config.get_value("ollama", "max_tokens", 2048)
 
 	var stop_tokens = config.get_value("ollama", "stop_tokens", [])
 	stop_tokens_input.text = ", ".join(stop_tokens)
 
+	# Load advanced parameters
+	top_k_input.value = config.get_value("ollama", "top_k", 40)
+	top_p_input.value = config.get_value("ollama", "top_p", 0.9)
+	min_p_input.value = config.get_value("ollama", "min_p", 0.0)
+	repeat_penalty_input.value = config.get_value("ollama", "repeat_penalty", 1.1)
+	repeat_last_n_input.value = config.get_value("ollama", "repeat_last_n", 64)
+	num_ctx_input.value = config.get_value("ollama", "num_ctx", 4096)
+	seed_input.value = config.get_value("ollama", "seed", 0)
+
 func _on_apply_button_pressed():
 	var new_model = model_name_input.text
 	var new_host = ollama_host_input.text
+	var new_temperature = temperature_input.value
+	var new_max_tokens = int(max_tokens_input.value)
 
 	config.set_value("ollama", "model", new_model)
 	config.set_value("ollama", "host", new_host)
+	config.set_value("ollama", "temperature", new_temperature)
+	config.set_value("ollama", "max_tokens", new_max_tokens)
 
 	var stop_tokens_raw = stop_tokens_input.text.split(",")
 	var stop_tokens = []
@@ -63,6 +96,15 @@ func _on_apply_button_pressed():
 			stop_tokens.append(cleaned_token)
 
 	config.set_value("ollama", "stop_tokens", stop_tokens)
+
+	# Save advanced parameters
+	config.set_value("ollama", "top_k", int(top_k_input.value))
+	config.set_value("ollama", "top_p", top_p_input.value)
+	config.set_value("ollama", "min_p", min_p_input.value)
+	config.set_value("ollama", "repeat_penalty", repeat_penalty_input.value)
+	config.set_value("ollama", "repeat_last_n", int(repeat_last_n_input.value))
+	config.set_value("ollama", "num_ctx", int(num_ctx_input.value))
+	config.set_value("ollama", "seed", int(seed_input.value))
 
 	config.save(Shoggoth.CONFIG_FILE)
 
@@ -75,7 +117,16 @@ func _on_apply_button_pressed():
 	Chronicler.log_event(self, "ai_settings_updated", {
 		"new_model": new_model,
 		"new_host": new_host,
-		"stop_tokens": stop_tokens
+		"temperature": new_temperature,
+		"max_tokens": new_max_tokens,
+		"stop_tokens": stop_tokens,
+		"top_k": int(top_k_input.value),
+		"top_p": top_p_input.value,
+		"min_p": min_p_input.value,
+		"repeat_penalty": repeat_penalty_input.value,
+		"repeat_last_n": int(repeat_last_n_input.value),
+		"num_ctx": int(num_ctx_input.value),
+		"seed": int(seed_input.value)
 	})
 
 func _on_models_initialized_after_apply(llm_success: bool):

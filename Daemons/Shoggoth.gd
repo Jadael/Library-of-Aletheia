@@ -140,25 +140,52 @@ func set_stop_tokens(tokens: Array) -> void:
 	config.save(CONFIG_FILE)
 	Chronicler.log_event(self, "stop_tokens_updated", {"tokens": tokens})
 
+## Submit a text completion task (uses /api/generate)
 func submit_task(prompt: String, parameters: Dictionary = {}) -> String:
 	var task_id = str(Time.get_unix_time_from_system()) + "_" + str(randi())
 	var task = {
 		"id": task_id,
 		"prompt": prompt,
-		"parameters": parameters
+		"parameters": parameters,
+		"mode": "generate"
 	}
 	task_queue.append(task)
-	
+
 	Chronicler.log_event(self, "task_submitted", {
 		"task_id": task_id,
 		"prompt_length": prompt.length(),
 		"prompt": prompt,
-		"parameters": parameters
+		"parameters": parameters,
+		"mode": "generate"
 	})
-	
+
 	if not is_processing:
 		_process_next_task()
-	
+
+	return task_id
+
+## Submit a chat task with message history (uses /api/chat)
+## messages: Array of {role: "user"|"assistant"|"system", content: "text"}
+func submit_chat(messages: Array, parameters: Dictionary = {}) -> String:
+	var task_id = str(Time.get_unix_time_from_system()) + "_" + str(randi())
+	var task = {
+		"id": task_id,
+		"messages": messages,
+		"parameters": parameters,
+		"mode": "chat"
+	}
+	task_queue.append(task)
+
+	Chronicler.log_event(self, "chat_submitted", {
+		"task_id": task_id,
+		"message_count": messages.size(),
+		"parameters": parameters,
+		"mode": "chat"
+	})
+
+	if not is_processing:
+		_process_next_task()
+
 	return task_id
 
 func _process_next_task() -> void:
@@ -203,8 +230,14 @@ func _apply_task_parameters() -> Dictionary:
 	return options
 
 func _execute_current_task(options: Dictionary) -> void:
-	var prompt = current_task["prompt"]
-	ollama_client.generate(prompt, options)
+	var mode = current_task.get("mode", "generate")
+
+	if mode == "chat":
+		var messages = current_task["messages"]
+		ollama_client.chat(messages, options)
+	else:
+		var prompt = current_task["prompt"]
+		ollama_client.generate(prompt, options)
 
 func _handle_task_error(error_message: String) -> void:
 	Chronicler.log_event(self, "task_execution_failed", {

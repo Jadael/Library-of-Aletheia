@@ -92,7 +92,143 @@ custom_minimum_size = Vector2(256, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="TemperatureLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Temperature (0.0 - 2.0):"
+
+[node name="TemperatureInput" type="SpinBox" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 2.0
+step = 0.05
+value = 0.7
+
+[node name="MaxTokensLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Max Tokens:"
+
+[node name="MaxTokensInput" type="SpinBox" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 32768.0
+step = 128.0
+value = 2048.0
+
 [node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="AdvancedToggle" type="Button" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "⚙️ Advanced Parameters"
+
+[node name="AdvancedPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="AdvancedMargin" type="MarginContainer" parent="MarginContainer/VBoxContainer/AdvancedPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="AdvancedGrid" type="GridContainer" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin"]
+layout_mode = 2
+columns = 2
+
+[node name="TopKLabel" type="Label" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+layout_mode = 2
+text = "Top K:"
+
+[node name="TopKInput" type="SpinBox" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 100.0
+value = 40.0
+
+[node name="TopPLabel" type="Label" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+layout_mode = 2
+text = "Top P:"
+
+[node name="TopPInput" type="SpinBox" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.05
+value = 0.9
+
+[node name="MinPLabel" type="Label" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+layout_mode = 2
+text = "Min P:"
+
+[node name="MinPInput" type="SpinBox" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.05
+value = 0.0
+
+[node name="RepeatPenaltyLabel" type="Label" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+layout_mode = 2
+text = "Repeat Penalty:"
+
+[node name="RepeatPenaltyInput" type="SpinBox" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 2.0
+step = 0.05
+value = 1.1
+
+[node name="RepeatLastNLabel" type="Label" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+layout_mode = 2
+text = "Repeat Last N:"
+
+[node name="RepeatLastNInput" type="SpinBox" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -1.0
+max_value = 2048.0
+value = 64.0
+
+[node name="NumCtxLabel" type="Label" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+layout_mode = 2
+text = "Context Size:"
+
+[node name="NumCtxInput" type="SpinBox" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 128.0
+max_value = 32768.0
+step = 128.0
+value = 4096.0
+
+[node name="SeedLabel" type="Label" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+layout_mode = 2
+text = "Seed (0=random):"
+
+[node name="SeedInput" type="SpinBox" parent="MarginContainer/VBoxContainer/AdvancedPanel/AdvancedMargin/AdvancedGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 2147483647.0
+value = 0.0
+
+[node name="HSeparator3" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 
 [node name="ApplyButton" type="Button" parent="MarginContainer/VBoxContainer"]

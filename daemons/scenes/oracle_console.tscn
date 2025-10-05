@@ -1,7 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://dqaxis52rrqn0"]
+[gd_scene load_steps=4 format=3 uid="uid://dqaxis52rrqn0"]
 
 [ext_resource type="Script" path="res://Daemons/oracle_console.gd" id="1_1okrr"]
 [ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/aletheia_theme.tres" id="1_qforb"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_mode"]
+resource_name = "ModeButtonGroup"
 
 [node name="OracleConsole" type="Window"]
 title = "Oracle Console"
@@ -16,6 +19,33 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="ModeContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ModeLabel" type="Label" parent="VBoxContainer/ModeContainer"]
+layout_mode = 2
+text = "Mode:"
+
+[node name="ContinuanceModeButton" type="Button" parent="VBoxContainer/ModeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("ButtonGroup_mode")
+text = "📝 Text Continuance"
+
+[node name="ChatModeButton" type="Button" parent="VBoxContainer/ModeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_group = SubResource("ButtonGroup_mode")
+text = "💬 Chat"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
 
 [node name="TextEdit" type="TextEdit" parent="VBoxContainer"]
 unique_name_in_owner = true

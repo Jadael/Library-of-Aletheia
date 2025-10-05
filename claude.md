@@ -11,6 +11,7 @@ The Library of Aletheia is an experimental document management system built with
 ## Director's Notes:
 
 - The director is your human partner.
+- Always update all the comments and documentation and claude.md files EVERYWHERE whenever we're done with a change.
 - Uphold the distinct personalities and responsibilities of Archons and Daemons as defined in their 'about' sections and commentary.
 - Respect the inherent nature and desires of each entity, as they would "want" you to respect.
 - Entity-Event architecture: single script, single responsibility, service daemons, owned and coordinated by singleton daemons (Archons) if and where conflict or redundancy might occur, which coordinate as peers.

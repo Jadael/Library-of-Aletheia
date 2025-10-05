@@ -4,16 +4,22 @@
 ## Used by Shoggoth daemon to abstract away backend implementation details.
 ##
 ## Responsibilities:
-## 1. Managing HTTP requests to Ollama's /api/generate endpoint
+## 1. Managing HTTP requests to Ollama's /api/generate and /api/chat endpoints
 ## 2. Handling JSON request/response serialization
 ## 3. Emitting signals for generation lifecycle (started, finished, failed)
-## 4. Configurable model, temperature, and host settings
+## 4. Supporting all Ollama API parameters dynamically
+## 5. Providing both text completion and chat modes
 ##
 ## Default Configuration:
 ## - Host: http://localhost:11434
 ## - Model: mistral-small:24b
 ## - Temperature: 0.7
 ## - Streaming: Currently disabled (may be added later)
+##
+## Supported Ollama Parameters:
+## - temperature, num_predict, top_k, top_p, min_p, repeat_penalty,
+## - repeat_last_n, seed, num_ctx, stop, system, template, format,
+## - suffix, raw, keep_alive, and more
 ##
 ## Note: This is a backend implementation detail. Most code should interact
 ## with Shoggoth daemon instead of using this directly.
@@ -48,6 +54,7 @@ func set_temperature(new_temp: float) -> void:
 func set_host(new_host: String) -> void:
 	ollama_host = new_host
 
+## Generate text using /api/generate endpoint (text completion mode)
 func generate(prompt: String, options: Dictionary = {}) -> void:
 	if is_generating:
 		Chronicler.log_event(self, "generation_already_running", {})
@@ -60,21 +67,28 @@ func generate(prompt: String, options: Dictionary = {}) -> void:
 	var body = {
 		"model": model_name,
 		"prompt": prompt,
-		"stream": false,  # We'll use non-streaming for simplicity
+		"stream": false,
 		"options": {}
 	}
 
-	# Apply options
-	if options.has("temperature"):
-		body["options"]["temperature"] = options["temperature"]
-	elif temperature != 0.7:
+	# Separate top-level parameters from model options
+	const TOP_LEVEL_PARAMS = ["system", "template", "format", "suffix", "raw", "keep_alive", "images"]
+	const MODEL_OPTIONS = ["temperature", "num_predict", "top_k", "top_p", "min_p",
+		"repeat_penalty", "repeat_last_n", "seed", "num_ctx", "stop"]
+
+	# Apply default temperature if not overridden
+	if not options.has("temperature") and temperature != 0.7:
 		body["options"]["temperature"] = temperature
 
-	if options.has("num_predict"):
-		body["options"]["num_predict"] = options["num_predict"]
-
-	if options.has("stop"):
-		body["options"]["stop"] = options["stop"]
+	# Process all options dynamically
+	for key in options:
+		if key in TOP_LEVEL_PARAMS:
+			body[key] = options[key]
+		elif key in MODEL_OPTIONS:
+			body["options"][key] = options[key]
+		else:
+			# Pass through unknown options to model options (future-proofing)
+			body["options"][key] = options[key]
 
 	var json_body = JSON.stringify(body)
 	var headers = ["Content-Type: application/json"]
@@ -96,6 +110,64 @@ func generate(prompt: String, options: Dictionary = {}) -> void:
 		is_generating = false
 		var error_msg = "Failed to start HTTP request: " + str(error)
 		Chronicler.log_event(self, "generate_request_failed", {"error": error_msg})
+		generate_failed.emit(error_msg)
+
+## Chat mode using /api/chat endpoint with message history
+func chat(messages: Array, options: Dictionary = {}) -> void:
+	if is_generating:
+		Chronicler.log_event(self, "generation_already_running", {})
+		return
+
+	is_generating = true
+	current_response = ""
+	generate_started.emit()
+
+	var body = {
+		"model": model_name,
+		"messages": messages,
+		"stream": false,
+		"options": {}
+	}
+
+	# Separate top-level parameters from model options
+	const TOP_LEVEL_PARAMS = ["format", "keep_alive", "tools"]
+	const MODEL_OPTIONS = ["temperature", "num_predict", "top_k", "top_p", "min_p",
+		"repeat_penalty", "repeat_last_n", "seed", "num_ctx", "stop"]
+
+	# Apply default temperature if not overridden
+	if not options.has("temperature") and temperature != 0.7:
+		body["options"]["temperature"] = temperature
+
+	# Process all options dynamically
+	for key in options:
+		if key in TOP_LEVEL_PARAMS:
+			body[key] = options[key]
+		elif key in MODEL_OPTIONS:
+			body["options"][key] = options[key]
+		else:
+			# Pass through unknown options (future-proofing)
+			body["options"][key] = options[key]
+
+	var json_body = JSON.stringify(body)
+	var headers = ["Content-Type: application/json"]
+
+	Chronicler.log_event(self, "chat_request_started", {
+		"model": model_name,
+		"message_count": messages.size(),
+		"options": options
+	})
+
+	var error = http_request.request(
+		ollama_host + "/api/chat",
+		headers,
+		HTTPClient.METHOD_POST,
+		json_body
+	)
+
+	if error != OK:
+		is_generating = false
+		var error_msg = "Failed to start HTTP request: " + str(error)
+		Chronicler.log_event(self, "chat_request_failed", {"error": error_msg})
 		generate_failed.emit(error_msg)
 
 func _on_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
@@ -135,15 +207,27 @@ func _on_request_completed(result: int, response_code: int, headers: PackedStrin
 
 	var response_data = json.get_data()
 
+	# Handle both /api/generate (has "response") and /api/chat (has "message")
 	if response_data.has("response"):
+		# Generate endpoint response
 		current_response = response_data["response"]
 		Chronicler.log_event(self, "generate_completed", {
 			"response_length": current_response.length(),
 			"model": response_data.get("model", "unknown")
 		})
 		generate_finished.emit(current_response)
+	elif response_data.has("message"):
+		# Chat endpoint response
+		var message = response_data["message"]
+		current_response = message.get("content", "")
+		Chronicler.log_event(self, "chat_completed", {
+			"response_length": current_response.length(),
+			"model": response_data.get("model", "unknown"),
+			"role": message.get("role", "unknown")
+		})
+		generate_finished.emit(current_response)
 	else:
-		var error_msg = "No 'response' field in Ollama API response"
+		var error_msg = "No 'response' or 'message' field in Ollama API response"
 		Chronicler.log_event(self, "invalid_response_format", {"response_data": response_data})
 		generate_failed.emit(error_msg)
 
