@@ -2,7 +2,7 @@
 # THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # DocuKeeper.gd
 extends Node
-#class_name DocuKeeper
+class_name DocuKeeper
 const NAME = "🗄️ Docu Keeper"
 # Owner: Aletheia
 

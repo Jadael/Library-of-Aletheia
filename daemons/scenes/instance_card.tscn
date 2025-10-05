@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://bjdm7mlonjmhv"]
 
-[ext_resource type="Script" path="res://daemons/scenes/instance_card.gd" id="1_2855g"]
+[ext_resource type="Script" path="res://Daemons/Scenes/instance_card.gd" id="1_2855g"]
 [ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/aletheia_theme.tres" id="1_ivk5i"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vyafr"]

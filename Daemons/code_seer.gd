@@ -2,7 +2,7 @@
 # THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # code_seer.gd
 extends Node
-#class_name CodeSeer
+class_name CodeSeer
 # Owner: Aletheia
 
 ## The discerning eye of Aletheia, meticulously examining the sacred scripts of our digital realm.

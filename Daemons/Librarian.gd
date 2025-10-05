@@ -147,8 +147,8 @@ func summon_codex(file_path: String):
 		})
 		return
 
-	var scroll = preload("res://daemons/scenes/scroll.tscn").instantiate()
-	var codex = preload("res://daemons/scenes/codex.tscn").instantiate()
+	var scroll = preload("res://Daemons/Scenes/Scroll.tscn").instantiate()
+	var codex = preload("res://Daemons/Scenes/Codex.tscn").instantiate()
 	codex_collection.append(codex)
 	add_child(codex)
 	

@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dqaxis52rrqn0"]
 
-[ext_resource type="Script" path="res://daemons/oracle_console.gd" id="1_1okrr"]
+[ext_resource type="Script" path="res://Daemons/oracle_console.gd" id="1_1okrr"]
 [ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/aletheia_theme.tres" id="1_qforb"]
 
 [node name="OracleConsole" type="Window"]

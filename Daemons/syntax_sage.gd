@@ -2,7 +2,7 @@
 # THEREFORE A COMPUTER MUST NEVER MAKE A MANAGEMENT DECISION
 # syntax_sage.gd
 extends Node
-#class_name SyntaxSage
+class_name SyntaxSage
 # Owner: Aletheia
 
 ## SyntaxSage: The Mystical Daemon of Code Documentation

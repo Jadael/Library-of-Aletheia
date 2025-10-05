@@ -111,15 +111,15 @@ func _handle_failed_awakening(librarian_success: bool, curator_success: bool) ->
 	})
 
 func _setup_card_catalog_window() -> void: ## Loads and adds the Card Catalog scene to the main node
-	card_catalog_window = preload("res://daemons/scenes/card_catalog.tscn").instantiate()
+	card_catalog_window = preload("res://Daemons/Scenes/card_catalog.tscn").instantiate()
 	add_child(card_catalog_window)
 
 func _setup_ai_settings_window() -> void: ## Loads and adds the AI Settings scene to the main node
-	ai_settings_window = preload("res://daemons/scenes/ai_settings.tscn").instantiate()
+	ai_settings_window = preload("res://Daemons/Scenes/ai_settings.tscn").instantiate()
 	add_child(ai_settings_window)
 
 func _setup_oracle_console_window() -> void: ## Loads and adds the Oracle Console scene to the main node
-	oracle_console_window = preload("res://daemons/scenes/oracle_console.tscn").instantiate()
+	oracle_console_window = preload("res://Daemons/Scenes/oracle_console.tscn").instantiate()
 	add_child(oracle_console_window)
 
 func _setup_ui() -> void: ## Creates a container and populates it with UI buttons for core functions

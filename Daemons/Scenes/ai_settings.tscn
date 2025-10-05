@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://cn17uqapvxn2f"]
 
 [ext_resource type="Theme" uid="uid://dhjt02la7o8du" path="res://assets/aletheia_theme.tres" id="1_jcxv1"]
-[ext_resource type="Script" path="res://daemons/ai_settings.gd" id="2_3smpe"]
+[ext_resource type="Script" path="res://Daemons/ai_settings.gd" id="2_3smpe"]
 
 [node name="AI Settings" type="Window"]
 title = "👾 AI Settings"

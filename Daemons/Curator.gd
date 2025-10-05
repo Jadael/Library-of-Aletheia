@@ -243,7 +243,7 @@ func suggest_scroll_arrangement() -> Array:
 ## This function summons a ChronicleViewer, allowing users to peer
 ## into the history of our mystical realm.
 func summon_chronicle_viewer():
-	var viewer = preload("res://daemons/scenes/chronicle_viewer.tscn").instantiate()
+	var viewer = preload("res://Daemons/Scenes/chronicle_viewer.tscn").instantiate()
 	main_node.add_child(viewer)
 	
 	var viewport_rect = main_node.get_viewport_rect()
