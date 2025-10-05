@@ -1,9 +1,9 @@
 [gd_resource type="Theme" load_steps=18 format=3 uid="uid://dhjt02la7o8du"]
 
-[ext_resource type="FontFile" uid="uid://hy7le4ku7dwx" path="res://fonts/LibreBaskerville-Bold.ttf" id="1_rwkvv"]
-[ext_resource type="FontFile" uid="uid://satkul7ohaxm" path="res://fonts/LibreBaskerville-Italic.ttf" id="2_46j2u"]
-[ext_resource type="FontFile" uid="uid://ci7w4fd3vwgba" path="res://fonts/LibreBaskerville-Regular.ttf" id="2_pi8ax"]
-[ext_resource type="FontFile" uid="uid://da3er4mjqd0j3" path="res://fonts/Hack-Regular.ttf" id="3_tnyg7"]
+[ext_resource type="FontFile" uid="uid://c0vul81q0nndf" path="res://fonts/LibreBaskerville-Bold.ttf" id="1_rwkvv"]
+[ext_resource type="FontFile" uid="uid://jchb4bbkrgts" path="res://fonts/LibreBaskerville-Italic.ttf" id="2_46j2u"]
+[ext_resource type="FontFile" uid="uid://c4esu5yju72bw" path="res://fonts/LibreBaskerville-Regular.ttf" id="2_pi8ax"]
+[ext_resource type="FontFile" uid="uid://bvor6xort6jlc" path="res://fonts/Hack-Regular.ttf" id="3_tnyg7"]
 [ext_resource type="StyleBox" uid="uid://c0cbspwo1uvbo" path="res://assets/document_stylebox.tres" id="5_ljnbq"]
 [ext_resource type="StyleBox" uid="uid://dpnr60xnwrjla" path="res://assets/tab_dark_normal.tres" id="6_vbfnb"]
 [ext_resource type="StyleBox" uid="uid://bghtye2mmc1kc" path="res://assets/window_dark_focused.tres" id="7_1dc7w"]
