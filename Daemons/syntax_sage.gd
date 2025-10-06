@@ -213,25 +213,38 @@ func _generate_function_description(script_name: String, script_about: String, f
 
 	var prompt = PROMPT_TEMPLATE_FUNCTION_DESCRIPTION.format({
 		"script_name": script_name,
-		#"script_about": script_about,
+		"script_about": script_about if script_about else "No description provided",
 		"func_name": func_name,
 		"func_code": func_code
 	})
-	
+
 	var retry_count = 0
 	var result = ""
-	
+
 	while retry_count < MAX_RETRIES:
-		var task_id = "generate_function_description_{0}_{1}_{2}_{3}".format([script_name, func_name, Time.get_unix_time_from_system() * 1000 + randi() % 1000, retry_count])
-		
 		Chronicler.log_event(self, "function_description_requested", {
 			"script_name": script_name,
 			"func_name": func_name,
 			"attempt": retry_count + 1
 		})
-		
-		result = await Shoggoth.generate_text(prompt, task_id, {"max_length": 512, "stop_on": "﴾"})
-		
+
+		# Submit task to Shoggoth and get task_id
+		var task_id = Shoggoth.submit_task(prompt, {"max_length": 512, "stop_tokens": ["﴾"]}) #FIXME: Should not be a hard-coded max length. Could be proportional to the prompt length? Though we want to minimize compute costs and time/energy use, it's also better to go a few tokens too long than for the response to get cut off before it finishes and have to re-generate the whole response.
+
+		# Wait for task completion signal
+		var completion_data = await Shoggoth.task_completed
+
+		# Verify this is our task
+		if completion_data[0] != task_id:
+			Chronicler.log_event(self, "task_id_mismatch", {
+				"expected": task_id,
+				"received": completion_data[0]
+			})
+			retry_count += 1
+			continue
+
+		result = completion_data[1]
+
 		if result == null or result.strip_edges().is_empty():
 			Chronicler.log_event(self, "null_llm_response", {
 				"script_name": script_name,
@@ -240,23 +253,24 @@ func _generate_function_description(script_name: String, script_about: String, f
 			})
 			retry_count += 1
 			continue
-		
+
 		if result.strip_edges().ends_with("﴿"):
 			Chronicler.log_event(self, "successful_function_description", {
 				"script_name": script_name,
 				"func_name": func_name,
 				"attempt": retry_count + 1
 			})
-			
+
 			return result
-		
+
 		Chronicler.log_event(self, "invalid_function_description_format", {
 			"script_name": script_name,
 			"func_name": func_name,
-			"attempt": retry_count + 1
+			"attempt": retry_count + 1,
+			"result_preview": result.substr(0, min(100, result.length()))
 		})
 		retry_count += 1
-	
+
 	Chronicler.log_event(self, "function_description_generation_failed", {
 		"script_name": script_name,
 		"func_name": func_name,

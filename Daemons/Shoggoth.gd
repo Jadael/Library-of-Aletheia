@@ -79,6 +79,7 @@ func _create_default_config() -> void:
 	config.set_value("ollama", "model", "mistral-small:24b")
 	config.set_value("ollama", "temperature", 0.7)
 	config.set_value("ollama", "max_tokens", 2048)
+	config.set_value("ollama", "stop_tokens", [])
 	config.save(CONFIG_FILE)
 	Chronicler.log_event(self, "default_config_created", {})
 
@@ -113,8 +114,10 @@ func _configure_ollama_client(ollama_host: String, model_name: String) -> void:
 	})
 
 func _run_initialization_test() -> void:
-	submit_task(INIT_TEST_PROMPT, {"is_init_test": true, "max_length": 32, "temperature": 0.0})
 	Chronicler.log_event(self, "initialization_test_started", {})
+
+	# Run init test directly without queuing to avoid circular dependency
+	ollama_client.generate(INIT_TEST_PROMPT, {"num_predict": 32, "temperature": 0.0})
 
 func _on_init_test_completed(result: String) -> void:
 	var llm_success = result.strip_edges() != ""
@@ -122,12 +125,19 @@ func _on_init_test_completed(result: String) -> void:
 
 	Chronicler.log_event(self, "models_initialized", {
 		"llm_success": llm_success,
-		"model": config.get_value("ollama", "model", "unknown"),
+		"model": config.get_value("ollama", "model", "unknown") if config else "unknown",
 		"init_test_prompt": INIT_TEST_PROMPT,
 		"init_test_result": result
 	})
 
 	is_initializing = false
+
+	# Now that initialization is complete, start processing any queued tasks
+	if not task_queue.is_empty() and not is_processing:
+		Chronicler.log_event(self, "processing_queued_tasks_after_init", {
+			"queue_length": task_queue.size()
+		})
+		_process_next_task()
 
 func set_model(model_name: String) -> void:
 	config.set_value("ollama", "model", model_name)
@@ -193,7 +203,17 @@ func _process_next_task() -> void:
 		is_processing = false
 		current_task = {}
 		return
-	
+
+	# Don't process tasks while still initializing or if client isn't ready
+	if is_initializing or not ollama_client:
+		Chronicler.log_event(self, "task_processing_deferred", {
+			"is_initializing": is_initializing,
+			"client_ready": ollama_client != null,
+			"queue_length": task_queue.size()
+		})
+		is_processing = false
+		return
+
 	is_processing = true
 	current_task = task_queue.pop_front()
 	retry_count = 0
@@ -205,7 +225,12 @@ func _apply_task_parameters() -> Dictionary:
 	var options = {}
 
 	# Get default stop tokens from config
-	var stop_tokens = config.get_value("ollama", "stop_tokens", [])
+	var stop_tokens = []
+	if config:
+		stop_tokens = config.get_value("ollama", "stop_tokens", [])
+	else:
+		push_error("Shoggoth: Config is null in _apply_task_parameters - this should not happen!")
+		Chronicler.log_event(self, "config_null_error", {"function": "_apply_task_parameters"})
 
 	for key in current_task["parameters"]:
 		match key:
@@ -230,6 +255,15 @@ func _apply_task_parameters() -> Dictionary:
 	return options
 
 func _execute_current_task(options: Dictionary) -> void:
+	# Safety check: ensure ollama_client is initialized
+	if not ollama_client:
+		var error_msg = "Ollama client not initialized - cannot execute task"
+		Chronicler.log_event(self, "ollama_client_not_ready", {
+			"task_id": current_task.get("id", "unknown")
+		})
+		_handle_task_error(error_msg)
+		return
+
 	var mode = current_task.get("mode", "generate")
 
 	if mode == "chat":
@@ -270,26 +304,32 @@ func _on_generate_failed(error: String) -> void:
 	_handle_task_error("Ollama generation failed: " + error)
 
 func _on_generate_text_finished(result: String) -> void:
+	# If we're still initializing, this is the init test response
+	if is_initializing:
+		result = _process_result(result)
+		_on_init_test_completed(result)
+		return
+
+	# Normal task completion
 	if current_task.is_empty():
 		Chronicler.log_event(self, "unexpected_task_completion", {
 			"result_length": result.length(),
 			"result": result
 		})
 		return
-	
+
 	result = _process_result(result)
-	
-	if current_task["parameters"].get("is_init_test", false):
-		_on_init_test_completed(result)
-	else:
-		_emit_task_completion(result)
-	
+	_emit_task_completion(result)
+
 	current_task = {}
 	_process_next_task()
 
 func _process_result(result: String) -> String:
 	# Ollama handles stop tokens internally, but we can do post-processing here if needed
-	var stop_tokens = config.get_value("ollama", "stop_tokens", [])
+	var stop_tokens = []
+	if config:
+		stop_tokens = config.get_value("ollama", "stop_tokens", [])
+
 	for token in stop_tokens:
 		var split_result = result.split(token)
 		if split_result.size() > 1:

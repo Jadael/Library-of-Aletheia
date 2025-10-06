@@ -46,6 +46,8 @@ func _ready():
 	var err = config.load(Shoggoth.CONFIG_FILE)
 	if err != OK:
 		Chronicler.log_event(self, "config_load_failed", {"error": err})
+		# Config doesn't exist yet - create default values
+		_create_default_config()
 
 	apply_button.pressed.connect(_on_apply_button_pressed)
 	advanced_toggle.pressed.connect(_on_advanced_toggle_pressed)
@@ -54,6 +56,23 @@ func _ready():
 
 	_load_current_settings()
 	_update_status_display("Initializing...", false)
+
+func _create_default_config():
+	## Create default configuration if config file doesn't exist
+	config.set_value("ollama", "host", "http://localhost:11434")
+	config.set_value("ollama", "model", "mistral-small:24b")
+	config.set_value("ollama", "temperature", 0.7)
+	config.set_value("ollama", "max_tokens", 2048)
+	config.set_value("ollama", "stop_tokens", [])
+	config.set_value("ollama", "top_k", 40)
+	config.set_value("ollama", "top_p", 0.9)
+	config.set_value("ollama", "min_p", 0.0)
+	config.set_value("ollama", "repeat_penalty", 1.1)
+	config.set_value("ollama", "repeat_last_n", 64)
+	config.set_value("ollama", "num_ctx", 4096)
+	config.set_value("ollama", "seed", 0)
+	config.save(Shoggoth.CONFIG_FILE)
+	Chronicler.log_event(self, "default_config_created", {})
 
 func _on_advanced_toggle_pressed():
 	advanced_panel.visible = not advanced_panel.visible

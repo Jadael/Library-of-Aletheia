@@ -103,20 +103,28 @@ Each daemon is designed as a specialized singleton responsible for a specific do
 ### Specialized Analysis Daemons
 
 **CodeSeer** (`code_seer.gd`) - *Code Analysis*
-- Analyzes GDScript code structure
-- Used by Aletheia for documentation generation
+- Scans project directories to discover GDScript files
+- Parses script structure (properties, functions, signals, constants)
+- Extracts 'about' sections and entity metadata
+- Used by Aletheia as "the discerning eye" in documentation generation
 - Scene: `Scenes/code_seer.tscn`
 - Location: `Daemons/code_seer.gd:1`
 
-**SyntaxSage** (`syntax_sage.gd`) - *Syntax Analysis and Validation*
-- GDScript syntax validation
-- Code quality checks
+**SyntaxSage** (`syntax_sage.gd`) - *Documentation Generation*
+- Generates comprehensive documentation from parsed code
+- Uses Shoggoth (LLM) to create insightful function descriptions
+- Creates Markdown documentation with YAML frontmatter
+- Channels "the wisdom of Shoggoth" while maintaining documentation standards
+- Used by Aletheia as the documentation wordsmith
 - Scene: `Scenes/syntax_sage.tscn`
 - Location: `Daemons/syntax_sage.gd:1`
 
-**DocuKeeper** (`docu_keeper.gd`) - *Documentation Management*
-- Manages individual document records
-- Documentation validation and formatting
+**DocuKeeper** (`docu_keeper.gd`) - *Documentation Persistence*
+- Manages storage and retrieval of generated documentation
+- Maintains documentation output directory structure
+- Saves documentation as Markdown files
+- Guardian of persistent documentation files
+- Used by Aletheia to preserve generated wisdom
 - Scene: `Scenes/docu_keeper.tscn`
 - Location: `Daemons/docu_keeper.gd:1`
 

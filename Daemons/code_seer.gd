@@ -114,12 +114,40 @@ func _extract_fundamental_nature(lines: Array, start_index: int) -> String:
 	##
 	## Returns:
 	## A string containing the extracted 'about' content.
-	
+
 	var essence = ""
 	var current_line = start_index + 1
-	while current_line < lines.size() and lines[current_line].begins_with("\"\"\""):
-		essence += lines[current_line].trim_prefix("\"\"\"").trim_suffix("\"\"\"") + "\n"
+	var in_multiline = false
+
+	# The start_index line contains '@export_multiline var about = """'
+	# We need to extract everything between the triple quotes
+	while current_line < lines.size():
+		var line = lines[current_line].strip_edges()
+
+		# Check if this line contains the opening triple quotes
+		if not in_multiline and '"""' in line:
+			in_multiline = true
+			# Extract content after the opening quotes on the same line
+			var parts = line.split('"""', false, 1)
+			if parts.size() > 1:
+				essence += parts[1] + "\n"
+			current_line += 1
+			continue
+
+		# Check if this line contains the closing triple quotes
+		if in_multiline and '"""' in line:
+			# Extract content before the closing quotes
+			var parts = line.split('"""', false, 1)
+			if parts.size() > 0 and parts[0].strip_edges() != "":
+				essence += parts[0] + "\n"
+			break
+
+		# If we're inside the multiline string, add the full line
+		if in_multiline:
+			essence += lines[current_line] + "\n"
+
 		current_line += 1
+
 	return essence.strip_edges()
 
 # TODO: Implement a method to detect and report inconsistencies in script structure,

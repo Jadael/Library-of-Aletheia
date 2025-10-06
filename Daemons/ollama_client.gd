@@ -43,6 +43,9 @@ func _ready() -> void:
 	http_request = HTTPRequest.new()
 	add_child(http_request)
 	http_request.request_completed.connect(_on_request_completed)
+	# Set generous timeout for local LLM inference (3 minutes)
+	# Local GPU inference can take 6-90+ seconds even on high-end hardware
+	http_request.timeout = 180.0
 
 func set_model(new_model: String) -> void:
 	model_name = new_model
@@ -55,7 +58,8 @@ func set_host(new_host: String) -> void:
 	ollama_host = new_host
 
 ## Generate text using /api/generate endpoint (text completion mode)
-func generate(prompt: String, options: Dictionary = {}) -> void:
+## If streaming is enabled, generate_updated signal will emit partial responses
+func generate(prompt: String, options: Dictionary = {}, stream: bool = false) -> void:
 	if is_generating:
 		Chronicler.log_event(self, "generation_already_running", {})
 		return
@@ -67,7 +71,7 @@ func generate(prompt: String, options: Dictionary = {}) -> void:
 	var body = {
 		"model": model_name,
 		"prompt": prompt,
-		"stream": false,
+		"stream": stream,
 		"options": {}
 	}
 
