@@ -274,7 +274,7 @@ func _execute_current_task(options: Dictionary) -> void:
 		ollama_client.generate(prompt, options)
 
 func _handle_task_error(error_message: String) -> void:
-	Chronicler.log_event(self, "task_execution_failed", {
+	Chronicler.log_event(self, "task_execution_failed", { # ERROR: Invalid access to property or key 'id' on a base object of type 'Dictionary'.
 		"task_id": current_task["id"],
 		"error": error_message,
 		"retry_count": retry_count
@@ -301,7 +301,7 @@ func _retry_current_task() -> void:
 	_execute_current_task(options)
 
 func _on_generate_failed(error: String) -> void:
-	_handle_task_error("Ollama generation failed: " + error)
+	_handle_task_error("Ollama generation failed: " + error) # ERROR: Invalid access to property or key 'id' on a base object of type 'Dictionary'.
 
 func _on_generate_text_finished(result: String) -> void:
 	# If we're still initializing, this is the init test response

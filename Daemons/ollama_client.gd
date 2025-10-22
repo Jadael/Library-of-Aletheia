@@ -193,7 +193,7 @@ func _on_request_completed(result: int, response_code: int, headers: PackedStrin
 			"response_code": response_code,
 			"body": body_text
 		})
-		generate_failed.emit(error_msg + " - " + body_text)
+		generate_failed.emit(error_msg + " - " + body_text) # ERROR: Invalid access to property or key 'id' on a base object of type 'Dictionary'.
 		return
 
 	var json_text = body.get_string_from_utf8()
